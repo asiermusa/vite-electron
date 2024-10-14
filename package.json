@@ -1,0 +1,46 @@
+{
+  "name": "denborak-vite",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"npm:electron-dev\"",
+    "electron-dev": "nodemon --quiet \"electron .\"",
+    "build": "vite build && electron-builder --mac"
+  },
+  "nodemonConfig": {
+    "watch": ["main.js"],
+    "exec": "electron .",
+    "ext": "js,json",
+    "quiet": true
+  },
+  "build": {
+    "appId": "com.denborak.online",
+    "productName": "Denborak Electron",
+    "files": [
+      "dist/index.html",
+      "dist/assets/**/*",
+      "main.js"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "dependencies": {
+    "concurrently": "^9.0.1",
+    "vue": "^3.5.10"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8",
+    "nodemon": "^3.1.7",
+    "vite": "^5.4.8",
+    "vite-plugin-electron-builder": "^0.1.0"
+  }
+}
