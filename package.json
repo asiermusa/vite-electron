@@ -19,7 +19,7 @@
   "build": {
     "appId": "com.denborak.online",
     "asar": true,
-    "productName": "Denborak Electron",
+    "productName": "DenborakWin",
     "files": [
       "dist/index.html",
       "dist/assets/**/*",

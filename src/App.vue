@@ -120,6 +120,7 @@
 <script>
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
+import moment from "moment";
 import { connect } from "net";
 
 export default {
@@ -238,6 +239,10 @@ export default {
           msg.events.forEach((id) => {
             if (id == res.unique_id) {
               res.start = msg.start;
+              res["pretty_start"] = moment
+                .unix(parseInt(msg.start))
+                .tz("Europe/Madrid")
+                .format("YYYY-MM-DD HH:mm:ss");
             }
           });
         });

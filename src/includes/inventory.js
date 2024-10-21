@@ -178,6 +178,7 @@ function _mountTag(win, tag_len, count, startList, startTime, currentTime, ant, 
     currentTag.name = current[2];
     currentTag.city = current[3];
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, startTime), startTime);
+    currentTag.real_time = moment().tz("Europe/Madrid").format("YYYY-MM-DD HH:mm:ss");
     currentTag.split = splitSlug;
     currentTag.reader = readerName;
 

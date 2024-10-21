@@ -212,6 +212,8 @@ async function requests(data, app, win) {
             startTime.push(event)
         })
 
+        console.log(array)
+
     }
 
     if (cmd == 'inventory') {

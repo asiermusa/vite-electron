@@ -35,6 +35,7 @@
           <th class="text-left">Izena</th>
           <th class="text-left">Herria</th>
           <th class="text-left">Denbora</th>
+          <th class="text-left">Irak. ordua</th>
           <th class="text-left">Split</th>
           <th class="text-left">Reader ID</th>
           <th class="text-left">Antena</th>
@@ -45,6 +46,7 @@
           <td>{{ item.name }}</td>
           <td>{{ item.city }}</td>
           <td>{{ item.pretty_time }}</td>
+          <td>{{ item.real_time }}</td>
           <td>{{ item.split }}</td>
           <td>{{ item.reader }}</td>
           <td>{{ item.ant }}</td>

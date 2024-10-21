@@ -38,7 +38,6 @@ export default createStore({
     },
     _SAVE_ITEMS(state, val) {
       state.items.push(val)
-      console.log('storer')
     },
     _RESET_ITEMS(state, val) {
       state.items = val
