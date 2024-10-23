@@ -118,7 +118,7 @@ export default {
       //   });
     },
     _write_tag() {
-      window.ipc.send("toMain", ["write-serial", this.writeData]);
+      window.ipc.send("toMain", ["write-serial", this.serial, this.writeData]);
 
       // axios
       //   .post("https://denborak.biklik.eus/wp-json/v1/save", {

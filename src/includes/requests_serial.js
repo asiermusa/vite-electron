@@ -58,7 +58,7 @@ async function requests_serial(data, win) {
         // let dig1 = '0x' + data[1][0] + data[1][1];
         // let dig2 = '0x' + data[1][2] + data[1][3];
 
-        let hexString = data[1];
+        let hexString = data[2];
 
         hexString = hexString.padStart(Math.ceil(hexString.length / 2) * 2, '0');
     
@@ -90,7 +90,7 @@ async function requests_serial(data, win) {
         } = require("serialport");
 
         let port = new SerialPort({
-            path: '/dev/cu.usbserial-0001',
+            path: data[1],
             baudRate: 57600,
         })
 

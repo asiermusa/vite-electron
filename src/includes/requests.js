@@ -1,7 +1,7 @@
 const moment = require("moment-timezone");
 const axios = require("axios");
 const createExcel = require("../helpers/excel.js");
-const { CheckSum, dec2hex } = require("../helpers/helpers.js");
+const { CheckSum, dec2hex, getAccurateTime } = require("../helpers/helpers.js");
 const { Socket } = require("net");
 const { inventory_fn, get_data } = require("./inventory.js");
 const os = require('os');
@@ -26,7 +26,8 @@ let startList = null;
 
 
 
-async function requests(data, app, win) {
+
+async function requests(data, app, win, timeOffset) {
     let cmd = data[0];
 
     if (cmd == 'connect') {
@@ -88,7 +89,7 @@ async function requests(data, app, win) {
             readers[i].on('data', data => {
                 if (startInventory || checkAntennas) {
 
-                    result = inventory_fn(data, win, readers[i], checkAntennas, startInventory, startTime, startList, count, TAG_LEN, read_delay_sec, selectedSplits, res);
+                    result = inventory_fn(data, win, readers[i], checkAntennas, startInventory, startTime, startList, count, TAG_LEN, read_delay_sec, selectedSplits, res, timeOffset);
                     if (result) count = result;
                 }
 
@@ -205,23 +206,25 @@ async function requests(data, app, win) {
         console.log('antena', data)
     }
 
+
+    // if (cmd == 'set-real-start-time') {
+    //     let message = JSON.parse(data[1]);
+    //     message.start =  getAccurateTime(timeOffset).format('x'); //moment().add('-3000', 'milliseconds').format('x');
+    //     win.webContents.send('fromMain', ['set-start-time', JSON.stringify(message)]);
+    // }
+
     if (cmd == 'start-time') {
         let array = JSON.parse(data[1]);
 
         array.forEach(event => {
             startTime.push(event)
         })
-
-        console.log(array)
-
     }
 
     if (cmd == 'inventory') {
         read_delay_sec = data[1];
         selectedSplits = JSON.parse(data[2]);
         startInventory = true;
-
-
 
         // Readers
         readers.forEach((reader, i) => {

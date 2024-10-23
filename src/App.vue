@@ -96,21 +96,13 @@
         </v-list>
 
         <div v-for="(event, i) in events" :key="i">
+          <pre>{{ event.start }}</pre>
           <p>{{ event.name }}: <Chrono :time="event.start" /></p>
         </div>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <v-alert
-          v-if="!_canInventory"
-          text="No puedes comenzar las lecturas antes de conectar un Reader."
-          title="Atencion!"
-          type="info"
-          variant="tonal"
-        ></v-alert>
-
         <button @click="_disconnect()">DISCONNECT</button>
 
-        <pre>invetntory: {{ _canInventory }}</pre>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -153,7 +145,6 @@ export default {
         function (event, data) {
           if (data[0] == "connection") {
             let readers = that.connected;
-            console.log("conn", data[1]);
             readers.map((res, i) => {
               if (res.name == data[1]) res.active = true;
             });
@@ -231,23 +222,20 @@ export default {
     socket.on("message", (msg) => {
       if (msg) {
         msg = JSON.parse(msg);
-        console.log("time", msg);
-        events = this.$store.state.events;
+        let events = that.$store.state.events;
 
-        console.log(events);
         events.map((res) => {
           msg.events.forEach((id) => {
             if (id == res.unique_id) {
               res.start = msg.start;
-              res["pretty_start"] = moment
-                .unix(parseInt(msg.start))
-                .tz("Europe/Madrid")
-                .format("YYYY-MM-DD HH:mm:ss");
+              res["pretty_start"] = moment(parseInt(msg.start)).format(
+                "YYYY-MM-DD HH:mm:ss.SSS"
+              );
             }
           });
         });
 
-        this.$store.commit("_SET_EVENTS", events);
+        that.$store.commit("_SET_EVENTS", events);
 
         window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
       }
@@ -296,6 +284,16 @@ export default {
   },
   methods: {
     _disconnect() {
+      this.connected.map((reader) => {
+        reader.active = false;
+      });
+
+      window.ipc.send("toMain", [
+        "remove-cookies",
+        "readers",
+        JSON.stringify(this.connected),
+      ]);
+
       window.ipc.send("toMain", ["disconnect"]);
     },
     stringToSlug(str) {
@@ -313,7 +311,6 @@ export default {
     },
     _setReaders(currentReaders) {
       // Readerrak zehaztu - defektuz 1
-
       if (!currentReaders) {
         currentReaders = [
           {

@@ -12,6 +12,8 @@ const path = require('path')
 const requests = require('./src/includes/requests.js')
 const requests_serial = require('./src/includes/requests_serial.js')
 const cookies = require('./src/includes/cookies.js')
+const axios = require('axios');
+const moment = require('moment');
 
 let win = null;
 
@@ -29,7 +31,6 @@ async function createWindow() {
     }
   })
 
-  console.log(path.join(__dirname, 'src/assets/icon.png'))
   // Load the correct HTML file based on the environment
   if (app.isPackaged) {
     // Ensure this path points to your built index.html
@@ -53,8 +54,23 @@ async function createWindow() {
         title: 'Confirm Close',
         message: 'Are you sure you want to close the application?',
       })
-      .then((result) => {
+      .then(async (result) => {
         if (result.response === 1) { // Index 1 corresponds to 'Close'
+
+          // let cookie = {
+          //   url: "http://denborak.online",
+          //   name: 'readers'
+          // };
+        
+          // try {
+          //   await session.defaultSession.cookies.remove(cookie.url, cookie.name);
+          //   console.log('Cookie removed successfully');
+          //   //win.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
+          // } catch (error) {
+          //   console.error(error);
+          // }
+          
+          
           win.destroy(); // Close the window if confirmed
         }
       });
@@ -63,8 +79,6 @@ async function createWindow() {
 }
 
 app.whenReady().then(createWindow);
-
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -76,6 +90,28 @@ app.on('activate', () => {
 
 ipcMain.on("toMain", async (event, data) => {
   requests_serial(data, win);
-  requests(data, app, win);
+  requests(data, app, win, timeOffset);
   cookies(data, win);
 });
+
+
+// Function to fetch server time and calculate the offset
+let timeOffset = 0; // Store the offset between local time and server time
+
+async function syncWithServerTime() {
+  try {
+    const response = await axios.get('https://denborak.biklik.eus/wp-json/v1/server-time');
+    const serverTime = moment(response.data.data, 'YYYY-MM-DD HH:mm:ss.SSS').valueOf(); // Unix timestamp in ms
+    const localTime = moment().valueOf();
+    // Calculate the offset (serverTime - localTime)
+    timeOffset = serverTime - localTime;
+    console.log('Time synchronized with server. Offset (ms):', timeOffset);
+  } catch (error) {
+    console.error('Error syncing with server time:', error);
+  }
+}
+
+// Initial sync at app startup
+syncWithServerTime();
+// Sync time every minute (60000 ms)
+setInterval(syncWithServerTime, 60000);

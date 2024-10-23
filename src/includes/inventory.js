@@ -1,13 +1,16 @@
 const moment = require('moment');
+const axios = require('axios');
 
 const {
     CheckSum,
     filterName,
     getPrettyTime,
     getAntenna,
-    uniqueId
+    uniqueId,
+    getAccurateTime
 } = require('../helpers/helpers.js');
 const os = require('os');
+
 
 function get_data(message, reader, reader_id = null) {
 
@@ -15,7 +18,7 @@ function get_data(message, reader, reader_id = null) {
     console.log('sended again from HELPER...', 'Reader ID: ' + reader_id);
 }
 
-function inventory_fn(data, win, reader, checkAntennas, startInventory, startTime, startList, count, TAG_LEN, READ_DELAY_MS, selectedSplits, readerInfo) {
+function inventory_fn(data, win, reader, checkAntennas, startInventory, startTime, startList, count, TAG_LEN, READ_DELAY_MS, selectedSplits, readerInfo, timeOffset) {
 
     let buf = Buffer.from(data);
     let response = buf.toString('hex', 0, buf.length);
@@ -32,7 +35,6 @@ function inventory_fn(data, win, reader, checkAntennas, startInventory, startTim
         response = tags[0];
     }
 
-    // console.log(response)
 
 
     // if (resp[1] == 4 && resp[4] != 10) {
@@ -40,11 +42,11 @@ function inventory_fn(data, win, reader, checkAntennas, startInventory, startTim
     // }
 
     //ANTENNA CHECKING
-    // if (resp[3] == '8a' && checkAntennas && resp[1] == 'a') {
-    //     win.webContents.send('fromMain', ['checking', resp]);
-    //     checkAntennas = false;
-    //     return false;
-    // }
+    if (response.substring(6, 8) == '8a' && checkAntennas && response.substring(2, 4) == '0a') {
+        win.webContents.send('fromMain', ['checking', resp]);
+        checkAntennas = false;
+        return false;
+    }
 
     if (response.substring(2, 4) == '0a' && startInventory == true) {
 
@@ -69,11 +71,13 @@ function inventory_fn(data, win, reader, checkAntennas, startInventory, startTim
         // if(tagFilter != '0000') return;
         // if(response.slice(14, 38).length < 23) return;
 
-        let currentTime = moment().tz("Europe/Madrid").format('x');
+
+
+        let currentTime = getAccurateTime(timeOffset).format('x');
         let ant = getAntenna('0x' + resp[4], '0x' + resp[resp.length - 2]);
 
         if (!count.length) {
-            _mountTag(win, response.slice(14, TAG_LEN), count, startList, startTime, currentTime, ant, selectedSplits, readerInfo.name)
+            _mountTag(win, response.slice(14, TAG_LEN), count, startList, startTime, currentTime, ant, selectedSplits, readerInfo.name, timeOffset)
         }
 
         // ikusi ea tag hau count array nagusian existitzen den ala ez.
@@ -87,17 +91,17 @@ function inventory_fn(data, win, reader, checkAntennas, startInventory, startTim
         })
 
         if (!tagExist) {
-            _mountTag(win, response.slice(14, TAG_LEN), count, startList, startTime, currentTime, ant, selectedSplits, readerInfo.name)
+            _mountTag(win, response.slice(14, TAG_LEN), count, startList, startTime, currentTime, ant, selectedSplits, readerInfo.name, timeOffset)
         }
     }
 }
 
-function _mountTag(win, tag_len, count, startList, startTime, currentTime, ant, selectedSplits, readerName) {
+function _mountTag(win, tag_len, count, startList, startTime, realDatetime, ant, selectedSplits, readerName, timeOffset) {
 
     let currentTag = {
         tag: tag_len,
         ant: ant,
-        time: currentTime,
+        time: realDatetime,
     }
 
     
@@ -106,13 +110,11 @@ function _mountTag(win, tag_len, count, startList, startTime, currentTime, ant, 
 
     if (current == "UNKNOWN") return false;
 
-    let real_datetime = moment().unix(moment().tz("Europe/Madrid").format())
-
-    let current_time = moment(current[4].start_date).unix(
+    let currentEventTime = moment(current[4].start_date).unix(
         moment().tz("Europe/Madrid").format()
     );
 
-    if (parseInt(real_datetime) < parseInt(current_time)) {
+    if (parseInt(realDatetime) < parseInt(currentEventTime)) {
         console.log("Ez da irakurketa hasi...");
         return false;
     }
@@ -155,9 +157,7 @@ function _mountTag(win, tag_len, count, startList, startTime, currentTime, ant, 
 
     let splitDiffSeconds = moment.duration(current[4].splits[find.length].min_time).asSeconds();
 
-    // console.log(parseInt(real_datetime) + ' < ' + parseInt(current_time + splitDiffSeconds))
-
-    if (parseInt(real_datetime) < parseInt(current_time + splitDiffSeconds)) {
+    if (parseInt(realDatetime) < parseInt(currentEventTime + splitDiffSeconds)) {
         // console.log("Split hau oraindik ezin da irakurri...");
         return false;
     }
@@ -177,13 +177,12 @@ function _mountTag(win, tag_len, count, startList, startTime, currentTime, ant, 
 
     currentTag.name = current[2];
     currentTag.city = current[3];
-    currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, startTime), startTime);
-    currentTag.real_time = moment().tz("Europe/Madrid").format("YYYY-MM-DD HH:mm:ss");
+    currentTag.pretty_time = getPrettyTime(realDatetime, uniqueId(current[4].name, startTime), startTime);
+    currentTag.real_time = getAccurateTime(timeOffset).format("YYYY-MM-DD HH:mm:ss.SSS");
     currentTag.split = splitSlug;
     currentTag.reader = readerName;
 
     
-
     count.push(currentTag)
 
 

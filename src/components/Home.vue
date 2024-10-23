@@ -21,47 +21,57 @@
 
     <h1>Inventory</h1>
 
-    <v-btn @click="_inventory()" color="primary"> Irakurketa hasi </v-btn>
+    <v-alert
+      v-if="!_canInventory"
+      text="No puedes comenzar las lecturas antes de conectar un Reader."
+      title="Atencion!"
+      type="info"
+      variant="tonal"
+    ></v-alert>
 
-    <v-btn @click="_stop()"> Irakurketa geratu</v-btn>
+    <div v-else>
+      <v-btn @click="_inventory()" color="primary"> Irakurketa hasi </v-btn>
 
-    <v-btn @click="_delete()" color="warning"> Datuak ezabatu</v-btn>
+      <v-btn @click="_stop()"> Irakurketa geratu</v-btn>
 
-    <v-text-field placeholder="Bilatu" v-model="search"></v-text-field>
+      <v-btn @click="_delete()" color="warning"> Datuak ezabatu</v-btn>
 
-    <v-table>
-      <thead>
-        <tr>
-          <th class="text-left">Izena</th>
-          <th class="text-left">Herria</th>
-          <th class="text-left">Denbora</th>
-          <th class="text-left">Irak. ordua</th>
-          <th class="text-left">Split</th>
-          <th class="text-left">Reader ID</th>
-          <th class="text-left">Antena</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, i) in sortItems" :key="i">
-          <td>{{ item.name }}</td>
-          <td>{{ item.city }}</td>
-          <td>{{ item.pretty_time }}</td>
-          <td>{{ item.real_time }}</td>
-          <td>{{ item.split }}</td>
-          <td>{{ item.reader }}</td>
-          <td>{{ item.ant }}</td>
-        </tr>
-      </tbody>
-    </v-table>
+      <v-text-field placeholder="Bilatu" v-model="search"></v-text-field>
 
-    <v-btn @click="_saveData()" color="secondary"> Internetera bidali</v-btn>
+      <v-table>
+        <thead>
+          <tr>
+            <th class="text-left">Izena</th>
+            <th class="text-left">Herria</th>
+            <th class="text-left">Denbora</th>
+            <th class="text-left">Irak. ordua</th>
+            <th class="text-left">Split</th>
+            <th class="text-left">Reader ID</th>
+            <th class="text-left">Antena</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, i) in sortItems" :key="i">
+            <td>{{ item.name }}</td>
+            <td>{{ item.city }}</td>
+            <td>{{ item.pretty_time }}</td>
+            <td>{{ item.real_time }}</td>
+            <td>{{ item.split }}</td>
+            <td>{{ item.reader }}</td>
+            <td>{{ item.ant }}</td>
+          </tr>
+        </tbody>
+      </v-table>
 
-    <v-container>
-      Eskuz sartu datuak
-      <v-text-field label="Dortsala" v-model="customDorsal"></v-text-field>
-      <v-text-field label="Denbora" v-model="customTime"></v-text-field>
-      <v-btn @click="_addData()"> Gehitu</v-btn>
-    </v-container>
+      <v-btn @click="_saveData()" color="secondary"> Internetera bidali</v-btn>
+
+      <v-container>
+        Eskuz sartu datuak
+        <v-text-field label="Dortsala" v-model="customDorsal"></v-text-field>
+        <v-text-field label="Denbora" v-model="customTime"></v-text-field>
+        <v-btn @click="_addData()"> Gehitu</v-btn>
+      </v-container>
+    </div>
   </div>
 </template>
 
@@ -97,6 +107,9 @@ export default {
       return items.filter((item) => {
         return item.name.toLowerCase().includes(this.search.toLowerCase());
       });
+    },
+    _canInventory() {
+      return this.$store.getters.canInventory;
     },
   },
 

@@ -30,16 +30,17 @@ export default {
   },
   methods: {
     start(val) {
+      console.log("val", val);
       if (this.running) return;
 
       if (this.timeBegan === null) {
         this.reset();
-        this.timeBegan = moment
-          .unix(parseInt(val))
-          .tz("Europe/Madrid")
-          .format("YYYY-MM-DD HH:mm:ss");
-        console.log(this.timeBegan);
+        this.timeBegan = moment(parseInt(val)).format(
+          "YYYY-MM-DD HH:mm:ss.SSS"
+        );
+
         this.timeBegan = new Date(this.timeBegan);
+        console.log("began", val);
       }
 
       if (this.timeStopped !== null) {
@@ -57,12 +58,12 @@ export default {
     },
 
     reset() {
+      this.clock = "00:00:00"; //00:00:00.00
       this.running = false;
       clearInterval(this.started);
       this.stoppedDuration = 0;
       this.timeBegan = null;
       this.timeStopped = null;
-      this.clock = "00:00:00"; //00:00:00.00
     },
 
     clockRunning() {

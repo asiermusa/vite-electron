@@ -1,8 +1,12 @@
 const EPC_LEN = 24; // EPC
 const PRESET_VALUE = 0xFFFF;
 const POLYNOMIAL = 0x8408;
-
 const moment = require('moment');
+
+function getAccurateTime(timeOffset, current = false) {
+    let d = moment().add(timeOffset, 'milliseconds'); // Adjust local time using the offset
+    return d;
+}
 
 const calculateCRC16bit = (pucY) => {
     let uiCrcValue = PRESET_VALUE;
@@ -88,13 +92,20 @@ function zeroPrefix(num, digit) {
 }
 
 function getPrettyTime(time, event, startTime) {
+
+    // time: 1729600250917 event: row_66a3c2bd2ae8f9.99315545
+    
     let start = null;
     startTime.forEach(res => {
         if (res.unique_id == event) {
             start = res.start;
+            
         }
     });
-    let diff = time - start * 1000;
+
+    console.log('pretty', time, start)
+    
+    let diff = time - start;
     // milliseconds
     let milli = diff / 1000;
     let decimalValue = milli.toString().indexOf(".");
@@ -108,6 +119,7 @@ function getPrettyTime(time, event, startTime) {
 
     return `${hour[0]}h:${hour[1]}:${hour[2]}:${hour[3]}`;
 }
+
 
 
 function stringToSlug(str) {
@@ -141,4 +153,5 @@ module.exports = {
     getPrettyTime,
     stringToSlug,
     uniqueId,
+    getAccurateTime
 };
