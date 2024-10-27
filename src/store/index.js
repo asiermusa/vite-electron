@@ -12,6 +12,7 @@ export default createStore({
     startList: [],
     items: [],
     hostname: null,
+    inventory: false,
     readDelay: 5, //seconds
     events: [],
     selectedSplits: [],
@@ -53,6 +54,9 @@ export default createStore({
     },
     _SET_SERIAL_PORT(state, val) {
       state.serial = val
+    },
+    _SET_INVENTORY_STATUS(state, val) {
+      state.inventory = val
     },
   },
   actions: {

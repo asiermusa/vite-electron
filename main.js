@@ -15,11 +15,13 @@ const cookies = require('./src/includes/cookies.js')
 const axios = require('axios');
 const moment = require('moment');
 
-let win = null;
+global.mainWindow = null;
+global.TAG_LEN = 38; // Total length (no EPC)
+
 
 async function createWindow() {
   // Create the browser window.
-  win = new BrowserWindow({
+  global.mainWindow = new BrowserWindow({
     width: 1000,
     height: 1000,
     icon: path.join(__dirname, 'src/assets/icon.png'), // for development
@@ -34,21 +36,21 @@ async function createWindow() {
   // Load the correct HTML file based on the environment
   if (app.isPackaged) {
     // Ensure this path points to your built index.html
-    win.loadFile(path.join(__dirname, 'dist/index.html'));
+    global.mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
     
   } else {
-    win.loadURL('http://localhost:5173'); // Development URL
+    global.mainWindow.loadURL('http://localhost:5173'); // Development URL
   }
 
   //win.webContents.openDevTools();
 
   // Prevent the default close action and show a confirmation dialog
-  win.on('close', (event) => {
+  global.mainWindow.on('close', (event) => {
     event.preventDefault(); // Prevent the window from closing immediately
 
     // Show confirmation dialog
     dialog
-      .showMessageBox(win, {
+      .showMessageBox(global.mainWindow, {
         type: 'warning',
         buttons: ['Cancel', 'Close'],
         title: 'Confirm Close',
@@ -71,7 +73,7 @@ async function createWindow() {
           // }
           
           
-          win.destroy(); // Close the window if confirmed
+          global.mainWindow.destroy(); // Close the window if confirmed
         }
       });
   });
@@ -89,14 +91,14 @@ app.on('activate', () => {
 });
 
 ipcMain.on("toMain", async (event, data) => {
-  requests_serial(data, win);
-  requests(data, app, win, timeOffset);
-  cookies(data, win);
+  requests_serial(data);
+  requests(data);
+  cookies(data);
 });
 
 
 // Function to fetch server time and calculate the offset
-let timeOffset = 0; // Store the offset between local time and server time
+global.timeOffset = 0; // Store the offset between local time and server time
 
 async function syncWithServerTime() {
   try {
@@ -104,7 +106,7 @@ async function syncWithServerTime() {
     const serverTime = moment(response.data.data, 'YYYY-MM-DD HH:mm:ss.SSS').valueOf(); // Unix timestamp in ms
     const localTime = moment().valueOf();
     // Calculate the offset (serverTime - localTime)
-    timeOffset = serverTime - localTime;
+    global.timeOffset = serverTime - localTime;
     console.log('Time synchronized with server. Offset (ms):', timeOffset);
   } catch (error) {
     console.error('Error syncing with server time:', error);

@@ -8,31 +8,21 @@
     ></v-progress-linear>
 
     <v-alert
-      v-if="alert"
-      class="my-5"
-      color="success"
-      variant="outlined"
-      icon="mdi-cloud-arrow-up-outline"
-    >
-      Praesent venenatis metus at tortor pulvinar varius. Aenean commodo ligula
-      eget dolor. Praesent ac massa at ligula laoreet iaculis. Vestibulum
-      ullamcorper mauris at ligula.
-    </v-alert>
-
-    <h1>Inventory</h1>
-
-    <v-alert
       v-if="!_canInventory"
       text="No puedes comenzar las lecturas antes de conectar un Reader."
       title="Atencion!"
-      type="info"
+      type="error"
       variant="tonal"
     ></v-alert>
 
     <div v-else>
-      <v-btn @click="_inventory()" color="primary"> Irakurketa hasi </v-btn>
+      <v-btn @click="_inventory()" v-if="!_inventoryStatus" color="primary">
+        Irakurketa hasi
+      </v-btn>
 
-      <v-btn @click="_stop()"> Irakurketa geratu</v-btn>
+      <v-btn @click="_stop()" v-if="_inventoryStatus" color="danger">
+        Irakurketa geratu</v-btn
+      >
 
       <v-btn @click="_delete()" color="warning"> Datuak ezabatu</v-btn>
 
@@ -65,12 +55,12 @@
 
       <v-btn @click="_saveData()" color="secondary"> Internetera bidali</v-btn>
 
-      <v-container>
+      <!-- <v-container>
         Eskuz sartu datuak
         <v-text-field label="Dortsala" v-model="customDorsal"></v-text-field>
         <v-text-field label="Denbora" v-model="customTime"></v-text-field>
         <v-btn @click="_addData()"> Gehitu</v-btn>
-      </v-container>
+      </v-container> -->
     </div>
   </div>
 </template>
@@ -110,6 +100,9 @@ export default {
     },
     _canInventory() {
       return this.$store.getters.canInventory;
+    },
+    _inventoryStatus() {
+      return this.$store.state.inventory;
     },
   },
 

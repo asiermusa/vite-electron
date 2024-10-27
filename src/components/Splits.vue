@@ -8,6 +8,27 @@
       :text="message"
     ></v-alert>
 
+    <pre>{{ _selectedSplits }}</pre>
+
+    <!-- <template v-for="(event, i) in events" :key="i">
+      <h4>{{ event.name }} - {{ event.start_date }}</h4>
+      <v-timeline align="start" side="end" direction="horizontal">
+        <template v-for="(s, index) in event.splits" :key="index">
+          <v-timeline-item dot-color="primary" size="small">
+            {{ s.name }}
+
+            <template v-for="(sel, s) in selectedSplits" :key="s">
+
+
+              <v-chip class="ma-2" color="primary" prepend-icon="mdi-wifi-alert"
+                >aaa
+              </v-chip>
+            </template>
+          </v-timeline-item>
+        </template>
+      </v-timeline>
+    </template> -->
+
     <template v-for="(event, i) in events" :key="i">
       <h4>{{ event.name }} - {{ event.start_date }}</h4>
       <div v-for="(s, index) in event.splits" :key="index">
@@ -15,16 +36,16 @@
           :label="`${s.name}`"
           v-model="selectedSplit[`${i}_${s.name.toLowerCase()}`]"
         ></v-checkbox>
-
         <!-- selectedSplit[`${i}_${s.name.toLowerCase()}`]-->
       </div>
     </template>
 
     <v-btn @click="setSplit()">Zehaztu Splitak</v-btn>
+
+    <v-btn @click="_get_data()" color="primary"
+      >Obtener datos del servidor
+    </v-btn>
   </div>
-  <v-btn @click="_get_data()" color="primary"
-    >Obtener datos del servidor
-  </v-btn>
 </template>
 
 <script>
@@ -49,11 +70,40 @@ export default {
     });
   },
   computed: {
+    _selectedSplits() {
+      let final = [];
+      this.events.forEach((e, index) => {
+        final.push({
+          name: e.name,
+          splits: [],
+        });
+
+        e.splits.forEach((s, splitIndex) => {
+          final[index].splits.push({
+            name: s.name,
+            hosts: [],
+          });
+
+          this.selectedSplits.forEach((sel) => {
+            if (sel.group == s.slug) {
+              sel.items.forEach((i) => {
+                final[index].splits[splitIndex].hosts.push(i);
+              });
+            }
+          });
+        });
+      });
+
+      console.log("final", final);
+    },
     hostname() {
       return this.$store.state.hostname;
     },
     events() {
       return this.$store.state.events;
+    },
+    selectedSplits() {
+      return this.$store.state.selectedSplits;
     },
   },
   methods: {
@@ -105,4 +155,12 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.v-input__details {
+  display: none;
+}
+
+.v-timeline-item__body {
+  padding-block-start: 10px !important;
+}
+</style>

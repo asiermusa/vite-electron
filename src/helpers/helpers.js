@@ -2,10 +2,21 @@ const EPC_LEN = 24; // EPC
 const PRESET_VALUE = 0xFFFF;
 const POLYNOMIAL = 0x8408;
 const moment = require('moment');
+const player = require('play-sound')();
+const path = require('path')
 
-function getAccurateTime(timeOffset, current = false) {
-    let d = moment().add(timeOffset, 'milliseconds'); // Adjust local time using the offset
+function getAccurateTime(current = false) {
+    let d = moment().add(global.timeOffset, 'milliseconds'); // Adjust local time using the offset
     return d;
+}
+
+function onTagDetected(tagId) {
+    // Reproduce un pitido o un sonido específico
+    let ruta = path.join(__dirname, '../assets/beep.mp3');
+    console.log(ruta)
+    player.play(ruta, (err) => {
+        if (err) console.log("Error al reproducir sonido:", err);
+    });
 }
 
 const calculateCRC16bit = (pucY) => {
@@ -153,5 +164,6 @@ module.exports = {
     getPrettyTime,
     stringToSlug,
     uniqueId,
-    getAccurateTime
+    getAccurateTime,
+    onTagDetected
 };

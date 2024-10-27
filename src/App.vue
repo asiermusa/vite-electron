@@ -6,14 +6,17 @@
       /></v-app-bar-title>
 
       <v-chip
-        v-if="_auth"
         class="ma-2"
         slor="end"
-        prepend-icon="mdi-account-check"
+        color="error"
+        prepend-icon="mdi-connection"
+        @click="_disconnect()"
       >
-        {{ _auth.user }}
+        <button>Desconectar Reader(s)</button>
 
-        <button @click="_logout()">| Irten</button>
+        <v-tooltip activator="parent" location="bottom"
+          >Desconectar todos los Readers</v-tooltip
+        >
       </v-chip>
 
       <template v-for="(conn, i) in connected" :key="i">
@@ -39,6 +42,18 @@
 
       <v-chip class="ma-2" color="primary" prepend-icon="mdi-laptop">
         {{ hostname }}
+      </v-chip>
+
+      <v-chip
+        v-if="_auth"
+        class="ma-2"
+        slor="end"
+        prepend-icon="mdi-account-check"
+        @click="_logout()"
+      >
+        {{ _auth.user }}
+
+        - Irten
       </v-chip>
     </v-app-bar>
 
@@ -95,14 +110,13 @@
           ></v-list-item>
         </v-list>
 
-        <div v-for="(event, i) in events" :key="i">
-          <pre>{{ event.start }}</pre>
-          <p>{{ event.name }}: <Chrono :time="event.start" /></p>
-        </div>
+        <v-list>
+          <v-list-item v-for="(event, i) in events" :key="i">
+            {{ event.name }}: <Chrono :time="event.start" />
+          </v-list-item>
+        </v-list>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <button @click="_disconnect()">DISCONNECT</button>
-
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -149,6 +163,15 @@ export default {
               if (res.name == data[1]) res.active = true;
             });
             that.$store.commit("_CONNECTED", readers);
+          }
+
+          if (data[0] == "no-ants") {
+            alert("Konektatu antenak eta hautatu hauek Ezarpenak atalean.");
+          }
+
+          if (data[0] == "inventory-status") {
+            console.log("inv", data[1]);
+            that.$store.commit("_SET_INVENTORY_STATUS", data[1]);
           }
 
           // hostname
@@ -216,6 +239,8 @@ export default {
     window.ipc.send("toMain", ["get-cookies", "auth"]);
     window.ipc.send("toMain", ["get-cookies", "readers"]);
     window.ipc.send("toMain", ["get-cookies", "serial"]);
+    // inventory status
+    window.ipc.send("toMain", ["is-inventory-started"]);
 
     let events;
     // socket

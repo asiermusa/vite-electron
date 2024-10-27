@@ -7,7 +7,7 @@ const {
     calculateCRC16bit,
 } = require('../helpers/helpers.js');
 
-async function requests_serial(data, win) {
+async function requests_serial(data) {
     let cmd = data[0];
 
     if(cmd == 'get-serial') {
@@ -19,7 +19,7 @@ async function requests_serial(data, win) {
             ports.forEach(port => {
                 allPorts.push(port.path);  // Output just the path
             });
-            win.webContents.send('fromMain', ['send-serials', JSON.stringify(allPorts)]);
+            global.mainWindow.webContents.send('fromMain', ['send-serials', JSON.stringify(allPorts)]);
         })
         .catch(err => {
             console.error('Error listing ports:', err);
@@ -37,7 +37,7 @@ async function requests_serial(data, win) {
         port.on('data', (data) => {
             const buf = Buffer.from(data, 'ascii');
             const response = buf.toString('hex', 0, buf.length);
-            win.webContents.send('fromMain', ['serial-usb', response.slice(12, 36), ]);
+            global.mainWindow.webContents.send('fromMain', ['serial-usb', response.slice(12, 36), ]);
             port.close()
         });
 

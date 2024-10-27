@@ -1,6 +1,6 @@
 const {session} = require('electron')
   
-  async function cookies(data, win) {
+  async function cookies(data) {
 
   let cmd = data[0];
   let cookieName = data[1];
@@ -32,13 +32,12 @@ const {session} = require('electron')
   if(cmd == 'get-cookies') {
     try {
       let cookie = await session.defaultSession.cookies.get({ name: cookieName });
-      win.webContents.send('fromMain', ['send-cookies', cookieName, cookie]);
+      global.mainWindow.webContents.send('fromMain', ['send-cookies', cookieName, cookie]);
+
     } catch (error) {
       console.error(error);
     }
   }
-
-
 
   if(cmd == 'remove-cookies') {
     
@@ -50,7 +49,7 @@ const {session} = require('electron')
     try {
       await session.defaultSession.cookies.remove(cookie.url, cookie.name);
       console.log('Cookie removed successfully');
-      //win.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
+      //global.mainWindow.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
     } catch (error) {
       console.error(error);
     }

@@ -1,78 +1,88 @@
 <template>
   <div class="main">
-    <v-card class="main-card" v-for="(item, key) in tabs" :key="key">
-      <h1>{{ item.name }}</h1>
-
-      <v-text-field label="IP" variant="solo" v-model="item.ip"></v-text-field>
-
-      <v-text-field
-        label="PORTUA"
-        variant="solo"
-        v-model="item.port"
-      ></v-text-field>
-
-      <!-- ANTENAK -->
-      <div class="ants">
-        <div class="ants__item" v-for="(ant, i) in item.ants" :key="i" cols="1">
-          <v-checkbox
-            :label="_toString(i + 1)"
-            v-model="item.ants[i]"
-          ></v-checkbox>
+    <v-row>
+      <v-col>
+        <v-card class="main-card" v-for="(item, key) in tabs" :key="key">
+          <v-text-field
+            label="IP"
+            variant="solo"
+            v-model="item.ip"
+          ></v-text-field>
 
           <v-text-field
-            label="dB"
-            variant="outlined"
-            v-model="item.power[i]"
+            label="PORTUA"
+            variant="solo"
+            v-model="item.port"
           ></v-text-field>
-        </div>
-      </div>
 
-      <v-btn @click="_getOutputPower(item)" color="danger">
-        Output power
-      </v-btn>
+          <!-- ANTENAK -->
+          <div class="ants">
+            <div
+              class="ants__item"
+              v-for="(ant, i) in item.ants"
+              :key="i"
+              cols="1"
+            >
+              <v-checkbox
+                :label="_toString(i + 1)"
+                v-model="item.ants[i]"
+              ></v-checkbox>
 
-      <v-btn @click="_setOutputPower(item)" color="primary" size="small">
-        Set Output power
-      </v-btn>
+              <v-text-field
+                label="dB"
+                variant="outlined"
+                v-model="item.power[i]"
+              ></v-text-field>
+            </div>
+          </div>
 
-      <v-btn @click="_checkAnts(item)" color="danger" size="small">
-        Chek antennas
-      </v-btn>
+          <v-btn @click="_setOutputPower(item)" color="primary" size="small">
+            Set Output power
+          </v-btn>
 
-      <!-- ANTENAK -->
-      <button @click="removeInput(key)">Ezabatu</button>
-    </v-card>
+          <v-btn @click="_checkAnts(item)" color="danger" size="small">
+            Chek antennas
+          </v-btn>
 
-    <button @click="addInput">Reader berria gehitu</button>
+          <!-- ANTENAK -->
+          <button @click="removeInput(key)">Ezabatu</button>
+        </v-card>
 
-    <v-btn @click="_connect()">Konektatuuuu</v-btn>
+        <button @click="addInput">Reader berria gehitu</button>
 
-    <v-text-field
-      label="Irakurketa atzerapena"
-      variant="solo"
-      v-model="readDelay"
-    ></v-text-field>
+        <v-btn @click="_connect()">Konektatu</v-btn>
 
-    <v-btn @click="_set_read_delay()">Ezarri </v-btn>
+        <v-text-field
+          label="Irakurketa atzerapena"
+          variant="solo"
+          v-model="readDelay"
+        ></v-text-field>
 
-    <v-alert
-      v-if="message"
-      class="my-5"
-      color="success"
-      icon="$success"
-      :text="message"
-    ></v-alert>
+        <v-btn @click="_set_read_delay()">Ezarri </v-btn>
 
-    <!-- serial port -->
-    <v-btn @click="_get_serial()">Obtener puertos disponibles</v-btn>
-    <template v-if="serials">
-      <v-select
-        label="Serial Port"
-        :items="serials"
-        v-model="serial"
-      ></v-select>
-      <v-btn @click="_set_serial()" color="primary">Establecer Puerto</v-btn>
-    </template>
+        <v-alert
+          v-if="message"
+          class="my-5"
+          color="success"
+          icon="success"
+          :text="message"
+        ></v-alert>
+      </v-col>
+      <v-col>
+        <!-- serial port -->
+        <v-btn @click="_get_serial()">Obtener puertos disponibles</v-btn>
+        <template v-if="serials">
+          <v-select
+            label="Serial Port"
+            :items="serials"
+            v-model="serial"
+          ></v-select>
+          <v-btn @click="_set_serial()" color="primary"
+            >Establecer Puerto</v-btn
+          >
+        </template>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
