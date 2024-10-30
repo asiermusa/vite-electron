@@ -94,7 +94,7 @@ export default {
         });
       });
 
-      console.log("final", final);
+      console.log("final array", final);
     },
     hostname() {
       return this.$store.state.hostname;
