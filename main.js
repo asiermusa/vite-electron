@@ -14,6 +14,7 @@ const requests_serial = require('./src/includes/requests_serial.js')
 const cookies = require('./src/includes/cookies.js')
 const axios = require('axios');
 const moment = require('moment');
+const gotTheLock = app.requestSingleInstanceLock();
 
 global.mainWindow = null;
 global.TAG_LEN = 38; // Total length (no EPC)
@@ -80,7 +81,20 @@ async function createWindow() {
 
 }
 
-app.whenReady().then(createWindow);
+// This is for only oNE ELECTRON INSTACE
+if (!gotTheLock) {
+  app.quit(); // Quit if another instance is already running
+} else {
+  app.on('second-instance', () => {
+    // Focus the existing window if a new instance is attempted
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  app.whenReady().then(createWindow);
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
