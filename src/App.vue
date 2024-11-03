@@ -43,18 +43,6 @@
       <v-chip class="ma-2" color="primary" prepend-icon="mdi-laptop">
         {{ hostname }}
       </v-chip>
-
-      <v-chip
-        v-if="_auth"
-        class="ma-2"
-        slor="end"
-        prepend-icon="mdi-account-check"
-        @click="_logout()"
-      >
-        {{ _auth.user }}
-
-        - Irten
-      </v-chip>
     </v-app-bar>
 
     <v-layout style="margin-top: 65px">
