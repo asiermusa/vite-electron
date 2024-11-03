@@ -1,0 +1,8 @@
+/* src/assets/styles.css */
+@font-face {
+    font-family: 'Upper-Clock';
+    src: url('./fonts/UpperClock-Regular.woff2') format('woff2'),
+        url('./fonts/UpperClock-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

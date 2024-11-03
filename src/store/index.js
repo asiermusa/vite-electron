@@ -3,6 +3,7 @@ import {
 } from 'vuex'
 
 import axios from 'axios'
+
 export default createStore({
   state: {
     _auth: null,
@@ -16,6 +17,7 @@ export default createStore({
     readDelay: 5, //seconds
     events: [],
     selectedSplits: [],
+    eventsSplitsHosts: null,
     serial: null
   },
   mutations: {
@@ -58,6 +60,9 @@ export default createStore({
     _SET_INVENTORY_STATUS(state, val) {
       state.inventory = val
     },
+    SET_EVENTS_SPLITS_HOSTS(state, val) {
+      state.eventsSplitsHosts = val;
+    }
   },
   actions: {
     async _get_events(context) {
@@ -88,11 +93,49 @@ export default createStore({
       window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
     },
     async _get_current_pc_splits(context) {
-      axios
+      await axios
         .get("/v1/get-split")
         .then((response) => {
           context.commit("_SET_SELECTED_SPLITS", response.data.data);
         });
+
+      context.dispatch('_mountEventsSplitsHosts');
+
+    },
+    async _mountEventsSplitsHosts(context) {
+      // crear objeto con todos los datos: eventos, splits, hosts, porcentages...
+      let final = [];
+      context.state.events.forEach((e, index) => {
+        final.push({
+          name: e.name,
+          distance: e.distance,
+          start_date: e.start_date,
+          splits: [],
+        });
+
+        e.splits.forEach((s, splitIndex) => {
+          final[index].splits.push({
+            active: false,
+            name: s.name,
+            slug: s.slug,
+            percent: 0,
+            hosts: [],
+          });
+          context.state.selectedSplits.forEach((sel) => {
+            if (sel.group == s.slug) {
+
+              sel.items.forEach((host) => {
+                if (context.state.hostname == host)
+                  final[index].splits[splitIndex].active = true;
+
+                final[index].splits[splitIndex].hosts.push(host);
+              });
+            }
+          });
+        });
+      });
+
+      context.commit('SET_EVENTS_SPLITS_HOSTS', final);
     },
     async _get_participants(context) {
       let events = context.state.events;
@@ -117,14 +160,17 @@ export default createStore({
     }
   },
   getters: {
-    canInventory (state) {
+    canInventory(state) {
       let active = false;
-      if(state.connected) {
+      if (state.connected) {
         state.connected.forEach(res => {
-          if(res.active) active = true;
+          if (res.active) active = true;
         })
       }
       return active;
+    },
+    getItems(state) {
+      return state.items;
     }
   },
   modules: {}

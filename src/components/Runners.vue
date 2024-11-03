@@ -2,11 +2,28 @@
   <div class="hello">
     <v-row>
       <v-col>
-        <h1>Inscritos</h1>
+        <v-row align="center" no-gutters>
+          <v-col cols="6"><h2 class="main-title">Parte-hartzaileak</h2> </v-col>
 
-        <v-text-field placeholder="Bilatu" v-model="search"></v-text-field>
+          <v-col class="text-right" cols="6">
+            <v-icon color="primary" icon="mdi-account-group" size="55"></v-icon>
+          </v-col>
+        </v-row>
 
-        <v-table>
+        <v-alert
+          text="Datu hauek excel fitxategi batetik ekarri dira."
+          type="success"
+          variant="tonal"
+        ></v-alert>
+
+        <v-text-field
+          placeholder="Bilatu"
+          variant="outlined"
+          v-model="search"
+          class="my-3"
+        ></v-text-field>
+
+        <v-table class="rankig">
           <tbody>
             <tr v-for="(item, i) in sortItems" :key="i">
               <td>{{ item[0] }}</td>
@@ -48,13 +65,20 @@
       </v-col>
     </v-row>
 
-    <v-btn @click="_get_data()" color="primary">Actualizar lista </v-btn>
+    <v-btn
+      @click="_get_data()"
+      variant="flat"
+      class="my-4"
+      color="primary"
+      prepend-icon="mdi-download"
+      >Zerrenda eguneratu
+    </v-btn>
   </div>
 </template>
 
 <script>
 export default {
-  name: "InsicritosComponent",
+  name: "RunnersComponent",
   data() {
     return {
       search: null,

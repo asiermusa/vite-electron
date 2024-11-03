@@ -1,15 +1,25 @@
 const moment = require("moment-timezone");
 const axios = require("axios");
 const createExcel = require("../helpers/excel.js");
-const { CheckSum, dec2hex, getAccurateTime } = require("../helpers/helpers.js");
-const { Socket } = require("net");
-const { inventory_fn, get_data } = require("./inventory.js");
+const {
+    CheckSum,
+    dec2hex,
+    getAccurateTime
+} = require("../helpers/helpers.js");
+const {
+    Socket
+} = require("net");
+const {
+    inventory_fn,
+    get_data
+} = require("./inventory.js");
 const os = require('os');
 
 const COMPUTER_NAME = os.userInfo().username;
 
 /** vars */
 global.count = [];
+global.percents = [];
 global.readersInfo = [];
 global.readers = [];
 global.checkAntennas = false;
@@ -33,7 +43,7 @@ async function requests(data) {
         global.readersInfo = readers;
 
         // Renderretik jasotako readerrak kudeatu (izena, ip...)
-        readers.forEach( (reader, i) => {
+        readers.forEach((reader, i) => {
 
             if (!reader.ip) return true;
 
@@ -106,9 +116,9 @@ async function requests(data) {
 
     }
 
-    if(cmd == 'alive') {
+    if (cmd == 'alive') {
         let readers = JSON.parse(data[1]);
-        if(global.readers.length) {
+        if (global.readers.length) {
             global.readers.forEach((res, i) => {
                 console.log('connected: ' + readers[i].name)
                 global.mainWindow.webContents.send('fromMain', ['connection', readers[i].name]);
@@ -117,12 +127,12 @@ async function requests(data) {
         }
     }
 
-    if(cmd == 'is-inventory-started') {
+    if (cmd == 'is-inventory-started') {
         global.mainWindow.webContents.send('fromMain', ['inventory-status', global.startInventory]);
     }
 
     // Deskonektatu (Cookiak ere ezabatuko dira)
-    if(cmd == "disconnect") {
+    if (cmd == "disconnect") {
         global.readers.forEach(reader => {
             reader.end(() => {
                 console.log('Server has ended the connection.');
@@ -146,7 +156,7 @@ async function requests(data) {
     if (cmd == 'get_hostname') {
         setTimeout(() => {
             global.mainWindow.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
-        }, 1000)
+        }, 0)
     }
 
 
@@ -162,9 +172,15 @@ async function requests(data) {
 
     if (cmd == 'delete') {
         global.count = []
+        global.percents = []
         global.mainWindow.webContents.send('fromMain', ['deleted', true]);
+        global.mainWindow.webContents.send('fromMain', ['percents', false]);
     }
 
+
+    if (cmd == 'get-read-percents') {
+        global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
+    }
 
     if (cmd == 'get-output-power') {
         let reader = JSON.parse(data[1]);
@@ -228,11 +244,11 @@ async function requests(data) {
                 else antennas[i] = '0x00'
             })
 
-            if(!antennas.includes('0x01')) {
+            if (!antennas.includes('0x01')) {
                 // Render pantaila bistaratuta badago bidali bestela ez. Programa hemen ETEN.
-               if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['no-ants']);
-               else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
-               return false;
+                if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['no-ants']);
+                else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
+                return false;
             }
 
             global.mainWindow.webContents.send('fromMain', ['inventory-status', global.startInventory]);

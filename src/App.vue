@@ -12,10 +12,10 @@
         prepend-icon="mdi-connection"
         @click="_disconnect()"
       >
-        <button>Desconectar Reader(s)</button>
+        <button>Deskonektatu</button>
 
         <v-tooltip activator="parent" location="bottom"
-          >Desconectar todos los Readers</v-tooltip
+          >Reader guztiak deskonektatuko dira</v-tooltip
         >
       </v-chip>
 
@@ -66,7 +66,7 @@
       >
         <v-list-item
           prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg"
-          title="John Leider"
+          title="2klik Timing"
           nav
         >
           <template v-slot:append>
@@ -80,41 +80,70 @@
 
         <v-divider></v-divider>
 
-        <v-list density="compact" nav>
+        <v-list nav density="compact">
           <v-list-item
-            prepend-icon="mdi-checkbox-marked-circle"
-            title="Home"
+            prepend-icon="mdi-timer-play"
+            title="Hasiera"
             to="/home"
           ></v-list-item>
-          <v-list-item
-            prepend-icon="mdi-cog"
-            title="Ezarpenak"
-            to="/settings"
-          ></v-list-item>
-          <v-list-item
-            prepend-icon="mdi-account-group-outline"
-            title="Parte-hartzaileak"
-            to="/inscritos"
-          ></v-list-item>
 
           <v-list-item
-            prepend-icon="mdi-account-group-outline"
-            title="Admin"
-            to="/admin"
+            prepend-icon="mdi-format-list-bulleted"
+            title="Percents"
+            to="/percents"
           ></v-list-item>
 
+          <v-list-group value="Ezarpenak">
+            <template v-slot:activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                prepend-icon="mdi-cog"
+                title="Ezarpenak"
+              ></v-list-item>
+            </template>
+
+            <v-list-item title="Reader" to="/settings"></v-list-item>
+            <v-list-item title="USB Reader" to="/usb-reader"></v-list-item>
+            <v-list-item
+              title="Reader Irakurketa"
+              to="/read-delay"
+            ></v-list-item>
+          </v-list-group>
+
           <v-list-item
-            prepend-icon="mdi-account-group-outline"
-            title="Splitak"
+            prepend-icon="mdi-image-filter-hdr"
+            title="Lasterketa Konfigurazioa"
             to="/splits"
           ></v-list-item>
+
+          <v-list-item
+            prepend-icon="mdi-account-group"
+            title="Parte-hartzaileak"
+            to="/runners"
+          ></v-list-item>
         </v-list>
 
-        <v-list>
+        <template v-slot:append>
           <v-list-item v-for="(event, i) in events" :key="i">
-            {{ event.name }}: <Chrono :time="event.start" />
+            <div class="d-flex">
+              <div color="primary">
+                <div class="race-name">{{ event.name }}</div>
+                <Chrono :time="event.start" />
+              </div>
+            </div>
           </v-list-item>
-        </v-list>
+
+          <v-list-item @click="_getCloudData()">
+            Datuak sync
+
+            <v-tooltip activator="parent" location="bottom"
+              >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
+            >
+          </v-list-item>
+          <v-list-item>
+            <div class="copyright">www.biklik.eus<br />Bertsioa 1.0.0</div>
+          </v-list-item>
+        </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
         <router-view></router-view>
@@ -266,17 +295,7 @@ export default {
       }
     });
 
-    // obtener todos los eventos de la carrera (generales)
-    await this.$store.dispatch("_get_events");
-
-    // hasierako atleta guztien excela montatu
-    await this.$store.dispatch("_get_participants");
-
-    // Obtener los cronos iniciales de la/s carrera/s
-    await this.$store.dispatch("_get_cronos");
-
-    // Ordenagailu honentzako splitak ekarri
-    await this.$store.dispatch("_get_current_pc_splits");
+    this._getCloudData();
   },
   computed: {
     split() {
@@ -294,6 +313,12 @@ export default {
     events() {
       return this.$store.state.events;
     },
+    items() {
+      return this.$store.state.items;
+    },
+    startList() {
+      return this.$store.state.startList;
+    },
     _auth() {
       return this.$store.state._auth;
     },
@@ -308,6 +333,19 @@ export default {
     },
   },
   methods: {
+    async _getCloudData() {
+      // obtener todos los eventos de la carrera (generales)
+      await this.$store.dispatch("_get_events");
+
+      // hasierako atleta guztien excela montatu
+      await this.$store.dispatch("_get_participants");
+
+      // Obtener los cronos iniciales de la/s carrera/s
+      await this.$store.dispatch("_get_cronos");
+
+      // Ordenagailu honentzako splitak ekarri
+      await this.$store.dispatch("_get_current_pc_splits");
+    },
     _disconnect() {
       this.connected.map((reader) => {
         reader.active = false;
@@ -385,5 +423,48 @@ export default {
 }
 .logo {
   height: 50px;
+}
+
+.main-title {
+  font-size: 45px !important;
+  font-weight: 300;
+}
+
+table tr:first-child {
+  background-image: linear-gradient(45deg, black, #444);
+  color: white;
+  font-weight: 800;
+}
+
+.cronos {
+  background: rgb(237, 237, 237);
+}
+
+.chrono-div {
+  font-family: "Upper-Clock";
+  font-weight: normal;
+  width: 100%;
+}
+
+.chrono {
+  text-align: center;
+  font-size: 50px;
+}
+
+.v-timeline-item__body {
+  padding-block-start: 0px !important;
+}
+
+.race-name {
+  font-weight: 300;
+}
+.copyright {
+  border-top: 1px solid black;
+  padding: 10px 0;
+  margin-top: 30px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #676767;
+  font-size: 10px;
 }
 </style>

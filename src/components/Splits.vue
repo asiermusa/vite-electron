@@ -8,43 +8,87 @@
       :text="message"
     ></v-alert>
 
-    <pre>{{ _selectedSplits }}</pre>
+    <v-tabs v-model="tab" bg-color="primary">
+      <v-tab v-for="(event, i) in eventsSplitsHosts" :key="i">{{
+        event.name
+      }}</v-tab>
+    </v-tabs>
 
-    <!-- <template v-for="(event, i) in events" :key="i">
-      <h4>{{ event.name }} - {{ event.start_date }}</h4>
-      <v-timeline align="start" side="end" direction="horizontal">
-        <template v-for="(s, index) in event.splits" :key="index">
-          <v-timeline-item dot-color="primary" size="small">
-            {{ s.name }}
+    <v-card-text class="px-0">
+      <v-tabs-window v-model="tab">
+        <v-tabs-window-item
+          v-for="(event, i) in eventsSplitsHosts"
+          :key="i"
+          class="selected-splits"
+        >
+          <v-card class="main-card" variant="outlined">
+            <v-card-item :title="event.name">
+              <template v-slot:subtitle>
+                {{ event.start_date }}
+              </template>
+            </v-card-item>
 
-            <template v-for="(sel, s) in selectedSplits" :key="s">
+            <v-card-text class="py-0">
+              <v-row align="center" no-gutters>
+                <v-col class="main-title" cols="6"
+                  >{{ event.distance / 1000 }} km
+                </v-col>
 
+                <v-col class="text-right" cols="6">
+                  <v-icon color="primary" icon="mdi-run" size="55"></v-icon>
+                </v-col>
+              </v-row>
+            </v-card-text>
 
-              <v-chip class="ma-2" color="primary" prepend-icon="mdi-wifi-alert"
-                >aaa
-              </v-chip>
+            <v-timeline
+              align="start"
+              side="end"
+              direction="horizontal"
+              class="ma-3"
+            >
+              <template v-for="(s, index) in event.splits" :key="index">
+                <v-timeline-item dot-color="primary" size="small">
+                  <h4>{{ s.name }}</h4>
+
+                  <template v-for="(host, s) in s.hosts" :key="s">
+                    <v-chip
+                      class="ma-2"
+                      color="primary"
+                      prepend-icon="mdi-laptop"
+                      >{{ host }} </v-chip
+                    ><br />
+                  </template>
+                </v-timeline-item>
+              </template>
+            </v-timeline>
+          </v-card>
+        </v-tabs-window-item>
+      </v-tabs-window>
+    </v-card-text>
+
+    <v-row class="mb-5">
+      <v-col cols="4" v-for="(event, i) in events" :key="i">
+        <v-card class="main-card" variant="outlined">
+          <v-card-item :title="event.name">
+            <template v-slot:subtitle>
+              {{ event.start_date }}
             </template>
-          </v-timeline-item>
-        </template>
-      </v-timeline>
-    </template> -->
+          </v-card-item>
 
-    <template v-for="(event, i) in events" :key="i">
-      <h4>{{ event.name }} - {{ event.start_date }}</h4>
-      <div v-for="(s, index) in event.splits" :key="index">
-        <v-checkbox
-          :label="`${s.name}`"
-          v-model="selectedSplit[`${i}_${s.name.toLowerCase()}`]"
-        ></v-checkbox>
-        <!-- selectedSplit[`${i}_${s.name.toLowerCase()}`]-->
-      </div>
-    </template>
+          <div v-for="(s, index) in event.splits" :key="index">
+            <v-checkbox
+              :label="`${s.name}`"
+              v-model="selectedSplit[`${i}_${s.name.toLowerCase()}`]"
+            ></v-checkbox>
+            <!-- selectedSplit[`${i}_${s.name.toLowerCase()}`]-->
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
 
-    <v-btn @click="setSplit()">Zehaztu Splitak</v-btn>
-
-    <v-btn @click="_get_data()" color="primary"
-      >Obtener datos del servidor
-    </v-btn>
+    <v-btn @click="setSplit()" color="primary" variant="flat"
+      >Zehaztu Splitak</v-btn
+    >
   </div>
 </template>
 
@@ -56,6 +100,7 @@ export default {
     return {
       selectedSplit: [],
       message: null,
+      tab: null,
     };
   },
   mounted() {
@@ -70,32 +115,6 @@ export default {
     });
   },
   computed: {
-    _selectedSplits() {
-      let final = [];
-      this.events.forEach((e, index) => {
-        final.push({
-          name: e.name,
-          splits: [],
-        });
-
-        e.splits.forEach((s, splitIndex) => {
-          final[index].splits.push({
-            name: s.name,
-            hosts: [],
-          });
-
-          this.selectedSplits.forEach((sel) => {
-            if (sel.group == s.slug) {
-              sel.items.forEach((i) => {
-                final[index].splits[splitIndex].hosts.push(i);
-              });
-            }
-          });
-        });
-      });
-
-      console.log("final array", final);
-    },
     hostname() {
       return this.$store.state.hostname;
     },
@@ -105,21 +124,11 @@ export default {
     selectedSplits() {
       return this.$store.state.selectedSplits;
     },
+    eventsSplitsHosts() {
+      return this.$store.state.eventsSplitsHosts;
+    },
   },
   methods: {
-    async _get_data() {
-      // obtener todos los eventos de la carrera (generales)
-      await this.$store.dispatch("_get_events");
-
-      // hasierako atleta guztien excela montatu
-      await this.$store.dispatch("_get_participants");
-
-      // Obtener los cronos iniciales de la/s carrera/s
-      await this.$store.dispatch("_get_cronos");
-
-      // Ordenagailu honentzako splitak ekarri
-      await this.$store.dispatch("_get_current_pc_splits");
-    },
     setSplit() {
       // let that = this;
       //console.log(JSON.stringify(this.selectedSplit));
@@ -143,12 +152,13 @@ export default {
           this.selectedSplit = [];
           response.data.data.forEach((res) => {
             this.selectedSplit[`${res.group.toLowerCase()}`] = false;
-
             res.items.forEach((s) => {
               if (s == this.hostname)
                 this.selectedSplit[`${res.group.toLowerCase()}`] = true;
             });
           });
+
+          this.$store.dispatch("_mountEventsSplitsHosts");
         });
     },
   },
@@ -157,10 +167,14 @@ export default {
 
 <style lang="scss">
 .v-input__details {
-  display: none;
+  display: none !important;
 }
 
 .v-timeline-item__body {
   padding-block-start: 10px !important;
+}
+
+.selected-splits {
+  margin-bottom: 50px;
 }
 </style>

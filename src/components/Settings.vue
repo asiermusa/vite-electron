@@ -1,22 +1,45 @@
 <template>
-  <div class="main">
+  <div class="hello">
     <v-row>
-      <v-col>
-        <v-card class="main-card" v-for="(item, key) in tabs" :key="key">
-          <v-text-field
-            label="IP"
-            variant="solo"
-            v-model="item.ip"
-          ></v-text-field>
+      <v-col v-for="(item, key) in tabs" :key="key" cols="6">
+        <v-card class="main-card mb-6" variant="outlined">
+          <v-card-text class="py-3">
+            <v-row align="center" no-gutters>
+              <v-col class="main-title" cols="6">Reader {{ key + 1 }}</v-col>
 
-          <v-text-field
-            label="PORTUA"
-            variant="solo"
-            v-model="item.port"
-          ></v-text-field>
+              <v-col class="text-right" cols="6">
+                <v-icon color="primary" icon="mdi-chip" size="55"></v-icon>
+              </v-col>
+            </v-row>
+          </v-card-text>
+
+          <v-card-item title="Konexioaren datuak">
+            <template v-slot:subtitle>IP eta Portua</template>
+          </v-card-item>
+
+          <v-row class="my-3 px-6">
+            <v-text-field
+              label="IP"
+              variant="outlined"
+              v-model="item.ip"
+              width="70%"
+            ></v-text-field>
+
+            <v-text-field
+              label="PORTUA"
+              variant="outlined"
+              v-model="item.port"
+              width="20%"
+              class="mx-2"
+            ></v-text-field>
+          </v-row>
+
+          <v-card-item title="Antenak">
+            <template v-slot:subtitle>Aktibatu eta potentzia</template>
+          </v-card-item>
 
           <!-- ANTENAK -->
-          <div class="ants">
+          <div class="ants mx-3">
             <div
               class="ants__item"
               v-for="(ant, i) in item.ants"
@@ -36,53 +59,63 @@
             </div>
           </div>
 
-          <v-btn @click="_setOutputPower(item)" color="primary" size="small">
-            Set Output power
-          </v-btn>
+          <div class="ma-3 my-6">
+            <v-btn
+              @click="_setOutputPower(item)"
+              color="primary"
+              variant="outlined"
+            >
+              Aldatu potentzia
+            </v-btn>
 
-          <v-btn @click="_checkAnts(item)" color="danger" size="small">
-            Chek antennas
-          </v-btn>
+            <v-btn
+              @click="_checkAnts(item)"
+              color="primary"
+              variant="outlined"
+              class="mx-2"
+            >
+              Frogatu antenak
+            </v-btn>
+          </div>
 
-          <!-- ANTENAK -->
-          <button @click="removeInput(key)">Ezabatu</button>
+          <v-divider></v-divider>
+
+          <v-card-actions class="px-3">
+            <v-btn
+              variant="flat"
+              color="error"
+              @click="removeInput(key)"
+              prepend-icon="mdi-delete"
+              >Reader hau kendu</v-btn
+            >
+            <v-btn
+              variant="flat"
+              color="black"
+              @click="addInput"
+              prepend-icon="mdi-plus"
+              >Reader berria gehitu</v-btn
+            >
+          </v-card-actions>
         </v-card>
-
-        <button @click="addInput">Reader berria gehitu</button>
-
-        <v-btn @click="_connect()">Konektatu</v-btn>
-
-        <v-text-field
-          label="Irakurketa atzerapena"
-          variant="solo"
-          v-model="readDelay"
-        ></v-text-field>
-
-        <v-btn @click="_set_read_delay()">Ezarri </v-btn>
-
-        <v-alert
-          v-if="message"
-          class="my-5"
-          color="success"
-          icon="success"
-          :text="message"
-        ></v-alert>
-      </v-col>
-      <v-col>
-        <!-- serial port -->
-        <v-btn @click="_get_serial()">Obtener puertos disponibles</v-btn>
-        <template v-if="serials">
-          <v-select
-            label="Serial Port"
-            :items="serials"
-            v-model="serial"
-          ></v-select>
-          <v-btn @click="_set_serial()" color="primary"
-            >Establecer Puerto</v-btn
-          >
-        </template>
       </v-col>
     </v-row>
+
+    <v-btn
+      @click="_connect()"
+      variant="flat"
+      color="primary"
+      size="large"
+      prepend-icon="mdi-chip"
+      >Konektatu</v-btn
+    >
+
+    <v-alert
+      v-if="message"
+      class="my-5"
+      color="success"
+      icon="success"
+      :text="message"
+    ></v-alert>
   </div>
 </template>
 
@@ -93,17 +126,10 @@ export default {
   data() {
     return {
       tabs: null,
-      readDelay: null,
       message: null,
-      serials: null,
-      serial: null,
     };
   },
   mounted() {
-    this.readDelay = this.$store.state.readDelay;
-
-    this.serial = this._serial;
-    console.log("conn", this.connected);
     // set reader info
     this.tabs = this.connected;
 
@@ -122,37 +148,15 @@ export default {
             let read = data[1][6];
             that.message = "Irakurritako tag kopurua: " + read;
           }
-
-          if (data[0] == "send-serials") {
-            console.log(JSON.parse(data[1]));
-            that.serials = JSON.parse(data[1]);
-          }
         }
     );
   },
   computed: {
-    hostname() {
-      return this.$store.state.hostname;
-    },
     connected() {
       return this.$store.state.connected;
     },
-    _serial() {
-      return this.$store.state.serial;
-    },
   },
   methods: {
-    _get_serial() {
-      window.ipc.send("toMain", ["get-serial"]);
-    },
-    _set_serial() {
-      window.ipc.send("toMain", ["set-cookies", "serial", this.serial]);
-      this.$store.commit("_SET_SERIAL_PORT", this.serial);
-    },
-    _set_read_delay() {
-      this.$store.commit("_SET_READ_DELAY", this.readDelay);
-      this.$store.commit("_SET_BEEP", this.beep);
-    },
     _getOutputPower(item) {
       window.ipc.send("toMain", ["get-output-power", JSON.stringify(item)]);
     },
@@ -205,11 +209,10 @@ export default {
 
 <style lang="scss">
 .main {
-  padding: 20px;
 }
 
 .main-card {
-  padding: 20px !important;
+  padding: 10px !important;
 }
 .ants {
   display: flex;

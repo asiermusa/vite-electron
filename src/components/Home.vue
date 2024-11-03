@@ -16,44 +16,77 @@
     ></v-alert>
 
     <div v-else>
-      <v-btn @click="_inventory()" v-if="!_inventoryStatus" color="primary">
+      <v-btn
+        @click="_inventory()"
+        v-if="!_inventoryStatus"
+        variant="flat"
+        color="success"
+        prepend-icon="mdi-play"
+      >
         Irakurketa hasi
       </v-btn>
 
-      <v-btn @click="_stop()" v-if="_inventoryStatus" color="danger">
+      <v-btn
+        @click="_stop()"
+        v-if="_inventoryStatus"
+        variant="flat"
+        color="error"
+        prepend-icon="mdi-stop"
+      >
         Irakurketa geratu</v-btn
       >
 
-      <v-btn @click="_delete()" color="warning"> Datuak ezabatu</v-btn>
+      <v-btn
+        @click="_delete()"
+        variant="outlined"
+        color="error"
+        prepend-icon="mdi-delete"
+        class="mx-2"
+      >
+        Datuak ezabatu</v-btn
+      >
 
-      <v-text-field placeholder="Bilatu" v-model="search"></v-text-field>
+      <v-btn
+        @click="_saveData()"
+        variant="outlined"
+        color="primary"
+        prepend-icon="mdi-upload"
+        class="mx-2"
+      >
+        Internetera bidali</v-btn
+      >
+
+      <v-text-field
+        placeholder="Bilatu"
+        v-model="search"
+        variant="outlined"
+        class="my-2"
+      ></v-text-field>
 
       <v-table>
-        <thead>
+        <tbody>
           <tr>
             <th class="text-left">Izena</th>
             <th class="text-left">Herria</th>
             <th class="text-left">Denbora</th>
             <th class="text-left">Irak. ordua</th>
+            <th class="text-left">Event</th>
             <th class="text-left">Split</th>
             <th class="text-left">Reader ID</th>
             <th class="text-left">Antena</th>
           </tr>
-        </thead>
-        <tbody>
           <tr v-for="(item, i) in sortItems" :key="i">
             <td>{{ item.name }}</td>
             <td>{{ item.city }}</td>
             <td>{{ item.pretty_time }}</td>
             <td>{{ item.real_time }}</td>
+            <td>{{ item.event }}</td>
             <td>{{ item.split }}</td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
           </tr>
         </tbody>
       </v-table>
-
-      <v-btn @click="_saveData()" color="secondary"> Internetera bidali</v-btn>
 
       <!-- <v-container>
         Eskuz sartu datuak
@@ -78,17 +111,32 @@ export default {
       alert: false,
       loader: false,
       search: null,
+      tab: null,
+      percents: null,
     };
   },
+
   computed: {
+    events() {
+      return this.$store.state.events;
+    },
     readDelay() {
       return this.$store.state.readDelay;
     },
     selectedSplits() {
       return this.$store.state.selectedSplits;
     },
+    eventsSplitsHosts() {
+      return this.$store.state.eventsSplitsHosts;
+    },
     items() {
-      return this.$store.state.items;
+      return this.$store.getters.getItems;
+    },
+    startList() {
+      return this.$store.state.startList;
+    },
+    hostname() {
+      return this.$store.state.hostname;
     },
     sortItems() {
       let items = this.$store.state.items;
@@ -105,7 +153,14 @@ export default {
       return this.$store.state.inventory;
     },
   },
+  // watch: {
+  //   items: {
+  //     handler(val) {
 
+  //     },
+  //     deep: true, // Set deep to true to watch nested changes
+  //   },
+  // },
   methods: {
     _stop() {
       window.ipc.send("toMain", ["stop"]);
@@ -152,4 +207,12 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style scoped>
+v-card-item .percent-name {
+  font-weight: 300;
+}
+
+.percent-number {
+  font-weight: 800;
+}
+</style>

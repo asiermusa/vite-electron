@@ -6,11 +6,15 @@ import {
 import store from '../store'
 
 import Settings from '@/components/Settings.vue'
+import USBReader from '@/components/USBReader.vue'
+import ReadDelayReader from '@/components/ReadDelayReader.vue'
+
 import Home from '@/components/Home.vue'
-import Inscritos from '@/components/Inscritos.vue'
+import Runners from '@/components/Runners.vue'
 import Login from '@/components/Login.vue'
 import Admin from '@/components/Admin.vue'
 import Splits from '@/components/Splits.vue'
+import Percents from '@/components/Percents.vue'
 
 // ROUTER
 const routes = [{
@@ -28,6 +32,13 @@ const routes = [{
     }
   },
   {
+    path: '/percents',
+    component: Percents,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+  {
     path: '/settings',
     component: Settings,
     meta: {
@@ -35,8 +46,22 @@ const routes = [{
     }
   },
   {
-    path: '/inscritos',
-    component: Inscritos,
+    path: '/usb-reader',
+    component: USBReader,
+    meta: {
+      requiresAuth: false,
+    }
+  },
+  {
+    path: '/read-delay',
+    component: ReadDelayReader,
+    meta: {
+      requiresAuth: false,
+    }
+  },
+  {
+    path: '/runners',
+    component: Runners,
     meta: {
       requiresAuth: true,
     }

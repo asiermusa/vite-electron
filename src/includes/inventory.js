@@ -34,7 +34,7 @@ function inventory_fn(data, reader, readerInfo) {
     if (tags) {
         response = tags[0];
     }
-    
+
     // ANTENA TXEKEOA egin behar denean soilik.
     // Hau ez da inbentarioa
     if (response.substring(6, 8) == '8a' && global.checkAntennas && response.substring(2, 4) == '0a') {
@@ -53,7 +53,7 @@ function inventory_fn(data, reader, readerInfo) {
             else antennas[i] = '0x00'
         })
 
-        
+
         //let query = Buffer.from([0xA0, 0x0D, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x00, 0xFF]);
         // 8 ports
         let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x25, 0xFF]);
@@ -132,7 +132,10 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     global.selectedSplits.forEach((split) => {
         current[4].splits.forEach((item) => {
             if (split.items.includes(hostname) && split.group == item.slug) {
-                array.push(item.name)
+                array.push({
+                    name: item.name,
+                    slug: item.slug
+                })
             }
         })
     })
@@ -168,20 +171,59 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.city = current[3];
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, global.startTime), global.startTime);
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
-    currentTag.split = splitSlug;
+    currentTag.event = current[4].name;
+    currentTag.split = splitSlug.name;
+    currentTag.split_slug = splitSlug.slug;
     currentTag.reader = readerName;
 
     // Count array nagusian gehitu.
+
+
+    // let item = data[1];
+    // that.startList.forEach((person) => {
+    //     if (person[0] == item.tag) {
+    //         console.log(person);
+    //     }
+    // });
     global.count.push(currentTag)
+
+    // cambiar porcentajes
+    if (!global.percents.length) {
+
+        global.percents.push({
+            name: currentTag.split,
+            group: currentTag.split_slug,
+            count: 1
+        })
+    } else {
+        let exist = 'no';
+        global.percents.forEach((p, i) => {
+            if (p.group == currentTag.split_slug) exist = i;
+        })
+
+        if (exist == 'no') {
+            global.percents.push({
+                name: currentTag.split,
+                group: currentTag.split_slug,
+                count: 1
+            })
+        } else {
+            global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
+        }
+
+    }
+
 
     // Soinua egin
     onTagDetected(currentTag);
 
     if (currentTag) {
-        
+
         // Render pantaila bistaratuta badago bidali bestela GORDE Baina ez bidali.
-        if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['inventory', currentTag]);
-        else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
+        if (global.mainWindow && !global.mainWindow.isDestroyed()) {
+            global.mainWindow.webContents.send('fromMain', ['inventory', currentTag]);
+            global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
+        } else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
 
         // socket.emit("currentTag", {
         //     currentTag

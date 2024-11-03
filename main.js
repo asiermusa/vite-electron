@@ -38,12 +38,12 @@ async function createWindow() {
   if (app.isPackaged) {
     // Ensure this path points to your built index.html
     global.mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
-    
+
   } else {
     global.mainWindow.loadURL('http://localhost:5173'); // Development URL
   }
 
-  //win.webContents.openDevTools();
+  global.mainWindow.webContents.openDevTools();
 
   // Prevent the default close action and show a confirmation dialog
   global.mainWindow.on('close', (event) => {
@@ -64,7 +64,7 @@ async function createWindow() {
           //   url: "http://denborak.online",
           //   name: 'readers'
           // };
-        
+
           // try {
           //   await session.defaultSession.cookies.remove(cookie.url, cookie.name);
           //   console.log('Cookie removed successfully');
@@ -72,8 +72,8 @@ async function createWindow() {
           // } catch (error) {
           //   console.error(error);
           // }
-          
-          
+
+
           global.mainWindow.destroy(); // Close the window if confirmed
         }
       });
@@ -81,7 +81,7 @@ async function createWindow() {
 
 }
 
-// This is for only oNE ELECTRON INSTACE
+// This is for only ONE ELECTRON INSTACE
 if (!gotTheLock) {
   app.quit(); // Quit if another instance is already running
 } else {
