@@ -64,6 +64,7 @@
               @click="_setOutputPower(item)"
               color="primary"
               variant="outlined"
+              size="small"
             >
               Aldatu potentzia
             </v-btn>
@@ -73,6 +74,7 @@
               color="primary"
               variant="outlined"
               class="mx-2"
+              size="small"
             >
               Frogatu antenak
             </v-btn>
@@ -82,18 +84,12 @@
 
           <v-card-actions class="px-3">
             <v-btn
-              variant="flat"
+              variant="text"
               color="error"
+              size="small"
               @click="removeInput(key)"
               prepend-icon="mdi-delete"
               >Reader hau kendu</v-btn
-            >
-            <v-btn
-              variant="flat"
-              color="black"
-              @click="addInput"
-              prepend-icon="mdi-plus"
-              >Reader berria gehitu</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -104,9 +100,17 @@
       @click="_connect()"
       variant="flat"
       color="primary"
-      size="large"
       prepend-icon="mdi-chip"
       >Konektatu</v-btn
+    >
+
+    <v-btn
+      variant="text"
+      color="black"
+      @click="addInput"
+      class="mx-3"
+      prepend-icon="mdi-plus"
+      >Reader berria gehitu</v-btn
     >
 
     <v-alert

@@ -31,7 +31,7 @@
             <v-card-text class="py-0">
               <v-row align="center" no-gutters>
                 <v-col class="main-title" cols="6"
-                  >{{ event.distance / 1000 }} km
+                  >{{ (event.distance / 1000).toFixed(2) }} km
                 </v-col>
 
                 <v-col class="text-right" cols="6">

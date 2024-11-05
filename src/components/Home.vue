@@ -9,8 +9,8 @@
 
     <v-alert
       v-if="!_canInventory"
-      text="No puedes comenzar las lecturas antes de conectar un Reader."
-      title="Atencion!"
+      text="Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe. Joan Ezarpenak atalera."
+      title="Adi!"
       type="error"
       variant="tonal"
     ></v-alert>
@@ -63,7 +63,7 @@
         class="my-2"
       ></v-text-field>
 
-      <v-table>
+      <v-table density="compact">
         <tbody>
           <tr>
             <th class="text-left">Izena</th>

@@ -11,20 +11,50 @@
         </v-row>
 
         <v-alert
-          text="Datu hauek excel fitxategi batetik ekarri dira."
-          type="success"
+          text="Datu hauek Google Driveko excel fitxategi batetik ekarri dira eta ezin dira hemen zuzenean editatu."
+          type="info"
+          icon="mdi-microsoft-excel"
           variant="tonal"
         ></v-alert>
 
-        <v-text-field
-          placeholder="Bilatu"
-          variant="outlined"
-          v-model="search"
-          class="my-3"
-        ></v-text-field>
+        <v-row>
+          <v-col cols="4">
+            <v-text-field
+              placeholder="Dortsala"
+              variant="outlined"
+              v-model="search"
+              class="my-3"
+            ></v-text-field>
+          </v-col>
 
-        <v-table class="rankig">
+          <v-col cols="4">
+            <v-text-field
+              placeholder="Izen-abizenak"
+              variant="outlined"
+              v-model="searchName"
+              class="my-3"
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="4">
+            <v-text-field
+              placeholder="Herria"
+              variant="outlined"
+              v-model="searchCity"
+              class="my-3"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-table class="rankig" density="compact">
           <tbody>
+            <tr>
+              <th class="text-left">TAG</th>
+              <th class="text-left">Dorsala</th>
+              <th class="text-left">Izena</th>
+              <th class="text-left">Herria</th>
+              <th class="text-left">Ekintza</th>
+            </tr>
             <tr v-for="(item, i) in sortItems" :key="i">
               <td>{{ item[0] }}</td>
               <td @click="_select(i)">{{ item[1] }}</td>
@@ -82,6 +112,8 @@ export default {
   data() {
     return {
       search: null,
+      searchCity: null,
+      searchName: null,
       header: null,
       selected: null,
       writeData: "",
@@ -108,11 +140,35 @@ export default {
   computed: {
     sortItems() {
       let items = this.$store.state.startList;
+
       if (!items.length) return;
-      if (!this.search) return items;
-      return items.filter((item) => {
-        return item[1].toLowerCase().includes(this.search.toLowerCase());
-      });
+      // if (!this.search) return items;
+      // if (!this.searchHerria) return items;
+
+      let response = items;
+
+      // Apply search filter if "search" is defined
+      if (this.search) {
+        response = response.filter((item) => {
+          return item[1].toLowerCase().includes(this.search.toLowerCase());
+        });
+      }
+
+      // Apply searchHerria filter if "searchHerria" is defined
+      if (this.searchName) {
+        response = response.filter((item) => {
+          return item[2].toLowerCase().includes(this.searchName.toLowerCase());
+        });
+      }
+
+      // Apply searchHerria filter if "searchHerria" is defined
+      if (this.searchCity) {
+        response = response.filter((item) => {
+          return item[3].toLowerCase().includes(this.searchCity.toLowerCase());
+        });
+      }
+
+      return response;
     },
     serial() {
       return this.$store.state.serial;
@@ -123,8 +179,7 @@ export default {
       this.selected = this.$store.state.startList[val];
     },
     _filterColumn(col, i) {
-      if (i > 0) return col.name;
-      else return col;
+      return col.name;
     },
     async _get_data() {
       // hasierako atleta guztien excela montatu

@@ -5,6 +5,15 @@
         ><img class="logo" src="./assets/logo.png"
       /></v-app-bar-title>
 
+      <v-btn stacked size="x-large">
+        <v-badge color="green" size="small" v-if="_inventoryStatus">
+          <v-icon>mdi-access-point</v-icon>
+        </v-badge>
+        <v-badge color="red" size="small" v-else>
+          <v-icon>mdi-access-point</v-icon>
+        </v-badge>
+      </v-btn>
+
       <v-chip
         class="ma-2"
         slor="end"
@@ -24,7 +33,7 @@
           v-if="conn.active == false"
           class="ma-2"
           color="error"
-          prepend-icon="mdi-wifi-alert"
+          prepend-icon="mdi-alert-circle"
         >
           {{ conn.name }}
         </v-chip>
@@ -33,7 +42,7 @@
           v-else
           class="ma-2"
           color="success"
-          prepend-icon="mdi-wifi"
+          prepend-icon="mdi-access-point-check"
           slor="end"
         >
           {{ conn.name }}
@@ -76,7 +85,7 @@
           ></v-list-item>
 
           <v-list-item
-            prepend-icon="mdi-format-list-bulleted"
+            prepend-icon="mdi-percent-circle"
             title="Percents"
             to="/percents"
           ></v-list-item>
@@ -121,9 +130,11 @@
             </div>
           </v-list-item>
 
-          <v-list-item @click="_getCloudData()">
-            Datuak sync
-
+          <v-list-item
+            @click="_getCloudData()"
+            prepend-icon="mdi-web-check"
+            title="Datuak Sync"
+          >
             <v-tooltip activator="parent" location="bottom"
               >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
             >
@@ -144,7 +155,6 @@
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
 import moment from "moment";
-import { connect } from "net";
 
 export default {
   name: "App",
@@ -313,6 +323,9 @@ export default {
     _canInventory() {
       return this.$store.getters.canInventory;
     },
+    _inventoryStatus() {
+      return this.$store.state.inventory;
+    },
   },
   watch: {
     connected(val) {
@@ -424,6 +437,10 @@ table tr:first-child {
   font-weight: 800;
 }
 
+table tr:nth-child(2n) {
+  background: rgba(black, 0.04);
+}
+
 .cronos {
   background: rgb(237, 237, 237);
 }
@@ -436,7 +453,7 @@ table tr:first-child {
 
 .chrono {
   text-align: center;
-  font-size: 50px;
+  font-size: 40px;
 }
 
 .v-timeline-item__body {
@@ -454,5 +471,9 @@ table tr:first-child {
   text-transform: uppercase;
   color: #676767;
   font-size: 10px;
+}
+
+.v-badge__badge {
+  border: 3px solid white;
 }
 </style>

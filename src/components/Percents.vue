@@ -4,11 +4,7 @@
       <v-col cols="6"><h2 class="main-title">Irakurketa tasa</h2> </v-col>
 
       <v-col class="text-right" cols="6">
-        <v-icon
-          color="primary"
-          icon="mdi-format-list-bulleted"
-          size="55"
-        ></v-icon>
+        <v-icon color="primary" icon="mdi-percent-circle" size="55"></v-icon>
       </v-col>
     </v-row>
 
@@ -17,16 +13,15 @@
         <v-card variant="outlined" class="main-card my-5">
           <!-- <v-card-item :title="event.name"> </v-card-item> -->
 
-          <v-chip class="ma-2" color="primary" prepend-icon="mdi-run"
-            >{{ event.name }}
-          </v-chip>
+          <h3 prepend-icon="mdi-run" class="my-2 mx-3">{{ event.name }}</h3>
 
           <template v-if="!_checkSplitsActive(event.splits)">
             <v-alert
-              text="No tienes splits asociados a este evento."
-              title="Atencion!"
-              type="warning"
+              text="Ez duzu split bat bera ere ez ekintza honi lotuta. Joan Lasterketaren konfiguraziora hau aldatzeko."
+              title="Adi!"
+              type="error"
               variant="tonal"
+              class="my-3 mx-3"
             ></v-alert>
           </template>
 
@@ -39,7 +34,8 @@
 
               <v-progress-linear
                 color="primary"
-                height="10"
+                rounded
+                height="15"
                 v-model="s.percent"
                 striped
               ></v-progress-linear>

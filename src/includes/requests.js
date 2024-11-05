@@ -79,7 +79,7 @@ async function requests(data) {
             // Erroreak kudeatu
             global.readers[i].on('error', (err) => {
                 console.error('Error de conexión:', err.message);
-                global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
+                //global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
                 // global.readers.splice(i, 1);
                 clearInterval(heartbeatInterval); // heartbeat geratu
                 if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {

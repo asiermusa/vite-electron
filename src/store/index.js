@@ -151,6 +151,9 @@ export default createStore({
               });
             });
           }
+
+          response.data.data.resultados.splice(0, 1)
+
           context.commit("_SET_START_LIST", response.data.data.resultados);
           window.ipc.send("toMain", [
             "start-list",
