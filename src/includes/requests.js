@@ -37,8 +37,6 @@ async function requests(data) {
         let heartbeatInterval;
         let readers = JSON.parse(data[1]);
         let result;
-        console.log('connect')
-
         // Gorde readerren informazio orokorra (izena, antenak...)
         global.readersInfo = readers;
 
@@ -64,15 +62,12 @@ async function requests(data) {
                         global.readers[i].write('ping');
                     }
                 }, 5000);
-
-                // setTimeout(() => {
-                //     win.webContents.send('fromMain', ['connection-error', i]);
-                // }, 6000)
             })
 
             // Konexioak itxi
             global.readers[i].on('close', (hadError) => {
                 console.log('Conexión cerrada');
+
                 if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
                 global.startInventory = false;
                 clearInterval(heartbeatInterval); // Detener el heartbeat
@@ -85,6 +80,7 @@ async function requests(data) {
             global.readers[i].on('error', (err) => {
                 console.error('Error de conexión:', err.message);
                 global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
+                // global.readers.splice(i, 1);
                 clearInterval(heartbeatInterval); // heartbeat geratu
                 if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
                     console.log('El lector fue desconectado físicamente.');
@@ -197,7 +193,10 @@ async function requests(data) {
     if (cmd == 'set-output-power') {
         let reader = JSON.parse(data[1]);
         let selectedReader;
-        if (reader.name == 'Reader 1') selectedReader = global.readers[0];
+
+        global.readersInfo.forEach((r, i) => {
+            if (r.name == reader.name) selectedReader = global.readers[i]
+        })
 
         let power = [];
         reader.power.forEach((res, i) => {

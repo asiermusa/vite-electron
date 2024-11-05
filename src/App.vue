@@ -203,7 +203,7 @@ export default {
           }
 
           if (data[0] == "connection-error") {
-            readers = that.$store.state.connected;
+            let readers = that.$store.state.connected;
             readers.map((res, i) => {
               if (i == data[1]) res.active = false;
             });
