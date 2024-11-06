@@ -57,7 +57,7 @@ async function requests(data) {
 
                 // 5 segunduro heartbeat datuak bidali readerra kokentatuta dagoela ziurtatzeko
                 heartbeatInterval = setInterval(() => {
-                    if(!global.readers.length) return;
+                    if (!global.readers.length) return;
                     if (global.readers[i].writable) {
                         console.log('beat...')
                         global.readers[i].write('ping');

@@ -5,6 +5,10 @@
         ><img class="logo" src="./assets/logo.png"
       /></v-app-bar-title>
 
+      <v-btn v-if="race" stacked size="large" @click="_removeRace()">
+        {{ race.name }}
+      </v-btn>
+
       <v-btn stacked size="x-large">
         <v-badge color="green" size="small" v-if="_inventoryStatus">
           <v-icon>mdi-access-point</v-icon>
@@ -85,9 +89,31 @@
           ></v-list-item>
 
           <v-list-item
+            v-if="race"
             prepend-icon="mdi-percent-circle"
             title="Percents"
             to="/percents"
+          ></v-list-item>
+
+          <v-list-item
+            v-if="!race"
+            prepend-icon="mdi-key"
+            title="Lasterketa konfiguratu"
+            to="/otp"
+          ></v-list-item>
+
+          <v-list-item
+            v-if="race"
+            prepend-icon="mdi-image-filter-hdr"
+            title="Splitak"
+            to="/splits"
+          ></v-list-item>
+
+          <v-list-item
+            v-if="race"
+            prepend-icon="mdi-account-group"
+            title="Parte-hartzaileak"
+            to="/runners"
           ></v-list-item>
 
           <v-list-group value="Ezarpenak">
@@ -106,18 +132,6 @@
               to="/read-delay"
             ></v-list-item>
           </v-list-group>
-
-          <v-list-item
-            prepend-icon="mdi-image-filter-hdr"
-            title="Lasterketa Konfigurazioa"
-            to="/splits"
-          ></v-list-item>
-
-          <v-list-item
-            prepend-icon="mdi-account-group"
-            title="Parte-hartzaileak"
-            to="/runners"
-          ></v-list-item>
         </v-list>
 
         <template v-slot:append>
@@ -258,6 +272,11 @@ export default {
               that.$store.commit("_SET_SERIAL_PORT", data[2][0].value);
               //let readers = JSON.parse(VueCookieNext.getCookie("readers"));
             }
+
+            if (cookie == "race") {
+              that.$store.commit("_SET_RACE", JSON.parse(data[2][0].value));
+              that._getCloudData();
+            }
           }
         }
     );
@@ -266,10 +285,10 @@ export default {
     window.ipc.send("toMain", ["get-cookies", "auth"]);
     window.ipc.send("toMain", ["get-cookies", "readers"]);
     window.ipc.send("toMain", ["get-cookies", "serial"]);
+    window.ipc.send("toMain", ["get-cookies", "race"]);
     // inventory status
     window.ipc.send("toMain", ["is-inventory-started"]);
 
-    let events;
     // socket
     socket.on("message", (msg) => {
       if (msg) {
@@ -292,8 +311,6 @@ export default {
         window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
       }
     });
-
-    this._getCloudData();
   },
   computed: {
     split() {
@@ -307,6 +324,9 @@ export default {
     },
     connected() {
       return this.$store.state.connected;
+    },
+    race() {
+      return this.$store.state.race;
     },
     events() {
       return this.$store.state.events;
@@ -372,6 +392,20 @@ export default {
       this.$store.commit("_AUTH", null);
       window.ipc.send("toMain", ["remove-cookies", "auth"]);
       this.$router.push("/");
+    },
+    _removeRace() {
+      const userConfirmed = confirm("Lasterketa hau itxi nahi duzu? ");
+
+      if (userConfirmed) {
+        this.$store.commit("_SET_RACE", null);
+        this.$store.commit("_SET_EVENTS_SPLITS_HOSTS", null);
+        this.$store.commit("_SET_SELECTED_SPLITS", []);
+        this.$store.commit("_SET_EVENTS", []);
+        this.$store.commit("_SET_START_LIST", []);
+        window.ipc.send("toMain", ["remove-cookies", "race"]);
+
+        this.$router.push("otp");
+      }
     },
     _setReaders(currentReaders) {
       // Readerrak zehaztu - defektuz 1

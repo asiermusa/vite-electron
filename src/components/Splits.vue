@@ -127,11 +127,15 @@ export default {
     eventsSplitsHosts() {
       return this.$store.state.eventsSplitsHosts;
     },
+    race() {
+      return this.$store.state.race;
+    },
   },
   methods: {
     setSplit() {
-      // let that = this;
-      //console.log(JSON.stringify(this.selectedSplit));
+      let race = this.race;
+      if (!race) return;
+
       let array = [];
 
       this.events.forEach((event, i) => {
@@ -145,6 +149,7 @@ export default {
         .post("/v1/set-split", {
           splits: JSON.stringify(array),
           name: this.hostname,
+          id: race.ID,
         })
         .then((response) => {
           this.$store.commit("_SET_SELECTED_SPLITS", response.data.data);

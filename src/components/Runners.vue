@@ -49,8 +49,8 @@
         <v-table class="rankig" density="compact">
           <tbody>
             <tr>
-              <th class="text-left">TAG</th>
-              <th class="text-left">Dorsala</th>
+              <th class="text-left" style="width: 50px">TAG</th>
+              <th class="text-left" style="width: 50px">Dorsala</th>
               <th class="text-left">Izena</th>
               <th class="text-left">Herria</th>
               <th class="text-left">Ekintza</th>

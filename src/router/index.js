@@ -15,6 +15,7 @@ import Login from '@/components/Login.vue'
 import Admin from '@/components/Admin.vue'
 import Splits from '@/components/Splits.vue'
 import Percents from '@/components/Percents.vue'
+import Otp from '@/components/Otp.vue'
 
 // ROUTER
 const routes = [{
@@ -62,6 +63,13 @@ const routes = [{
   {
     path: '/runners',
     component: Runners,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+  {
+    path: '/otp',
+    component: Otp,
     meta: {
       requiresAuth: true,
     }

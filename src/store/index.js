@@ -15,10 +15,11 @@ export default createStore({
     hostname: null,
     inventory: false,
     readDelay: 5, //seconds
+    serial: null,
+    race: null,
     events: [],
     selectedSplits: [],
     eventsSplitsHosts: null,
-    serial: null
   },
   mutations: {
     _AUTH(state, val) {
@@ -60,14 +61,63 @@ export default createStore({
     _SET_INVENTORY_STATUS(state, val) {
       state.inventory = val
     },
-    SET_EVENTS_SPLITS_HOSTS(state, val) {
+    _SET_EVENTS_SPLITS_HOSTS(state, val) {
       state.eventsSplitsHosts = val;
+    },
+    _SET_RACE(state, val) {
+      state.race = val
     }
   },
   actions: {
-    async _get_events(context) {
+    async _set_race(context, val) {
+      let params = {
+        otp: val
+      };
+      let response = await axios.get("/v1/get-race-id", {
+        params
+      });
+      let race = response.data.data;
+      if (race) {
+        console.log(race)
+        race = {
+          ID: race.ID,
+          name: race.post_title
+        }
 
-      let response = await axios.get("/v1/get-race");
+        context.commit("_SET_RACE", race);
+        window.ipc.send("toMain", [
+          "set-cookies",
+          "race",
+          JSON.stringify(race),
+        ]);
+
+
+        // obtener todos los eventos de la carrera (generales)
+        await context.dispatch("_get_events");
+
+        // hasierako atleta guztien excela montatu
+        await context.dispatch("_get_participants");
+
+        // Obtener los cronos iniciales de la/s carrera/s
+        await context.dispatch("_get_cronos");
+
+        // Ordenagailu honentzako splitak ekarri
+        await context.dispatch("_get_current_pc_splits");
+
+      }
+
+    },
+    async _get_events(context) {
+      let race = context.state.race;
+      if (!race) return;
+
+      let params = {
+        id: race.ID
+      };
+      let response = await axios.get("/v1/get-race", {
+        params
+      });
+
       let events = response.data.data;
       events.forEach((event) => {
         event['start'] = null;
@@ -75,8 +125,15 @@ export default createStore({
       context.commit("_SET_EVENTS", events);
     },
     async _get_cronos(context) {
+      let race = context.state.race;
+      if (!race) return;
+      let params = {
+        id: race.ID
+      };
       let starts = await axios.get(
-        "/v1/get-starts"
+        "/v1/get-starts", {
+          params
+        }
       );
 
       starts = starts.data.data;
@@ -93,8 +150,16 @@ export default createStore({
       window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
     },
     async _get_current_pc_splits(context) {
+      let race = context.state.race;
+      console.log(race)
+      if (!race) return;
+      let params = {
+        id: race.ID
+      };
       await axios
-        .get("/v1/get-split")
+        .get("/v1/get-split", {
+          params
+        })
         .then((response) => {
           context.commit("_SET_SELECTED_SPLITS", response.data.data);
         });
@@ -135,12 +200,20 @@ export default createStore({
         });
       });
 
-      context.commit('SET_EVENTS_SPLITS_HOSTS', final);
+      context.commit('_SET_EVENTS_SPLITS_HOSTS', final);
     },
     async _get_participants(context) {
+      let race = context.state.race;
+      if (!race) return;
+      let params = {
+        id: race.ID
+      };
+
       let events = context.state.events;
       axios
-        .get("/v1/resultados")
+        .get("/v1/resultados", {
+          params
+        })
         .then((response) => {
           if (events) {
             events.forEach((split) => {
