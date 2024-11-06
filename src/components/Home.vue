@@ -56,13 +56,45 @@
         Internetera bidali</v-btn
       >
 
-      <v-text-field
-        placeholder="Bilatu"
-        v-model="search"
-        variant="outlined"
-        class="my-2"
-      ></v-text-field>
+      <v-row>
+        <v-col cols="3">
+          <v-text-field
+            placeholder="Dortsala"
+            variant="outlined"
+            v-model="search"
+            class="my-3"
+          ></v-text-field>
+        </v-col>
 
+        <v-col cols="3">
+          <v-text-field
+            placeholder="Izen-abizenak"
+            variant="outlined"
+            v-model="searchName"
+            class="my-3"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="3" v-if="eventsSplitsHosts.length">
+          <v-select
+            placeholder="Lasterketa"
+            variant="outlined"
+            v-model="searchEvent"
+            class="my-3"
+            :items="eventsSplitsHosts"
+            item-title="name"
+          ></v-select>
+        </v-col>
+
+        <v-col cols="3">
+          <v-text-field
+            placeholder="Splita"
+            variant="outlined"
+            v-model="searchSplit"
+            class="my-3"
+          ></v-text-field>
+        </v-col>
+      </v-row>
       <v-table density="compact">
         <tbody>
           <tr>
@@ -111,6 +143,9 @@ export default {
       alert: false,
       loader: false,
       search: null,
+      searchName: null,
+      searchEvent: null,
+      searchSplit: null,
       tab: null,
       percents: null,
     };
@@ -140,11 +175,41 @@ export default {
     },
     sortItems() {
       let items = this.$store.state.items;
+
       if (!items.length) return;
-      if (!this.search) return items;
-      return items.filter((item) => {
-        return item.name.toLowerCase().includes(this.search.toLowerCase());
-      });
+      // if (!this.search) return items;
+      // if (!this.searchHerria) return items;
+
+      let response = items;
+
+      // Apply search filter if "search" is defined
+      if (this.search) {
+        response = response.filter((item) => {
+          return item.tag.toLowerCase().includes(this.search.toLowerCase());
+        });
+      }
+      if (this.searchName) {
+        response = response.filter((item) => {
+          return item.name
+            .toLowerCase()
+            .includes(this.searchName.toLowerCase());
+        });
+      }
+      if (this.searchEvent) {
+        response = response.filter((item) => {
+          return item.event
+            .toLowerCase()
+            .includes(this.searchEvent.toLowerCase());
+        });
+      }
+      if (this.searchSplit) {
+        response = response.filter((item) => {
+          return item.split
+            .toLowerCase()
+            .includes(this.searchSplit.toLowerCase());
+        });
+      }
+      return response;
     },
     _canInventory() {
       return this.$store.getters.canInventory;
