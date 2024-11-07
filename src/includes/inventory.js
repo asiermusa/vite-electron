@@ -165,7 +165,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         return false;
     }
 
-
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
     currentTag.name = current[2];
     currentTag.city = current[3];
@@ -177,14 +176,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.reader = readerName;
 
     // Count array nagusian gehitu.
-
-
-    // let item = data[1];
-    // that.startList.forEach((person) => {
-    //     if (person[0] == item.tag) {
-    //         console.log(person);
-    //     }
-    // });
     global.count.push(currentTag)
 
     // cambiar porcentajes

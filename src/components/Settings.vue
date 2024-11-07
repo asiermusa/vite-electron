@@ -1,6 +1,21 @@
 <template>
   <div class="hello">
     <v-row>
+      <v-col>
+        <v-alert
+          v-if="message"
+          class="my-5"
+          icon="mdi-select-search"
+          :title="`${currentReader.name} - ${currentReader.desc}`"
+          :text="message"
+          color="primary"
+          variant="tonal"
+          closable
+          border="start"
+        ></v-alert>
+      </v-col>
+    </v-row>
+    <v-row>
       <v-col v-for="(item, key) in tabs" :key="key" cols="6">
         <v-card class="main-card mb-6" variant="outlined">
           <v-card-text class="py-3">
@@ -31,6 +46,19 @@
               v-model="item.port"
               width="20%"
               class="mx-2"
+            ></v-text-field>
+          </v-row>
+
+          <v-card-item>
+            <template v-slot:subtitle>Deskribapena</template>
+          </v-card-item>
+
+          <v-row class="my-3 px-6">
+            <v-text-field
+              label="Deskribapena"
+              variant="outlined"
+              v-model="item.desc"
+              width="90%"
             ></v-text-field>
           </v-row>
 
@@ -68,6 +96,15 @@
             >
               Aldatu potentzia
             </v-btn>
+
+            <!-- <v-btn
+              @click="_getOutputPower(item)"
+              color="primary"
+              variant="outlined"
+              size="small"
+            >
+              Ikusi potentzia
+            </v-btn> -->
 
             <v-btn
               @click="_checkAnts(item)"
@@ -112,14 +149,6 @@
       prepend-icon="mdi-plus"
       >Reader berria gehitu</v-btn
     >
-
-    <v-alert
-      v-if="message"
-      class="my-5"
-      color="success"
-      icon="success"
-      :text="message"
-    ></v-alert>
   </div>
 </template>
 
@@ -131,6 +160,7 @@ export default {
     return {
       tabs: null,
       message: null,
+      currentReader: null,
     };
   },
   mounted() {
@@ -148,6 +178,11 @@ export default {
       "fromMain",
       () =>
         function (event, data) {
+          if (data[0] == "checking") {
+            let read = data[1][6];
+            that.message = "Irakurritako tag kopurua: " + read;
+          }
+
           if (data[0] == "checking") {
             let read = data[1][6];
             that.message = "Irakurritako tag kopurua: " + read;
@@ -173,18 +208,27 @@ export default {
       window.ipc.send("toMain", ["set-output-power", JSON.stringify(item)]);
     },
     _checkAnts(item) {
+      this.currentReader = item;
       window.ipc.send("toMain", ["check-antennas", JSON.stringify(item)]);
     },
     _connect() {
       window.ipc.send("toMain", [
-        "set-cookies",
+        "remove-cookies",
         "readers",
-        JSON.stringify(this.tabs),
+        JSON.stringify(this.connected),
       ]);
-      this.$store.commit("_CONNECTED", this.tabs);
 
-      console.log(this.tabs);
-      window.ipc.send("toMain", ["connect", JSON.stringify(this.tabs)]);
+      window.ipc.send("toMain", ["disconnect"]);
+
+      setTimeout(() => {
+        window.ipc.send("toMain", [
+          "set-cookies",
+          "readers",
+          JSON.stringify(this.tabs),
+        ]);
+        this.$store.commit("_CONNECTED", this.tabs);
+        window.ipc.send("toMain", ["connect", JSON.stringify(this.tabs)]);
+      }, 1000);
     },
     addInput() {
       if (this.tabs.length > 1) {
@@ -196,6 +240,7 @@ export default {
         name: "Reader " + num,
         ip: "",
         port: "4001",
+        desc: "",
         ants: [0, 0, 0, 0, 0, 0, 0, 0],
         power: [33, 33, 33, 33, 33, 33, 33, 33],
         active: false,

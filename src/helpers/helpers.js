@@ -13,7 +13,6 @@ function getAccurateTime(current = false) {
 function onTagDetected(tagId) {
     // Reproduce un pitido o un sonido específico
     let ruta = path.join(__dirname, '../assets/beep.mp3');
-    console.log(ruta)
     player.play(ruta, (err) => {
         if (err) console.log("Error al reproducir sonido:", err);
     });
@@ -113,8 +112,6 @@ function getPrettyTime(time, event, startTime) {
             
         }
     });
-
-    console.log('pretty', time, start)
     
     let diff = time - start;
     // milliseconds

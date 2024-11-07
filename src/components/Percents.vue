@@ -118,7 +118,7 @@ export default {
               });
             }
 
-            that.$store.commit("SET_EVENTS_SPLITS_HOSTS", current);
+            that.$store.commit("_SET_EVENTS_SPLITS_HOSTS", current);
           }
         }
     );

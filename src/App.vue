@@ -231,7 +231,7 @@ export default {
             readers.map((res, i) => {
               if (i == data[1]) res.active = false;
             });
-            alert(`${readers[data[1]].name}-ekin konexioa galdu da...`);
+            //alert(`${readers[data[1]].name}-ekin konexioa galdu da...`);
             // RE-conectar todos los readers
             that.$store.commit("_CONNECTED", readers);
           }
@@ -274,6 +274,7 @@ export default {
             }
 
             if (cookie == "race") {
+              if (!data[2].length) return;
               that.$store.commit("_SET_RACE", JSON.parse(data[2][0].value));
               that._getCloudData();
             }
@@ -415,6 +416,7 @@ export default {
             name: "Reader 1",
             ip: "192.168.1.178",
             port: "4001",
+            desc: "",
             ants: [0, 0, 0, 0, 0, 0, 0, 0],
             power: [33, 33, 33, 33, 33, 33, 33, 33],
             active: false,

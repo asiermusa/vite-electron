@@ -106,6 +106,8 @@ async function requests(data) {
                         let current = res.toString(16);
                         resp.push(current)
                     })
+
+                    console.log('power', resp)
                     global.outputPower = false;
                 }
             });
@@ -182,7 +184,11 @@ async function requests(data) {
     if (cmd == 'get-output-power') {
         let reader = JSON.parse(data[1]);
         let selectedReader;
-        if (reader.name == 'Reader 1') selectedReader = global.readers[0];
+
+        global.readersInfo.forEach((r, i) => {
+            if (r.name == reader.name) selectedReader = global.readers[i]
+        })
+        
         const query = Buffer.from([0xA0, 0x03, 0x01, 0x77]);
         const check = CheckSum(query); // Example check
         const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
@@ -272,14 +278,18 @@ async function requests(data) {
 
     if (cmd == 'check-antennas') {
         global.startInventory = false;
-        let selectedReader = JSON.parse(data[1])
+        let reader = JSON.parse(data[1])
         let antennas = [];
-        selectedReader.ants.filter((res, i) => {
+        reader.ants.filter((res, i) => {
             if (res) antennas[i] = '0x01'
             else antennas[i] = '0x00'
         })
 
-        if (selectedReader.name == 'Reader 1') selectedReader = global.readers[0];
+        let selectedReader;
+
+        global.readersInfo.forEach((r, i) => {
+            if (r.name == reader.name) selectedReader = global.readers[i]
+        })
 
         let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x00, 0x01]);
         const check = CheckSum(query); // Example check

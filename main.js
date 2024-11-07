@@ -59,21 +59,6 @@ async function createWindow() {
       })
       .then(async (result) => {
         if (result.response === 1) { // Index 1 corresponds to 'Close'
-
-          // let cookie = {
-          //   url: "http://denborak.online",
-          //   name: 'readers'
-          // };
-
-          // try {
-          //   await session.defaultSession.cookies.remove(cookie.url, cookie.name);
-          //   console.log('Cookie removed successfully');
-          //   //win.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
-          // } catch (error) {
-          //   console.error(error);
-          // }
-
-
           global.mainWindow.destroy(); // Close the window if confirmed
         }
       });

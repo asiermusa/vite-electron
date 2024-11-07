@@ -75,7 +75,7 @@
           ></v-text-field>
         </v-col>
 
-        <v-col cols="3" v-if="eventsSplitsHosts.length">
+        <v-col cols="3" v-if="eventsSplitsHosts">
           <v-select
             placeholder="Lasterketa"
             variant="outlined"
