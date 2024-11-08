@@ -18,7 +18,26 @@ export default {
       started: null,
       running: false,
       clock: "00:00:00",
+      timeDiff: null,
     };
+  },
+  mounted() {
+    let that = this;
+    window.ipc.handle(
+      "fromMain",
+      () =>
+        function (event, data) {
+          if (data[0] == "real-time") {
+            that.timeDiff = data[1];
+          }
+        }
+    );
+
+    this._getTimeServer();
+
+    setInterval(() => {
+      this._getTimeServer();
+    }, 60000);
   },
   watch: {
     time(val) {
@@ -29,25 +48,38 @@ export default {
     },
   },
   methods: {
+    _getTimeServer() {
+      window.ipc.send("toMain", ["real-time"]);
+    },
+    _getAccurateTime() {
+      let d = moment().add(this.timeDiff, "milliseconds"); // Adjust local time using the offset
+      return d;
+    },
     start(val) {
-      console.log("val", val);
       if (this.running) return;
+
+      console.log("vali", val);
 
       if (this.timeBegan === null) {
         this.reset();
-        this.timeBegan = moment(parseInt(val)).format(
-          "YYYY-MM-DD HH:mm:ss.SSS"
-        );
 
-        this.timeBegan = new Date(this.timeBegan);
-        console.log("began", val);
+        this.timeBegan = parseInt(val);
+
+        this._getTimeServer();
+
+        console.log(
+          "acu",
+          this.timeBegan,
+          moment().format("x"),
+          this._getAccurateTime().format("x")
+        );
       }
 
       if (this.timeStopped !== null) {
         this.stoppedDuration += new Date() - this.timeStopped;
       }
 
-      this.started = setInterval(this.clockRunning, 10);
+      this.started = setInterval(this.clockRunning, 20);
       this.running = true;
     },
 
@@ -66,24 +98,44 @@ export default {
       this.timeStopped = null;
     },
 
+    // clockRunning() {
+    //   var currentTime = this._getAccurateTime(),
+    //     timeElapsed = new Date(
+    //       currentTime - this.timeBegan - this.stoppedDuration
+    //     ),
+    //     hour = timeElapsed.getUTCHours(),
+    //     min = timeElapsed.getUTCMinutes(),
+    //     sec = timeElapsed.getUTCSeconds(),
+    //     ms = Math.round(timeElapsed.getUTCMilliseconds() / 10);
+
+    //   this.clock =
+    //     this.zeroPrefix(hour, 2) +
+    //     ":" +
+    //     this.zeroPrefix(min, 2) +
+    //     ":" +
+    //     this.zeroPrefix(sec, 2) +
+    //     ":" +
+    //     this.zeroPrefix(ms, 2);
+    // },
+
     clockRunning() {
-      var currentTime = new Date(),
-        timeElapsed = new Date(
-          currentTime - this.timeBegan - this.stoppedDuration
-        ),
-        hour = timeElapsed.getUTCHours(),
-        min = timeElapsed.getUTCMinutes(),
-        sec = timeElapsed.getUTCSeconds();
-      //ms = Math.round(timeElapsed.getUTCMilliseconds() / 10);
+      var currentTime = this._getAccurateTime();
 
-      this.clock =
-        this.zeroPrefix(hour, 2) +
-        ":" +
-        this.zeroPrefix(min, 2) +
-        ":" +
-        this.zeroPrefix(sec, 2);
+      let timeElapsed = currentTime - this.timeBegan;
+
+      // milliseconds
+      let milli = timeElapsed / 1000;
+      let decimalValue = milli.toString().indexOf(".");
+      let resultMilli = milli.toString().substring(decimalValue + 1);
+
+      let hour = [];
+      hour.push(moment.utc(timeElapsed).format("HH"));
+      hour.push(moment.utc(timeElapsed).format("mm"));
+      hour.push(moment.utc(timeElapsed).format("ss"));
+      hour.push(this.zeroPrefix(resultMilli, 2));
+
+      this.clock = hour[0] + ":" + hour[1] + ":" + hour[2];
     },
-
     zeroPrefix(num, digit) {
       var zero = "";
       for (var i = 0; i < digit; i++) {

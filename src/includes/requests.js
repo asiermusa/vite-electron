@@ -189,7 +189,7 @@ async function requests(data) {
             if (r.name == reader.name) selectedReader = global.readers[i]
         })
         
-        const query = Buffer.from([0xA0, 0x03, 0x01, 0x77]);
+        const query = Buffer.from([0xA0, 0x03, 0x01, 0x97]);
         const check = CheckSum(query); // Example check
         const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
         selectedReader.write(message, () => {
@@ -219,6 +219,10 @@ async function requests(data) {
 
     if (cmd == 'start-list') {
         global.startList = JSON.parse(data[1]);
+    }
+
+    if(cmd == 'real-time') {
+        global.mainWindow.webContents.send('fromMain', ['real-time', global.timeOffset]);
     }
 
     if (cmd == 'get-antenna') {

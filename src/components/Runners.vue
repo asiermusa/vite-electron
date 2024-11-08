@@ -17,13 +17,14 @@
           variant="tonal"
         ></v-alert>
 
-        <v-row>
+        <v-row class="my-1">
           <v-col cols="4">
             <v-text-field
               placeholder="Dortsala"
               variant="outlined"
               v-model="search"
               class="my-3"
+              density="compact"
             ></v-text-field>
           </v-col>
 
@@ -33,6 +34,7 @@
               variant="outlined"
               v-model="searchName"
               class="my-3"
+              density="compact"
             ></v-text-field>
           </v-col>
 
@@ -42,6 +44,7 @@
               variant="outlined"
               v-model="searchCity"
               class="my-3"
+              density="compact"
             ></v-text-field>
           </v-col>
         </v-row>

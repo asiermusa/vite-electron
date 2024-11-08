@@ -10,10 +10,15 @@
       </v-btn>
 
       <v-btn stacked size="x-large">
-        <v-badge color="green" size="small" v-if="_inventoryStatus">
+        <v-badge
+          color="green"
+          size="small"
+          v-if="_inventoryStatus"
+          @click="_stop()"
+        >
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
-        <v-badge color="red" size="small" v-else>
+        <v-badge color="red" size="small" v-else @click="_inventory()">
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
       </v-btn>
@@ -341,6 +346,12 @@ export default {
     _auth() {
       return this.$store.state._auth;
     },
+    readDelay() {
+      return this.$store.state.readDelay;
+    },
+    selectedSplits() {
+      return this.$store.state.selectedSplits;
+    },
     _canInventory() {
       return this.$store.getters.canInventory;
     },
@@ -388,6 +399,20 @@ export default {
         .replace(/[^\w\s-]/g, "") // Remove all non-word characters (excluding whitespace and hyphens)
         .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with a single hyphen
         .replace(/^-+|-+$/g, ""); // Remove leading and trailing hyphens
+    },
+    _stop() {
+      window.ipc.send("toMain", ["stop"]);
+    },
+    _delete() {
+      if (confirm("Datuak ezabatu nahi al dituzu?"))
+        window.ipc.send("toMain", ["delete"]);
+    },
+    _inventory() {
+      window.ipc.send("toMain", [
+        "inventory",
+        this.readDelay * 1000,
+        JSON.stringify(this.selectedSplits),
+      ]);
     },
     _logout() {
       this.$store.commit("_AUTH", null);

@@ -96,7 +96,9 @@ ipcMain.on("toMain", async (event, data) => {
 });
 
 
-// Function to fetch server time and calculate the offset
+// Funtzio honek zerbitzariko ordua eta ordenagailu honen orduaaren artek diferentzia aterako du.
+// Normalean milisegundo batzuk izaten dira. Adibidez: 360ms
+
 global.timeOffset = 0; // Store the offset between local time and server time
 
 async function syncWithServerTime() {

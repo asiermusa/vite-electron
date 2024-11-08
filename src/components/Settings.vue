@@ -97,20 +97,20 @@
               Aldatu potentzia
             </v-btn>
 
-            <!-- <v-btn
+            <v-btn
               @click="_getOutputPower(item)"
               color="primary"
+              class="mx-2"
               variant="outlined"
               size="small"
             >
               Ikusi potentzia
-            </v-btn> -->
+            </v-btn>
 
             <v-btn
               @click="_checkAnts(item)"
-              color="primary"
+              color="success"
               variant="outlined"
-              class="mx-2"
               size="small"
             >
               Frogatu antenak
@@ -257,9 +257,6 @@ export default {
 </script>
 
 <style lang="scss">
-.main {
-}
-
 .main-card {
   padding: 10px !important;
 }

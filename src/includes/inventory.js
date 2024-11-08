@@ -166,6 +166,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
+    currentTag.dorsal = current[1];
     currentTag.name = current[2];
     currentTag.city = current[3];
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, global.startTime), global.startTime);

@@ -56,13 +56,14 @@
         Internetera bidali</v-btn
       >
 
-      <v-row>
+      <v-row class="my-1">
         <v-col cols="3">
           <v-text-field
             placeholder="Dortsala"
             variant="outlined"
             v-model="search"
             class="my-3"
+            density="compact"
           ></v-text-field>
         </v-col>
 
@@ -72,6 +73,7 @@
             variant="outlined"
             v-model="searchName"
             class="my-3"
+            density="compact"
           ></v-text-field>
         </v-col>
 
@@ -83,6 +85,7 @@
             class="my-3"
             :items="eventsSplitsHosts"
             item-title="name"
+            density="compact"
           ></v-select>
         </v-col>
 
@@ -92,22 +95,25 @@
             variant="outlined"
             v-model="searchSplit"
             class="my-3"
+            density="compact"
           ></v-text-field>
         </v-col>
       </v-row>
       <v-table density="compact">
         <tbody>
           <tr>
-            <th class="text-left">Izena</th>
+            <th class="text-left" style="width: 50px">Dortsala</th>
+            <th class="text-left">Izen-abizenak</th>
             <th class="text-left">Herria</th>
-            <th class="text-left">Denbora</th>
+            <th class="text-left" style="width: 130px">Denbora</th>
             <th class="text-left">Irak. ordua</th>
-            <th class="text-left">Event</th>
+            <th class="text-left">Lasterketa</th>
             <th class="text-left">Split</th>
-            <th class="text-left">Reader ID</th>
-            <th class="text-left">Antena</th>
+            <th class="text-left" style="width: 100px">Reader ID</th>
+            <th class="text-left" style="width: 50px">Antena</th>
           </tr>
           <tr v-for="(item, i) in sortItems" :key="i">
+            <td>{{ item.dorsal }}</td>
             <td>{{ item.name }}</td>
             <td>{{ item.city }}</td>
             <td>{{ item.pretty_time }}</td>
@@ -133,7 +139,7 @@
 <script>
 //import axios from "axios";
 export default {
-  name: "HomeComponent",
+  name: "InventoryComponent",
 
   data() {
     return {

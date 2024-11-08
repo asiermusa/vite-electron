@@ -9,7 +9,7 @@ import Settings from '@/components/Settings.vue'
 import USBReader from '@/components/USBReader.vue'
 import ReadDelayReader from '@/components/ReadDelayReader.vue'
 
-import Home from '@/components/Home.vue'
+import Inventory from '@/components/Inventory.vue'
 import Runners from '@/components/Runners.vue'
 import Login from '@/components/Login.vue'
 import Admin from '@/components/Admin.vue'
@@ -27,7 +27,7 @@ const routes = [{
   },
   {
     path: '/home',
-    component: Home,
+    component: Inventory,
     meta: {
       requiresAuth: false,
     }
