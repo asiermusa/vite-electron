@@ -216,7 +216,6 @@ export default {
           }
 
           if (data[0] == "inventory-status") {
-            console.log("inv", data[1]);
             that.$store.commit("_SET_INVENTORY_STATUS", data[1]);
           }
 
@@ -270,7 +269,6 @@ export default {
                 : null;
               that.$store.commit("_CONNECTED", readers);
               that._setReaders(readers);
-              console.log("setup", readers);
             }
 
             if (cookie == "serial") {
@@ -361,7 +359,6 @@ export default {
   },
   watch: {
     connected(val) {
-      console.log("alive", val);
       window.ipc.send("toMain", ["alive", JSON.stringify(val)]);
     },
   },
@@ -408,6 +405,13 @@ export default {
         window.ipc.send("toMain", ["delete"]);
     },
     _inventory() {
+      if (!this._canInventory) {
+        alert(
+          "Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe."
+        );
+        return true;
+      }
+
       window.ipc.send("toMain", [
         "inventory",
         this.readDelay * 1000,

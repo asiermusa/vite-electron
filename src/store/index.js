@@ -73,37 +73,46 @@ export default createStore({
       let params = {
         otp: val
       };
-      let response = await axios.get("/v1/get-race-id", {
-        params
-      });
-      let race = response.data.data;
-      if (race) {
-        console.log(race)
-        race = {
-          ID: race.ID,
-          name: race.post_title
+
+      try {
+
+        let response = await axios.get("/v1/get-race-id", {
+          params
+        });
+        let race = response.data.data;
+
+        if (race) {
+          race = {
+            ID: race.ID,
+            name: race.post_title
+          }
+
+          context.commit("_SET_RACE", race);
+          window.ipc.send("toMain", [
+            "set-cookies",
+            "race",
+            JSON.stringify(race),
+          ]);
+
+
+          // obtener todos los eventos de la carrera (generales)
+          await context.dispatch("_get_events");
+
+          // hasierako atleta guztien excela montatu
+          await context.dispatch("_get_participants");
+
+          // Obtener los cronos iniciales de la/s carrera/s
+          await context.dispatch("_get_cronos");
+
+          // Ordenagailu honentzako splitak ekarri
+          await context.dispatch("_get_current_pc_splits");
+
+          return true;
         }
 
-        context.commit("_SET_RACE", race);
-        window.ipc.send("toMain", [
-          "set-cookies",
-          "race",
-          JSON.stringify(race),
-        ]);
+      } catch (error) {
 
-
-        // obtener todos los eventos de la carrera (generales)
-        await context.dispatch("_get_events");
-
-        // hasierako atleta guztien excela montatu
-        await context.dispatch("_get_participants");
-
-        // Obtener los cronos iniciales de la/s carrera/s
-        await context.dispatch("_get_cronos");
-
-        // Ordenagailu honentzako splitak ekarri
-        await context.dispatch("_get_current_pc_splits");
-
+        console.log('errorea', error);
       }
 
     },
@@ -151,7 +160,6 @@ export default createStore({
     },
     async _get_current_pc_splits(context) {
       let race = context.state.race;
-      console.log(race)
       if (!race) return;
       let params = {
         id: race.ID
@@ -161,7 +169,10 @@ export default createStore({
           params
         })
         .then((response) => {
-          context.commit("_SET_SELECTED_SPLITS", response.data.data);
+          let resp = response.data.data;
+          let splits = [];
+          if (resp != '') splits = resp;
+          context.commit("_SET_SELECTED_SPLITS", splits);
         });
 
       context.dispatch('_mountEventsSplitsHosts');

@@ -1,5 +1,13 @@
 <template>
   <div class="hello">
+    <v-alert
+      v-if="error"
+      text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
+      title="Errorea!"
+      type="error"
+      variant="tonal"
+    ></v-alert>
+
     <v-row align="center" no-gutters>
       <v-col cols="6"><h2 class="main-title">OTP</h2> </v-col>
 
@@ -44,6 +52,7 @@ export default {
   data() {
     return {
       otp: null,
+      error: false,
     };
   },
   mounted() {},
@@ -54,8 +63,11 @@ export default {
   },
   methods: {
     async _set_data() {
+      this.error = false;
       // wordpress post bat ekarri OTP bidez
-      this.$store.dispatch("_set_race", this.otp);
+      let result = await this.$store.dispatch("_set_race", this.otp);
+      if (!result) this.error = true;
+      else this.$router.push("/");
     },
   },
 };
