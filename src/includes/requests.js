@@ -14,6 +14,8 @@ const {
     get_data
 } = require("./inventory.js");
 const os = require('os');
+const socket = require('../socket-common.js')
+
 
 const COMPUTER_NAME = os.userInfo().username;
 
@@ -163,9 +165,15 @@ async function requests(data) {
         global.startInventory = false;
         global.mainWindow.webContents.send('fromMain', ['inventory-status', global.startInventory]);
         console.log('stop')
-        // socket.emit("currentTag", {
-        //     name: 'asierrrrr'
-        // });
+
+    }
+
+
+    if (cmd == 'socket-io') {
+        console.log('send-socket')
+        socket.emit("currentTag", {
+            name: 'asier'
+        });
     }
 
 
@@ -188,7 +196,7 @@ async function requests(data) {
         global.readersInfo.forEach((r, i) => {
             if (r.name == reader.name) selectedReader = global.readers[i]
         })
-        
+
         const query = Buffer.from([0xA0, 0x03, 0x01, 0x97]);
         const check = CheckSum(query); // Example check
         const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
@@ -221,7 +229,7 @@ async function requests(data) {
         global.startList = JSON.parse(data[1]);
     }
 
-    if(cmd == 'real-time') {
+    if (cmd == 'real-time') {
         global.mainWindow.webContents.send('fromMain', ['real-time', global.timeOffset]);
     }
 

@@ -164,6 +164,7 @@
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
+        <button @click="_sendSocket()">SEND SOCKET</button>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -363,6 +364,9 @@ export default {
     },
   },
   methods: {
+    async _sendSocket() {
+      window.ipc.send("toMain", ["socket-io"]);
+    },
     async _getCloudData() {
       // obtener todos los eventos de la carrera (generales)
       await this.$store.dispatch("_get_events");
