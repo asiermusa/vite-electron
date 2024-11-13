@@ -106,6 +106,14 @@
       prepend-icon="mdi-download"
       >Zerrenda eguneratu
     </v-btn>
+
+    <v-btn
+      @click="_send_to_server()"
+      variant="outlined"
+      class="my-4"
+      color="primary"
+      >Sailkapena bidali
+    </v-btn>
   </div>
 </template>
 
@@ -188,6 +196,9 @@ export default {
       // hasierako atleta guztien excela montatu
       this.$store.dispatch("_get_participants");
     },
+    _send_to_server() {
+      window.ipc.send("toMain", ["upload-file"]);
+    },
     _save_tag() {
       window.ipc.send("toMain", ["serial-usb", this.serial]);
 
@@ -199,6 +210,7 @@ export default {
       //     console.log(response.data.data);
       //   });
     },
+
     _write_tag() {
       window.ipc.send("toMain", ["write-serial", this.serial, this.writeData]);
 

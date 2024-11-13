@@ -1,5 +1,10 @@
 const moment = require("moment-timezone");
+const fs = require('fs');
 const axios = require("axios");
+const {
+    Parser
+} = require('json2csv');
+
 const createExcel = require("../helpers/excel.js");
 const {
     CheckSum,
@@ -151,6 +156,34 @@ async function requests(data) {
             host: COMPUTER_NAME
         });
         //createExcel(items, app)
+    }
+
+    if (cmd == 'upload-file') {
+
+        const json2csvParser = new Parser();
+        const csvData = json2csvParser.parse(global.startList);
+        const FormData = require('form-data');
+
+        try {
+            // Wait for the file to be fully written before continuing
+            await fs.promises.writeFile('output.csv', csvData);
+            console.log('CSV file successfully created!');
+
+            const form = new FormData();
+            form.append("file", fs.createReadStream('output.csv'));
+
+            const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload', form, {
+                headers: {
+                    ...form.getHeaders() // ensure correct headers
+                }
+            });
+
+            console.log('Upload response:', upload.data);
+
+        } catch (error) {
+            console.error("Error:", error.message);
+        }
+
     }
 
 
