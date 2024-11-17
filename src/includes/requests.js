@@ -25,6 +25,7 @@ const socket = require('../socket-common.js')
 const COMPUTER_NAME = os.userInfo().username;
 
 /** vars */
+global.counter = 0;
 global.count = [];
 global.percents = [];
 global.readersInfo = [];
@@ -36,6 +37,28 @@ global.startList = null;
 global.selectedSplits = false;
 global.readDelaySec = 30;
 global.outputPower = false;
+
+
+
+let currentTag = {
+    id: 5,
+    tag: '000000000000000001',
+    ant: 1,
+    time: 'denboria',
+    dorsal: 1,
+    name: 'invent decarlos',
+    city: 'inventlandia',
+    pretty_time: '00:01:30:00:345',
+    real_time: '6363738383',
+    event: 'Martxa Luzea',
+    split: 'Irteera - Salida',
+    split_slug: '0_irteer - salida',
+    reader: 'Reader 1'
+};
+
+global.count.push(currentTag)
+
+
 
 async function requests(data) {
     let cmd = data[0];
@@ -156,6 +179,19 @@ async function requests(data) {
             host: COMPUTER_NAME
         });
         //createExcel(items, app)
+    }
+
+    if (cmd == 'change-item') {
+        let item = JSON.parse(data[1]);
+
+        global.count.map(res => {
+            if(item.id == res.id) {
+                res.split = item.split;
+                res.split_slug = item.split_slug;
+            }
+        })
+
+        console.log(global.count)
     }
 
     if (cmd == 'upload-file') {

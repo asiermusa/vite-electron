@@ -15,7 +15,29 @@
       variant="tonal"
     ></v-alert>
 
-    <div v-else>
+    <v-dialog
+      v-model="changeSplit"
+      width="auto"
+    >
+    <v-card class="pa-3">
+
+      <template v-if="changeSplit">
+                <v-select
+                  placeholder="Splita aldatu"
+                  variant="outlined"
+                  v-model="changeSplitSelected"
+                  class="my-3"
+                  :items="changeSplit"
+                  item-title="name"
+                  density="compact"
+                ></v-select>
+
+                <v-btn @click="_saveRow()" variant="outlined" size="small" color="primary" class="mb-2"> gorde</v-btn>
+
+              </template>
+    </v-card>
+    </v-dialog>
+    <div>
       <v-btn
         @click="_inventory()"
         v-if="!_inventoryStatus"
@@ -119,7 +141,11 @@
             <td>{{ item.pretty_time }}</td>
             <td>{{ item.real_time }}</td>
             <td>{{ item.event }}</td>
-            <td>{{ item.split }}</td>
+            <td @click="_changeRow(item)" class="td-hover">
+              
+                {{ item.split }}
+
+              </td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
           </tr>
@@ -154,6 +180,9 @@ export default {
       searchSplit: null,
       tab: null,
       percents: null,
+      changeItem: null,
+      changeSplit: null,
+      changeSplitSelected: null
     };
   },
 
@@ -223,6 +252,9 @@ export default {
     _inventoryStatus() {
       return this.$store.state.inventory;
     },
+    startList() {
+      return this.$store.state.startList;
+    }
   },
   // watch: {
   //   items: {
@@ -233,6 +265,45 @@ export default {
   //   },
   // },
   methods: {
+    _changeRow(item){
+      this.changeSplit = null;
+      let find = this.startList.filter(res => {
+        if(res[1] == item.dorsal) return res;
+      })
+      this.changeSplit = find[0][4].splits;
+      this.changeItem = item;
+    }, 
+    _saveRow() {
+      let find = null;
+      this.startList.forEach(res => {
+        if(res[1] == this.changeItem.dorsal) {
+          res[4].splits.forEach(s => {
+            if(s.name == this.changeSplitSelected) {
+              find = s;
+            }
+          })
+        }
+      })
+
+      if(find) {
+        this.changeSplit.split = find.name;
+        this.changeSplit.split_slug = find.slug;
+
+        this.items.map(item => {
+          if(item.id == this.changeItem.id) {
+            item.split = this.changeSplit.split;
+            item.split_slug = this.changeSplit.split_slug;
+            window.ipc.send("toMain", ["change-item", JSON.stringify(this.changeItem)]);
+
+          }
+      })
+      }
+      setTimeout(() => {
+        this.changeSplit = null;
+        this.changeItem = null;
+      }, 300)
+     
+    },
     _stop() {
       window.ipc.send("toMain", ["stop"]);
     },
@@ -285,5 +356,9 @@ v-card-item .percent-name {
 
 .percent-number {
   font-weight: 800;
+}
+
+.td-hover {
+  cursor: pointer;
 }
 </style>
