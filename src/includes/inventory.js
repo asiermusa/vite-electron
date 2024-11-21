@@ -1,4 +1,5 @@
 const moment = require('moment');
+const socket = require('../socket-common.js')
 const axios = require('axios');
 
 const {
@@ -8,7 +9,9 @@ const {
     getAntenna,
     uniqueId,
     getAccurateTime,
-    onTagDetected
+    onTagDetected,
+    percentsSum,
+    generateRandomString,
 } = require('../helpers/helpers.js');
 const os = require('os');
 
@@ -43,7 +46,7 @@ function inventory_fn(data, reader, readerInfo) {
         return false;
     }
 
-    // INBENTARIOA BERRIZ ESKATZEN denean. Eskuz geratu arte honek bueltaka jarraitu behar du (get-data() funtzioa deituo du berriz buklean sartzeko).
+    // INBENTARIOA BERRIZ ESKATZEN denean. Eskuz geratu arte honek bueltaka jarraitu behar du (get-data() funtzioa deituko du berriz buklean sartzeko).
     if (response.substring(2, 4) == '0a' && global.startInventory == true) {
 
         let antennas = [];
@@ -80,7 +83,7 @@ function inventory_fn(data, reader, readerInfo) {
         let tagExist = false;
         global.count.forEach((res) => {
             // compare tag time
-            let tagTime = parseInt(res.time) + global.readDelaySec;
+            let tagTime = parseInt(res.timestamp) + global.readDelaySec;
             if (res.tag == response.slice(14, global.TAG_LEN) && currentTime < tagTime) {
                 tagExist = true;
             }
@@ -99,7 +102,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     let currentTag = {
         tag: tagLength,
         ant: ant,
-        time: currentTime,
+        timestamp: currentTime,
     }
 
     // Hasierako parte-hartzaileen zerrenda orokorretik TAG honen datuak ekarri (izena, abizena, dortsala...)
@@ -121,33 +124,54 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Count array orokorrean gordeta dauden baloreetatik ikusi zenbat aldiz irakurri den TAG hau.
     let hostname = os.userInfo().username;
-    let find = global.count.filter((res) => {
+    
+    let runnerReadings = global.count.filter((res) => {
         return res.tag == tagLength;
     });
 
-    // parte-hartzaile honen lastreketak zein SPLIT dituen ekarri (IRTEERA, TARTEKOA, HELMUGA...)
-    let splitSlug = false;
-    let findIndex = find.length ? find.length : 0;
-    let array = [];
+    // Parte-hartzaile honen lasterketak zein SPLIT dituen ekarri (IRTEERA, TARTEKOAK, HELMUGA...)
+    let nextSplit = false;
+    const splitsConfig = [];
+    // [
+    //     { name: 'Irteera - Salida', slug: '0_irteera - salida' },
+    //     { name: 'Tartekoa - Intermedio', slug: '0_tartekoa - intermedio' },
+    //     { name: 'Helmuga - Meta', slug: '0_helmuga - meta' }
+    // ]
     global.selectedSplits.forEach((split) => {
         current[4].splits.forEach((item) => {
             if (split.items.includes(hostname) && split.group == item.slug) {
-                array.push({
+                splitsConfig.push({
                     name: item.name,
                     slug: item.slug
                 })
             }
         })
     })
-    splitSlug = array[findIndex];
+
+    let lastReading = 0;
+    let lastSplitIndex = 0;
+    let setSplitIndex = 0;
+    if(runnerReadings.length) {
+        lastReading = runnerReadings.at(-1);
+        lastSplitIndex = splitsConfig.findIndex(s => s.slug === lastReading.split_slug);
+        nextSplit = splitsConfig[lastSplitIndex + 1];
+        setSplitIndex = lastSplitIndex + 1;
+    } else {
+        nextSplit = splitsConfig[0];
+
+    }
+    
+
     // Goiko LOOParen SPLITEN arabera jakin ea daturik gorde behar den ala ez.
-    if (!splitSlug) {
+    if (!nextSplit) {
         console.log("Ez dago splitik gordetzeko...");
         return true;
     }
 
     // Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress backendean dagoen informazioa da hau).
-    let splitDiffSeconds = moment.duration(current[4].splits[find.length].min_time).asSeconds();
+    console.log('min time', current[4].splits[setSplitIndex].min_time)
+    let splitDiffSeconds = moment.duration(current[4].splits[setSplitIndex].min_time).asSeconds();
+
     if (parseInt(currentTime) < parseInt(currentEventTime + splitDiffSeconds)) {
         console.log("Split hau oraindik ezin da irakurri...");
         return false;
@@ -156,7 +180,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // Parte-hartzaile honen lasterketa hasita dagoen ala ez ikusi (benetako hasiera eta ez WordPressean zehaztu dena).
     let start = null;
     global.startTime.forEach(res => {
-        if (res.unique_id == uniqueId(current[4].name, startTime)) {
+        if (res.unique_id == uniqueId(current[4].name, global.startTime)) {
             start = res.start;
         }
     });
@@ -165,50 +189,40 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         return false;
     }
 
+    // Irteera errealearen ordua ikusi + split jakin baten min_time gehitu.
+    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000))
+
+
+    if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
+        console.log("Split hau oraindik ezin da irakurri MIN TIME...");
+        return false;
+    }
+
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
-    current.id = global.counter++;
+    currentTag.id = generateRandomString(10);
     currentTag.dorsal = current[1];
     currentTag.name = current[2];
     currentTag.city = current[3];
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, global.startTime), global.startTime);
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
     currentTag.event = current[4].name;
-    currentTag.split = splitSlug.name;
-    currentTag.split_slug = splitSlug.slug;
+    currentTag.split = nextSplit.name;
+    currentTag.split_slug = nextSplit.slug;
     currentTag.reader = readerName;
+    currentTag.host = hostname;
+    currentTag.race = global.race.ID
 
     // Count array nagusian gehitu.
     global.count.push(currentTag)
 
-    // cambiar porcentajes
-    if (!global.percents.length) {
+    // realtime app SOKET.IO
+    socket.emit("currentTag", currentTag);
 
-        global.percents.push({
-            name: currentTag.split,
-            group: currentTag.split_slug,
-            count: 1
-        })
-    } else {
-        let exist = 'no';
-        global.percents.forEach((p, i) => {
-            if (p.group == currentTag.split_slug) exist = i;
-        })
-
-        if (exist == 'no') {
-            global.percents.push({
-                name: currentTag.split,
-                group: currentTag.split_slug,
-                count: 1
-            })
-        } else {
-            global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
-        }
-
-    }
+    percentsSum(currentTag)
 
 
     // Soinua egin
-    onTagDetected(currentTag);
+    //onTagDetected(currentTag);
 
     if (currentTag) {
 

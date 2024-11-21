@@ -177,6 +177,7 @@ export default {
 
 .v-timeline-item__body {
   padding-block-start: 10px !important;
+  justify-content: flex-start !important;
 }
 
 .selected-splits {

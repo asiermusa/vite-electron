@@ -36,7 +36,7 @@ const routes = [{
     path: '/percents',
     component: Percents,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
     }
   },
   {
@@ -64,21 +64,21 @@ const routes = [{
     path: '/runners',
     component: Runners,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
     }
   },
   {
     path: '/otp',
     component: Otp,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
     }
   },
   {
     path: '/splits',
     component: Splits,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
     }
   },
   {

@@ -10,6 +10,34 @@ function getAccurateTime(current = false) {
     return d;
 }
 
+function percentsSum(currentTag) {
+    // cambiar porcentajes
+    if (!global.percents.length) {
+
+        global.percents.push({
+            name: currentTag.split,
+            group: currentTag.split_slug,
+            count: 1
+        })
+    } else {
+        let exist = 'no';
+        global.percents.forEach((p, i) => {
+            if (p.group == currentTag.split_slug) exist = i;
+        })
+
+        if (exist == 'no') {
+            global.percents.push({
+                name: currentTag.split,
+                group: currentTag.split_slug,
+                count: 1
+            })
+        } else {
+            global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
+        }
+
+    }
+}
+
 function onTagDetected(tagId) {
     // Reproduce un pitido o un sonido específico
     let ruta = path.join(__dirname, '../assets/beep.mp3');
@@ -76,6 +104,15 @@ function CheckSum(data) {
 
     // const toInt8 = createToInt(8);
     return '0x' + ((uSum) >>> 0).toString(16).slice(-2);
+}
+
+function generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 function filterName(tag, startList) {
@@ -162,5 +199,7 @@ module.exports = {
     stringToSlug,
     uniqueId,
     getAccurateTime,
-    onTagDetected
+    onTagDetected,
+    percentsSum,
+    generateRandomString
 };

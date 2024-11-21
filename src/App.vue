@@ -64,12 +64,7 @@
     </v-app-bar>
 
     <v-layout style="margin-top: 65px">
-      <v-navigation-drawer
-        v-model="drawer"
-        :rail="rail"
-        permanent
-        @click="rail = false"
-      >
+      <v-navigation-drawer v-model="drawer" permanent>
         <v-list-item
           prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg"
           title="2klik Timing"
@@ -96,7 +91,7 @@
           <v-list-item
             v-if="race"
             prepend-icon="mdi-percent-circle"
-            title="Percents"
+            title="Irakurketa tasa"
             to="/percents"
           ></v-list-item>
 
@@ -164,7 +159,6 @@
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <button @click="_sendSocket()">SEND SOCKET</button>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -345,6 +339,9 @@ export default {
     _auth() {
       return this.$store.state._auth;
     },
+    race() {
+      return this.$store.state.race;
+    },
     readDelay() {
       return this.$store.state.readDelay;
     },
@@ -416,10 +413,12 @@ export default {
         return true;
       }
 
+      console.log(this.selectedSplits);
       window.ipc.send("toMain", [
         "inventory",
         this.readDelay * 1000,
         JSON.stringify(this.selectedSplits),
+        JSON.stringify(this.race),
       ]);
     },
     _logout() {
@@ -437,7 +436,6 @@ export default {
         this.$store.commit("_SET_EVENTS", []);
         this.$store.commit("_SET_START_LIST", []);
         window.ipc.send("toMain", ["remove-cookies", "race"]);
-
         this.$router.push("otp");
       }
     },

@@ -9,7 +9,8 @@ const createExcel = require("../helpers/excel.js");
 const {
     CheckSum,
     dec2hex,
-    getAccurateTime
+    getAccurateTime,
+    percentsSum
 } = require("../helpers/helpers.js");
 const {
     Socket
@@ -25,7 +26,6 @@ const socket = require('../socket-common.js')
 const COMPUTER_NAME = os.userInfo().username;
 
 /** vars */
-global.counter = 0;
 global.count = [];
 global.percents = [];
 global.readersInfo = [];
@@ -37,26 +37,25 @@ global.startList = null;
 global.selectedSplits = false;
 global.readDelaySec = 30;
 global.outputPower = false;
+global.race = false;
 
+// let currentTag = {
+//     id: 5,
+//     tag: '000000000000000001',
+//     ant: 1,
+//     time: 'denboria',
+//     dorsal: 1,
+//     name: 'invent decarlos',
+//     city: 'inventlandia',
+//     pretty_time: '00:01:30:00:345',
+//     real_time: '6363738383',
+//     event: 'Martxa Luzea',
+//     split: 'Irteera - Salida',
+//     split_slug: '0_irteer - salida',
+//     reader: 'Reader 1'
+// };
 
-
-let currentTag = {
-    id: 5,
-    tag: '000000000000000001',
-    ant: 1,
-    time: 'denboria',
-    dorsal: 1,
-    name: 'invent decarlos',
-    city: 'inventlandia',
-    pretty_time: '00:01:30:00:345',
-    real_time: '6363738383',
-    event: 'Martxa Luzea',
-    split: 'Irteera - Salida',
-    split_slug: '0_irteer - salida',
-    reader: 'Reader 1'
-};
-
-global.count.push(currentTag)
+// global.count.push(currentTag)
 
 
 
@@ -181,17 +180,31 @@ async function requests(data) {
         //createExcel(items, app)
     }
 
+
     if (cmd == 'change-item') {
         let item = JSON.parse(data[1]);
 
-        global.count.map(res => {
+        let previous = JSON.parse(JSON.stringify(global.count.find(res => item.id == res.id)));
+
+
+        global.count.map((res, i) => {
             if(item.id == res.id) {
                 res.split = item.split;
                 res.split_slug = item.split_slug;
+                // realtime app SOKET.IO (edit TRUE)
+                socket.emit("currentTag", res, true);
+
+                // porcentajes: Restar el split anterior
+                global.percents.map(res => {
+                    if(res.group == previous.split_slug) res.count--;
+                })
+                // porcentajes: Sumar el split actual (cambiado)
+                // Esta funcion es la que se utiliza en el inventario
+                percentsSum(item)
             }
         })
 
-        console.log(global.count)
+        console.log(global.percents)
     }
 
     if (cmd == 'upload-file') {
@@ -239,7 +252,6 @@ async function requests(data) {
 
 
     if (cmd == 'socket-io') {
-        console.log('send-socket')
         socket.emit("currentTag", {
             name: 'asier'
         });
@@ -318,6 +330,7 @@ async function requests(data) {
     if (cmd == 'inventory') {
         global.readDelaySec = data[1];
         global.selectedSplits = JSON.parse(data[2]);
+        global.race = JSON.parse(data[3]);
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)

@@ -80,7 +80,7 @@
               ></v-checkbox>
 
               <v-text-field
-                label="dB"
+                label="dBm"
                 variant="outlined"
                 v-model="item.power[i]"
               ></v-text-field>

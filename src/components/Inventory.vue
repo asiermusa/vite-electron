@@ -1,11 +1,42 @@
 <template>
   <div class="hello">
+    <v-navigation-drawer location="right" permanent>
+      <ReadersInfo></ReadersInfo>
+
+      <PercentsComponent :minimal="true"></PercentsComponent>
+    </v-navigation-drawer>
+
     <v-progress-linear
       color="lime"
       indeterminate
       reverse
       v-if="loader"
     ></v-progress-linear>
+
+    <v-dialog v-model="changeSplit" width="400">
+      <v-card class="pa-3">
+        <template v-if="changeSplit">
+          <v-select
+            placeholder="Splita aldatu"
+            variant="outlined"
+            v-model="changeSplitSelected"
+            class="my-3"
+            :items="changeSplit"
+            item-title="name"
+            density="compact"
+          ></v-select>
+
+          <v-btn
+            @click="_saveRow()"
+            color="primary"
+            class="mb-2"
+            variant="flat"
+          >
+            Gorde</v-btn
+          >
+        </template>
+      </v-card>
+    </v-dialog>
 
     <v-alert
       v-if="!_canInventory"
@@ -15,29 +46,7 @@
       variant="tonal"
     ></v-alert>
 
-    <v-dialog
-      v-model="changeSplit"
-      width="auto"
-    >
-    <v-card class="pa-3">
-
-      <template v-if="changeSplit">
-                <v-select
-                  placeholder="Splita aldatu"
-                  variant="outlined"
-                  v-model="changeSplitSelected"
-                  class="my-3"
-                  :items="changeSplit"
-                  item-title="name"
-                  density="compact"
-                ></v-select>
-
-                <v-btn @click="_saveRow()" variant="outlined" size="small" color="primary" class="mb-2"> gorde</v-btn>
-
-              </template>
-    </v-card>
-    </v-dialog>
-    <div>
+    <div v-else>
       <v-btn
         @click="_inventory()"
         v-if="!_inventoryStatus"
@@ -133,6 +142,7 @@
             <th class="text-left">Split</th>
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
+            <th class="text-left" style="width: 50px">ID</th>
           </tr>
           <tr v-for="(item, i) in sortItems" :key="i">
             <td>{{ item.dorsal }}</td>
@@ -142,12 +152,11 @@
             <td>{{ item.real_time }}</td>
             <td>{{ item.event }}</td>
             <td @click="_changeRow(item)" class="td-hover">
-              
-                {{ item.split }}
-
-              </td>
+              {{ item.split }}
+            </td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
+            <td>{{ item.id }}</td>
           </tr>
         </tbody>
       </v-table>
@@ -164,9 +173,15 @@
 
 <script>
 //import axios from "axios";
+
+import PercentsComponent from "./Percents.vue";
+import ReadersInfo from "./ReadersInfo.vue";
 export default {
   name: "InventoryComponent",
-
+  components: {
+    PercentsComponent,
+    ReadersInfo,
+  },
   data() {
     return {
       name: null,
@@ -182,7 +197,7 @@ export default {
       percents: null,
       changeItem: null,
       changeSplit: null,
-      changeSplitSelected: null
+      changeSplitSelected: null,
     };
   },
 
@@ -204,6 +219,9 @@ export default {
     },
     startList() {
       return this.$store.state.startList;
+    },
+    race() {
+      return this.$store.state.race;
     },
     hostname() {
       return this.$store.state.hostname;
@@ -254,7 +272,7 @@ export default {
     },
     startList() {
       return this.$store.state.startList;
-    }
+    },
   },
   // watch: {
   //   items: {
@@ -265,44 +283,48 @@ export default {
   //   },
   // },
   methods: {
-    _changeRow(item){
+    _changeRow(item) {
       this.changeSplit = null;
-      let find = this.startList.filter(res => {
-        if(res[1] == item.dorsal) return res;
-      })
+      let find = this.startList.filter((res) => {
+        if (res[1] == item.dorsal) return res;
+      });
+
+      console.log(item);
       this.changeSplit = find[0][4].splits;
       this.changeItem = item;
-    }, 
+      this.changeSplitSelected = item.split;
+    },
     _saveRow() {
       let find = null;
-      this.startList.forEach(res => {
-        if(res[1] == this.changeItem.dorsal) {
-          res[4].splits.forEach(s => {
-            if(s.name == this.changeSplitSelected) {
+      this.startList.forEach((res) => {
+        if (res[1] == this.changeItem.dorsal) {
+          res[4].splits.forEach((s) => {
+            if (s.name == this.changeSplitSelected) {
               find = s;
             }
-          })
+          });
         }
-      })
+      });
 
-      if(find) {
+      if (find) {
         this.changeSplit.split = find.name;
         this.changeSplit.split_slug = find.slug;
 
-        this.items.map(item => {
-          if(item.id == this.changeItem.id) {
+        this.items.map((item) => {
+          if (item.id == this.changeItem.id) {
             item.split = this.changeSplit.split;
             item.split_slug = this.changeSplit.split_slug;
-            window.ipc.send("toMain", ["change-item", JSON.stringify(this.changeItem)]);
-
+            window.ipc.send("toMain", [
+              "change-item",
+              JSON.stringify(this.changeItem),
+            ]);
           }
-      })
+        });
       }
       setTimeout(() => {
         this.changeSplit = null;
         this.changeItem = null;
-      }, 300)
-     
+      }, 300);
     },
     _stop() {
       window.ipc.send("toMain", ["stop"]);
@@ -316,6 +338,7 @@ export default {
         "inventory",
         this.readDelay * 1000,
         JSON.stringify(this.selectedSplits),
+        JSON.stringify(this.race),
       ]);
     },
     _saveData() {
