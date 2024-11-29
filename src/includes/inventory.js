@@ -139,10 +139,10 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // ]
     global.selectedSplits.forEach((split) => {
         current[4].splits.forEach((item) => {
-            if (split.items.includes(hostname) && split.group == item.slug) {
+            if (split.items.includes(hostname) && split.group == item.unique_id) {
                 splitsConfig.push({
                     name: item.name,
-                    slug: item.slug
+                    unique_id: item.unique_id
                 })
             }
         })
@@ -153,7 +153,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     let setSplitIndex = 0;
     if(runnerReadings.length) {
         lastReading = runnerReadings.at(-1);
-        lastSplitIndex = splitsConfig.findIndex(s => s.slug === lastReading.split_slug);
+        lastSplitIndex = splitsConfig.findIndex(s => s.unique_id === lastReading.split_id);
         nextSplit = splitsConfig[lastSplitIndex + 1];
         setSplitIndex = lastSplitIndex + 1;
     } else {
@@ -190,7 +190,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Irteera errealearen ordua ikusi + split jakin baten min_time gehitu.
-    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000))
+    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000)) 
 
 
     if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
@@ -207,7 +207,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
     currentTag.event = current[4].name;
     currentTag.split = nextSplit.name;
-    currentTag.split_slug = nextSplit.slug;
+    currentTag.split_id = nextSplit.unique_id;
     currentTag.reader = readerName;
     currentTag.host = hostname;
     currentTag.race = global.race.ID

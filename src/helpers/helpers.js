@@ -16,7 +16,7 @@ function percentsSum(currentTag) {
 
         global.percents.push({
             name: currentTag.split,
-            group: currentTag.split_slug,
+            group: currentTag.split_id,
             count: 1
         })
     } else {
@@ -28,7 +28,7 @@ function percentsSum(currentTag) {
         if (exist == 'no') {
             global.percents.push({
                 name: currentTag.split,
-                group: currentTag.split_slug,
+                group: currentTag.split_id,
                 count: 1
             })
         } else {

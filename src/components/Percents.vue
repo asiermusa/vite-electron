@@ -23,7 +23,6 @@
             class="my-3 mx-3"
           ></v-alert>
         </template>
-
         <div v-for="(s, index) in event.splits" :key="index">
           <v-card-item v-if="s.active">
             <div class="percent-name">
@@ -96,13 +95,14 @@ export default {
             let percents = data[1];
             let current = that.eventsSplitsHosts;
 
+            console.log(percents);
             if (percents.length) {
               current.map((res) => {
                 res.splits.map((s) => {
                   percents.forEach((d) => {
                     eventsQty.forEach((qt) => {
                       if (qt.name == res.name) {
-                        if (d.group == s.slug) {
+                        if (d.group == s.unique_id) {
                           s.percent = (
                             (parseInt(d.count) * 100) /
                             qt.count

@@ -16,15 +16,24 @@ import Admin from '@/components/Admin.vue'
 import Splits from '@/components/Splits.vue'
 import Percents from '@/components/Percents.vue'
 import Otp from '@/components/Otp.vue'
+import ServerWP from '@/components/ServerWP.vue'
 
 // ROUTER
 const routes = [{
-    path: '/',
+    path: '/login',
     component: Login,
     meta: {
       requiresAuth: false,
     }
   },
+  {
+    path: '/server',
+    component: ServerWP,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+
   {
     path: '/home',
     component: Inventory,

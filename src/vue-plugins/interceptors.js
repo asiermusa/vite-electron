@@ -7,9 +7,11 @@ const interceptors = () => {
     let api = import.meta.env.VITE_API_URL;
 
     axios.defaults.baseURL = api;
+
+    
     axios.interceptors.request.use(
         async (config) => {
-                const token = store.replaceState._auth;
+                const token = store.state._auth;
                 
                 if (token) {
                     config.headers['Authorization'] = `Bearer ${ token.token }`;
@@ -24,8 +26,8 @@ const interceptors = () => {
     axios.interceptors.response.use(response => {
         return response;
     }, error => {
+        console.log(error)
         if (error.response.status === 401) {
-            VueCookieNext.removeCookie('auth')
             store.commit("_AUTH", false);
             router.push("/");
         }

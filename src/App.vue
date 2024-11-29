@@ -26,7 +26,6 @@
       <v-chip
         class="ma-2"
         slor="end"
-        color="error"
         prepend-icon="mdi-connection"
         @click="_disconnect()"
       >
@@ -63,7 +62,7 @@
       </v-chip>
     </v-app-bar>
 
-    <v-layout style="margin-top: 65px">
+    <v-layout style="margin-top: 65px" :class="{ 'login-page': _checkRoute() }">
       <v-navigation-drawer v-model="drawer" permanent>
         <v-list-item
           prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg"
@@ -98,7 +97,7 @@
           <v-list-item
             v-if="!race"
             prepend-icon="mdi-key"
-            title="Lasterketa konfiguratu"
+            title="Lasterketa kargatu"
             to="/otp"
           ></v-list-item>
 
@@ -121,7 +120,7 @@
               <v-list-item
                 v-bind="props"
                 prepend-icon="mdi-cog"
-                title="Ezarpenak"
+                title="Reader ezarpenak"
               ></v-list-item>
             </template>
 
@@ -132,30 +131,54 @@
               to="/read-delay"
             ></v-list-item>
           </v-list-group>
-        </v-list>
 
-        <template v-slot:append>
-          <v-list-item v-for="(event, i) in events" :key="i">
-            <div class="d-flex">
-              <div color="primary">
-                <div class="race-name">{{ event.name }}</div>
-                <Chrono :time="event.start" />
-              </div>
-            </div>
+          <v-divider></v-divider>
+
+          <v-list-item
+            v-if="_auth"
+            to="/server"
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-server-network"
+            title="Zerbitzaria"
+          >
           </v-list-item>
 
           <v-list-item
-            @click="_getCloudData()"
-            prepend-icon="mdi-web-check"
-            title="Datuak Sync"
+            v-else
+            to="/login"
+            prepend-icon="mdi-server-network-off"
+            title="Zerbitzarian konektatu"
           >
-            <v-tooltip activator="parent" location="bottom"
-              >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
+          </v-list-item>
+        </v-list>
+
+        <template v-slot:append>
+          <v-list nav density="compact">
+            <v-list-item v-for="(event, i) in events" :key="i">
+              <div class="d-flex">
+                <div color="primary">
+                  <div class="race-name">{{ event.name }}</div>
+                  <Chrono :time="event.start" />
+                </div>
+              </div>
+            </v-list-item>
+            <v-divider></v-divider>
+
+            <v-list-item
+              v-if="race"
+              @click="_getCloudData()"
+              prepend-icon="mdi-web-check"
+              title="Datuak Sync"
             >
-          </v-list-item>
-          <v-list-item>
-            <div class="copyright">www.biklik.eus<br />Bertsioa 1.0.0</div>
-          </v-list-item>
+              <v-tooltip activator="parent" location="bottom"
+                >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
+              >
+            </v-list-item>
+            <v-list-item>
+              <div class="copyright">www.biklik.eus<br />Bertsioa 1.0.0</div>
+            </v-list-item>
+          </v-list>
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
@@ -364,6 +387,9 @@ export default {
     async _sendSocket() {
       window.ipc.send("toMain", ["socket-io"]);
     },
+    _checkRoute() {
+      if (this.$route.path === "/login") return true;
+    },
     async _getCloudData() {
       // obtener todos los eventos de la carrera (generales)
       await this.$store.dispatch("_get_events");
@@ -421,11 +447,7 @@ export default {
         JSON.stringify(this.race),
       ]);
     },
-    _logout() {
-      this.$store.commit("_AUTH", null);
-      window.ipc.send("toMain", ["remove-cookies", "auth"]);
-      this.$router.push("/");
-    },
+
     _removeRace() {
       const userConfirmed = confirm("Lasterketa hau itxi nahi duzu? ");
 
@@ -481,6 +503,11 @@ export default {
 // BODY {
 //   font-family: "Share Tech Mono", sans-serif;
 // }
+
+.login-page {
+  background-image: linear-gradient(45deg, #1867c0, #0d5f8f);
+}
+
 .hello {
   overflow-y: scroll;
   height: 100%;
@@ -498,13 +525,13 @@ export default {
   font-weight: 300;
 }
 
-table tr:first-child {
+.custom-table table tr:first-child {
   background-image: linear-gradient(45deg, black, #444);
   color: white;
   font-weight: 800;
 }
 
-table tr:nth-child(2n) {
+.custom-table table tr:nth-child(2n) {
   background: rgba(black, 0.04);
 }
 

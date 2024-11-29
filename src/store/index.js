@@ -161,25 +161,32 @@ export default createStore({
     async _get_current_pc_splits(context) {
       let race = context.state.race;
       if (!race) return;
+
       let params = {
         id: race.ID
       };
+
       await axios
         .get("/v1/get-split", {
           params
         })
         .then((response) => {
           let resp = response.data.data;
+
           let splits = [];
           if (resp != '') splits = resp;
           context.commit("_SET_SELECTED_SPLITS", splits);
-        });
+          console.log(splits)
 
+          
+        });
+      
       context.dispatch('_mountEventsSplitsHosts');
 
     },
     async _mountEventsSplitsHosts(context) {
       // crear objeto con todos los datos: eventos, splits, hosts, porcentages...
+
       let final = [];
       context.state.events.forEach((e, index) => {
         final.push({
@@ -193,12 +200,12 @@ export default createStore({
           final[index].splits.push({
             active: false,
             name: s.name,
-            slug: s.slug,
+            unique_id: s.unique_id,
             percent: 0,
             hosts: [],
           });
           context.state.selectedSplits.forEach((sel) => {
-            if (sel.group == s.slug) {
+            if (sel.group == s.unique_id) {
 
               sel.items.forEach((host) => {
                 if (context.state.hostname == host)
@@ -210,6 +217,8 @@ export default createStore({
           });
         });
       });
+
+      console.log(final)
 
       context.commit('_SET_EVENTS_SPLITS_HOSTS', final);
     },

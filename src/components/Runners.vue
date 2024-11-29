@@ -49,7 +49,7 @@
           </v-col>
         </v-row>
 
-        <v-table class="rankig" density="compact">
+        <v-table class="custom-table rankig" density="compact">
           <tbody>
             <tr>
               <th class="text-left" style="width: 50px">TAG</th>

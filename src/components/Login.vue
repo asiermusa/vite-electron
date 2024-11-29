@@ -3,10 +3,33 @@
     <div>
       <img src="../assets/logo.png" class="logo" />
 
-      <input type="text" v-model="username" />
-      <input type="password" v-model="password" />
+      <v-text-field
+        label="Erabiltzailea"
+        placeholder="Erabiltzailea"
+        v-model="username"
+        variant="solo"
+        class="my-3"
+      ></v-text-field>
 
-      <button type="submit" @click="login">Saioa hasi</button>
+      <v-text-field
+        label="Pasahitza"
+        placeholder="Pasahitza"
+        v-model="password"
+        variant="solo"
+        type="password"
+        class="my-3"
+      ></v-text-field>
+
+      <v-btn
+        class="mt-2"
+        type="submit"
+        @click="login"
+        block
+        variant="outlined"
+        color="white"
+        size="large"
+        >Saioa hasi</v-btn
+      >
     </div>
   </div>
 </template>
@@ -26,8 +49,9 @@ export default {
   },
   mounted() {
     // document.title = "Hasiera - Loraldia QR aplikazioa";
+    this._get_races();
     console.log("auth", this._auth);
-    if (this._auth) this.$router.push("/home");
+    if (this._auth) this.$router.push("/server");
   },
 
   computed: {
@@ -36,6 +60,26 @@ export default {
     },
   },
   methods: {
+    async _get_races() {
+      try {
+        let res = await axios.get("/v1/get-races");
+        this.loader = false;
+
+        console.log(22, res);
+        if (res.status === 200) {
+        } else {
+          this.error = "Sartutako datuak ez dira zuzenak.";
+        }
+      } catch (error) {
+        this.error = "Sartutako datuak ez dira zuzenak.";
+        console.log(99, error);
+        setTimeout(() => {
+          this.error = false;
+        }, 3500);
+
+        this.loader = false;
+      }
+    },
     async login(e) {
       e.preventDefault();
 
@@ -65,7 +109,7 @@ export default {
               JSON.stringify(authObject),
             ]);
             this.$store.commit("_AUTH", authObject);
-            this.$router.push("/home");
+            this.$router.push("/server");
 
             setTimeout(() => {
               this.error = false;
@@ -90,18 +134,20 @@ export default {
 };
 </script>
 
-<style lang="css">
+<style lang="scss">
 .login {
   height: 100%;
   width: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
 }
 
 .login > div {
   padding: 30px;
-  width: 100%;
   text-align: center;
+  display: block;
+  width: 500px;
 }
 
 ion-button {

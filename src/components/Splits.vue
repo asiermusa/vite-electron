@@ -21,7 +21,7 @@
           :key="i"
           class="selected-splits"
         >
-          <v-card class="main-card" variant="outlined">
+          <v-card class="main-card" variant="text">
             <v-card-item :title="event.name">
               <template v-slot:subtitle>
                 {{ event.start_date }}
@@ -74,13 +74,11 @@
               {{ event.start_date }}
             </template>
           </v-card-item>
-
           <div v-for="(s, index) in event.splits" :key="index">
             <v-checkbox
               :label="`${s.name}`"
-              v-model="selectedSplit[`${i}_${s.name.toLowerCase()}`]"
+              v-model="selectedSplit[s.unique_id]"
             ></v-checkbox>
-            <!-- selectedSplit[`${i}_${s.name.toLowerCase()}`]-->
           </div>
         </v-card>
       </v-col>
@@ -106,6 +104,7 @@ export default {
   mounted() {
     if (!this.events.length) return;
     this.selectedSplit = [];
+
     this.$store.state.selectedSplits.forEach((res) => {
       this.selectedSplit[`${res.group.toLowerCase()}`] = false;
       res.items.forEach((s) => {
@@ -132,6 +131,17 @@ export default {
     },
   },
   methods: {
+    _generateRandomString(length) {
+      const characters = "0123456789abcdef"; // Hexadecimal characters
+      let result = "";
+
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        result += characters[randomIndex];
+      }
+
+      return result;
+    },
     setSplit() {
       let race = this.race;
       if (!race) return;
@@ -140,11 +150,10 @@ export default {
 
       this.events.forEach((event, i) => {
         event.splits.forEach((s) => {
-          let current = `${i}_${s.name.toLowerCase()}`;
+          let current = s.unique_id;
           if (this.selectedSplit[current]) array.push(current);
         });
       });
-
       axios
         .post("/v1/set-split", {
           splits: JSON.stringify(array),
@@ -152,6 +161,7 @@ export default {
           id: race.ID,
         })
         .then((response) => {
+          console.log("emon", response.data.data);
           this.$store.commit("_SET_SELECTED_SPLITS", response.data.data);
 
           this.selectedSplit = [];
