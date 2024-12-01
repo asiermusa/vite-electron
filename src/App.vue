@@ -151,6 +151,17 @@
             title="Zerbitzarian konektatu"
           >
           </v-list-item>
+
+          <v-list-item
+            v-if="race"
+            @click="_getCloudData()"
+            prepend-icon="mdi-web-check"
+            title="Datuak Sync"
+          >
+            <v-tooltip activator="parent" location="bottom"
+              >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
+            >
+          </v-list-item>
         </v-list>
 
         <template v-slot:append>
@@ -165,16 +176,6 @@
             </v-list-item>
             <v-divider></v-divider>
 
-            <v-list-item
-              v-if="race"
-              @click="_getCloudData()"
-              prepend-icon="mdi-web-check"
-              title="Datuak Sync"
-            >
-              <v-tooltip activator="parent" location="bottom"
-                >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
-              >
-            </v-list-item>
             <v-list-item>
               <div class="copyright">www.biklik.eus<br />Bertsioa 1.0.0</div>
             </v-list-item>

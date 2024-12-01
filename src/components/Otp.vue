@@ -66,8 +66,9 @@ export default {
       this.error = false;
       // wordpress post bat ekarri OTP bidez
       let result = await this.$store.dispatch("_set_race", this.otp);
+
       if (!result) this.error = true;
-      else this.$router.push("/");
+      else this.$router.push("/splits");
     },
   },
 };

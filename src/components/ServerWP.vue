@@ -1,5 +1,5 @@
 <template>
-  <div class="server">
+  <div class="hello">
     <v-row align="center" no-gutters v-if="!minimal">
       <v-col cols="6"><h2 class="main-title">WordPress Zerbitzaria</h2> </v-col>
 
@@ -27,12 +27,37 @@
       >
 
       <v-row>
-        <v-col cols="12">
-          <h2>{{ item.name }}</h2>
+        <v-col cols="12" class="my-6">
+          <v-alert
+            v-if="error"
+            :text="error"
+            type="error"
+            class="my-4"
+          ></v-alert>
+
+          <v-alert
+            v-if="success"
+            :text="success"
+            type="success"
+            class="my-4"
+          ></v-alert>
+
+          <h2>{{ item.title }}</h2>
+        </v-col>
+      </v-row>
+
+      <v-row align="center" no-gutters v-if="!minimal">
+        <v-col cols="6">
+          <v-text-field
+            v-model="item.otp"
+            label="Lasterketaren kodea (6 digitu)"
+            variant="outlined"
+          ></v-text-field>
         </v-col>
       </v-row>
 
       <!-- Repeatable Forms -->
+
       <v-row
         v-for="(event, index) in item.events"
         :key="index"
@@ -135,7 +160,7 @@
             variant="tonal"
             class="mx-3"
           >
-            Lasterketa berria
+            Ebento berria
           </v-btn>
         </v-col>
       </v-row>
@@ -176,6 +201,7 @@ export default {
       items: null,
       item: null,
       error: false,
+      success: false,
       loader: false,
       menu: false,
     };
@@ -206,16 +232,8 @@ export default {
               name: r.post_title,
             });
           });
-        } else {
-          this.error = "Sartutako datuak ez dira zuzenak.";
         }
       } catch (error) {
-        this.error = "Sartutako datuak ez dira zuzenak.";
-        console.log(99, error);
-        setTimeout(() => {
-          this.error = false;
-        }, 3500);
-
         this.loader = false;
       }
     },
@@ -237,20 +255,22 @@ export default {
     },
 
     async _submitForm() {
+      this.error = false;
+      this.success = false;
+
       const params = {
-        id: this.item.id,
-        events: this.item.events,
+        data: this.item,
       };
       try {
         let res = await axios.post("/v1/set-race-by-id", params);
 
         if (res.status === 200) {
-          console.log(res.data.data);
+          this.success = "Datuak ondo gorde dira zerbitzarian.";
         } else {
-          this.error = "Sartutako datuak ez dira zuzenak.";
+          this.error = "Errore bat gertatu da datuak gordetzerakoan.";
         }
       } catch (error) {
-        console.log(33, error);
+        this.error = "Errore bat gertatu da datuak gordetzerakoan.";
       }
     },
     _addEvent() {

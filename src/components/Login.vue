@@ -30,6 +30,8 @@
         size="large"
         >Saioa hasi</v-btn
       >
+
+      <v-alert v-if="error" :text="error" type="error" class="my-4"></v-alert>
     </div>
   </div>
 </template>
@@ -49,8 +51,6 @@ export default {
   },
   mounted() {
     // document.title = "Hasiera - Loraldia QR aplikazioa";
-    this._get_races();
-    console.log("auth", this._auth);
     if (this._auth) this.$router.push("/server");
   },
 
@@ -60,26 +60,6 @@ export default {
     },
   },
   methods: {
-    async _get_races() {
-      try {
-        let res = await axios.get("/v1/get-races");
-        this.loader = false;
-
-        console.log(22, res);
-        if (res.status === 200) {
-        } else {
-          this.error = "Sartutako datuak ez dira zuzenak.";
-        }
-      } catch (error) {
-        this.error = "Sartutako datuak ez dira zuzenak.";
-        console.log(99, error);
-        setTimeout(() => {
-          this.error = false;
-        }, 3500);
-
-        this.loader = false;
-      }
-    },
     async login(e) {
       e.preventDefault();
 
@@ -121,11 +101,6 @@ export default {
           }
         } catch (error) {
           this.error = "Sartutako datuak ez dira zuzenak.";
-
-          setTimeout(() => {
-            this.error = false;
-          }, 3500);
-
           this.loader = false;
         }
       }, 0);
