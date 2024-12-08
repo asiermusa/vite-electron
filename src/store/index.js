@@ -3,6 +3,7 @@ import {
 } from 'vuex'
 
 import axios from 'axios'
+import socket from "../socket";
 
 export default createStore({
   state: {
@@ -20,6 +21,11 @@ export default createStore({
     events: [],
     selectedSplits: [],
     eventsSplitsHosts: null,
+    status: {
+      wp: false,
+      socket: false,
+      drive: false
+    }
   },
   mutations: {
     _AUTH(state, val) {
@@ -66,6 +72,9 @@ export default createStore({
     },
     _SET_RACE(state, val) {
       state.race = val
+    },
+    _SET_STATUS(state, val) {
+      state.status[val.desc] = val.value
     }
   },
   actions: {
@@ -93,6 +102,10 @@ export default createStore({
             "race",
             JSON.stringify(race),
           ]);
+
+
+          socket.emit("check-status");
+
 
 
           // obtener todos los eventos de la carrera (generales)
@@ -132,6 +145,12 @@ export default createStore({
         event['start'] = null;
       });
       context.commit("_SET_EVENTS", events);
+
+      context.commit("_SET_STATUS", {
+        desc: "wp",
+        value: true,
+      });
+
     },
     async _get_cronos(context) {
       let race = context.state.race;
@@ -178,9 +197,9 @@ export default createStore({
           context.commit("_SET_SELECTED_SPLITS", splits);
           console.log(splits)
 
-          
+
         });
-      
+
       context.dispatch('_mountEventsSplitsHosts');
 
     },
@@ -248,6 +267,12 @@ export default createStore({
           response.data.data.resultados.splice(0, 1)
 
           context.commit("_SET_START_LIST", response.data.data.resultados);
+
+          context.commit("_SET_STATUS", {
+            desc: "drive",
+            value: true,
+          });
+
           window.ipc.send("toMain", [
             "start-list",
             JSON.stringify(response.data.data.resultados),

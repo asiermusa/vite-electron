@@ -30,7 +30,7 @@
         size="large"
         >Saioa hasi</v-btn
       >
-
+      <Loader v-if="loader" class="my-2" color="white" />
       <v-alert v-if="error" :text="error" type="error" class="my-4"></v-alert>
     </div>
   </div>
@@ -39,8 +39,13 @@
 <script>
 // @ is an alias to /src
 import axios from "axios";
+import Loader from "./Loader.vue";
+
 export default {
   name: "LoginComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       error: false,

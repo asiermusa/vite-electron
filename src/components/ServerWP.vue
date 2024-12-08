@@ -2,7 +2,6 @@
   <div class="hello">
     <v-row align="center" no-gutters v-if="!minimal">
       <v-col cols="6"><h2 class="main-title">WordPress Zerbitzaria</h2> </v-col>
-
       <v-col class="text-right" cols="6">
         <v-btn
           @click="_logout()"
@@ -15,6 +14,8 @@
         <v-icon color="primary" icon="mdi-server-network" size="55"></v-icon>
       </v-col>
     </v-row>
+
+    <Loader v-if="loader" />
 
     <div v-if="item" class="events">
       <v-btn
@@ -189,8 +190,12 @@
 <script>
 // @ is an alias to /src
 import axios from "axios";
+import Loader from "./Loader.vue";
 export default {
   name: "ServerWPComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       headers: [
@@ -220,6 +225,7 @@ export default {
   },
   methods: {
     async _get_races() {
+      this.loader = true;
       try {
         let res = await axios.get("/v1/get-races");
         this.loader = false;
@@ -238,11 +244,15 @@ export default {
       }
     },
     async _editItem(item) {
+      this.loader = true;
+      this.success = false;
       const params = {
         id: item.id,
       };
       try {
         let res = await axios.get("/v1/get-race-by-id", { params });
+
+        this.loader = false;
 
         if (res.status === 200) {
           this.item = res.data.data;
@@ -250,13 +260,14 @@ export default {
           this.error = "Sartutako datuak ez dira zuzenak.";
         }
       } catch (error) {
-        console.log(33, error);
+        this.loader = false;
       }
     },
 
     async _submitForm() {
       this.error = false;
       this.success = false;
+      this.loader = true;
 
       const params = {
         data: this.item,
@@ -264,12 +275,16 @@ export default {
       try {
         let res = await axios.post("/v1/set-race-by-id", params);
 
+        this.loader = false;
+
         if (res.status === 200) {
           this.success = "Datuak ondo gorde dira zerbitzarian.";
         } else {
           this.error = "Errore bat gertatu da datuak gordetzerakoan.";
         }
       } catch (error) {
+        this.loader = false;
+
         this.error = "Errore bat gertatu da datuak gordetzerakoan.";
       }
     },

@@ -172,8 +172,6 @@
 </template>
 
 <script>
-//import axios from "axios";
-
 import PercentsComponent from "./Percents.vue";
 import ReadersInfo from "./ReadersInfo.vue";
 export default {

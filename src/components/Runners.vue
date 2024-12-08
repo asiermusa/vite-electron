@@ -10,6 +10,8 @@
           </v-col>
         </v-row>
 
+        <Loader v-if="loader" class="mb-2" />
+
         <v-alert
           text="Datu hauek Google Driveko excel fitxategi batetik ekarri dira eta ezin dira hemen zuzenean editatu."
           type="info"
@@ -118,8 +120,13 @@
 </template>
 
 <script>
+import Loader from "./Loader.vue";
+
 export default {
   name: "RunnersComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       search: null,
@@ -129,6 +136,7 @@ export default {
       selected: null,
       writeData: "",
       tag: null,
+      loader: false,
     };
   },
   mounted() {
@@ -185,6 +193,11 @@ export default {
       return this.$store.state.serial;
     },
   },
+  watch: {
+    sortItems() {
+      this.loader = false;
+    },
+  },
   methods: {
     _select(val) {
       this.selected = this.$store.state.startList[val];
@@ -193,6 +206,8 @@ export default {
       return col.name;
     },
     async _get_data() {
+      this.loader = true;
+
       // hasierako atleta guztien excela montatu
       this.$store.dispatch("_get_participants");
     },

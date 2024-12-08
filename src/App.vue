@@ -183,6 +183,7 @@
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
+        <pre>{{ status }}</pre>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -279,8 +280,8 @@ export default {
             if (cookie == "auth") {
               let auth = data[2];
               that.$store.commit("_AUTH", JSON.parse(auth[0].value));
-              that.$router.push("/home");
             }
+            that.$router.push("/home");
 
             if (cookie == "readers") {
               let readers = data[2].length
@@ -313,6 +314,14 @@ export default {
     window.ipc.send("toMain", ["is-inventory-started"]);
 
     // socket
+    socket.on("connected", (msg) => {
+      if (msg.connected)
+        this.$store.commit("_SET_STATUS", {
+          desc: "socket",
+          value: true,
+        });
+    });
+
     socket.on("message", (msg) => {
       if (msg) {
         msg = JSON.parse(msg);
@@ -351,8 +360,14 @@ export default {
     race() {
       return this.$store.state.race;
     },
+    status() {
+      return this.$store.state.status;
+    },
     events() {
       return this.$store.state.events;
+    },
+    status() {
+      return this.$store.state.status;
     },
     items() {
       return this.$store.state.items;
@@ -392,6 +407,17 @@ export default {
       if (this.$route.path === "/login") return true;
     },
     async _getCloudData() {
+      const status = ["wp", "socket", "drive"];
+
+      status.forEach((res) => {
+        this.$store.commit("_SET_STATUS", {
+          desc: res,
+          value: false,
+        });
+      });
+
+      socket.emit("check-status");
+
       // obtener todos los eventos de la carrera (generales)
       await this.$store.dispatch("_get_events");
 

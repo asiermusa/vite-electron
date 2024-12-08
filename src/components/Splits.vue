@@ -66,6 +66,8 @@
       </v-tabs-window>
     </v-card-text>
 
+    <Loader v-if="loader" />
+
     <v-row class="mb-5">
       <v-col cols="4" v-for="(event, i) in events" :key="i">
         <v-card class="main-card" variant="outlined">
@@ -92,13 +94,19 @@
 
 <script>
 import axios from "axios";
+import Loader from "./Loader.vue";
+
 export default {
   name: "EventsComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       selectedSplit: [],
       message: null,
       tab: null,
+      loader: false,
     };
   },
   mounted() {
@@ -146,6 +154,7 @@ export default {
       let race = this.race;
       if (!race) return;
 
+      this.loader = true;
       let array = [];
 
       this.events.forEach((event, i) => {
@@ -174,6 +183,8 @@ export default {
           });
 
           this.$store.dispatch("_mountEventsSplitsHosts");
+
+          this.loader = false;
         });
     },
   },
