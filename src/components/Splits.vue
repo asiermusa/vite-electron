@@ -163,6 +163,7 @@ export default {
           if (this.selectedSplit[current]) array.push(current);
         });
       });
+
       axios
         .post("/v1/set-split", {
           splits: JSON.stringify(array),
@@ -170,7 +171,6 @@ export default {
           id: race.ID,
         })
         .then((response) => {
-          console.log("emon", response.data.data);
           this.$store.commit("_SET_SELECTED_SPLITS", response.data.data);
 
           this.selectedSplit = [];

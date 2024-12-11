@@ -60,7 +60,11 @@
               <th class="text-left">Herria</th>
               <th class="text-left">Ekintza</th>
             </tr>
-            <tr v-for="(item, i) in sortItems" :key="i">
+            <tr
+              v-for="(item, i) in sortItems"
+              :key="i"
+              :class="{ deactive: !_filterColumn(item[4]) }"
+            >
               <td>{{ item[0] }}</td>
               <td @click="_select(i)">{{ item[1] }}</td>
               <td>{{ item[2] }}</td>
@@ -203,7 +207,8 @@ export default {
       this.selected = this.$store.state.startList[val];
     },
     _filterColumn(col, i) {
-      return col.name;
+      if (col.name) return col.name;
+      else return false;
     },
     async _get_data() {
       this.loader = true;
@@ -242,4 +247,8 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style lang="scss" scoped>
+.deactive {
+  background: rgba(202, 79, 79, 0.15);
+}
+</style>

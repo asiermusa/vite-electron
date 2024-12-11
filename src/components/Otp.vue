@@ -1,13 +1,5 @@
 <template>
   <div class="hello">
-    <v-alert
-      v-if="error"
-      text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
-      title="Errorea!"
-      type="error"
-      variant="tonal"
-    ></v-alert>
-
     <v-row align="center" no-gutters>
       <v-col cols="6"><h2 class="main-title">OTP</h2> </v-col>
 
@@ -15,6 +7,17 @@
         <v-icon color="primary" icon="mdi-cloud-key" size="55"></v-icon>
       </v-col>
     </v-row>
+
+    <v-alert
+      v-if="error"
+      text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
+      title="Errorea!"
+      type="error"
+      variant="tonal"
+      class="my-2"
+    ></v-alert>
+
+    <Loader v-if="loader" class="my-2" />
 
     <v-card variant="outlined" class="main-card my-5">
       <!-- <v-card-item :title="event.name"> </v-card-item> -->
@@ -47,12 +50,18 @@
 </template>
 
 <script>
+import Loader from "./Loader.vue";
+
 export default {
   name: "OtpComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       otp: null,
       error: false,
+      loader: false,
     };
   },
   mounted() {},
@@ -63,10 +72,12 @@ export default {
   },
   methods: {
     async _set_data() {
+      this.loader = true;
       this.error = false;
       // wordpress post bat ekarri OTP bidez
       let result = await this.$store.dispatch("_set_race", this.otp);
 
+      this.loader = false;
       if (!result) this.error = true;
       else this.$router.push("/splits");
     },

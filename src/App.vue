@@ -322,6 +322,15 @@ export default {
         });
     });
 
+    socket.on("connected-mongo", (msg) => {
+      console.log("mess", msg);
+      if (msg.connected)
+        this.$store.commit("_SET_STATUS", {
+          desc: "mongo",
+          value: true,
+        });
+    });
+
     socket.on("message", (msg) => {
       if (msg) {
         msg = JSON.parse(msg);
@@ -407,7 +416,7 @@ export default {
       if (this.$route.path === "/login") return true;
     },
     async _getCloudData() {
-      const status = ["wp", "socket", "drive"];
+      const status = ["wp", "socket", "drive", "mongo"];
 
       status.forEach((res) => {
         this.$store.commit("_SET_STATUS", {

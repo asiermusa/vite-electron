@@ -24,6 +24,7 @@ export default createStore({
     status: {
       wp: false,
       socket: false,
+      mongo: false,
       drive: false
     }
   },
@@ -103,10 +104,7 @@ export default createStore({
             JSON.stringify(race),
           ]);
 
-
           socket.emit("check-status");
-
-
 
           // obtener todos los eventos de la carrera (generales)
           await context.dispatch("_get_events");
