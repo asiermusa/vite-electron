@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <v-row>
-      <v-col>
+      <v-col class="py-0">
         <v-alert
           v-if="message"
           class="my-5"

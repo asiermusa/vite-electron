@@ -17,7 +17,6 @@
         <template v-if="!_checkSplitsActive(event.splits)">
           <v-alert
             text="Ez duzu split bat bera ere ez ekintza honi lotuta. Joan Lasterketaren konfiguraziora hau aldatzeko."
-            title="Adi!"
             type="error"
             variant="tonal"
             class="my-3 mx-3"

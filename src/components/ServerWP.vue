@@ -34,6 +34,7 @@
             :text="error"
             type="error"
             class="my-4"
+            variant="tonal"
           ></v-alert>
 
           <v-alert
@@ -41,6 +42,7 @@
             :text="success"
             type="success"
             class="my-4"
+            variant="tonal"
           ></v-alert>
 
           <h2>{{ item.title }}</h2>
@@ -279,6 +281,7 @@ export default {
 
         if (res.status === 200) {
           this.success = "Datuak ondo gorde dira zerbitzarian.";
+          this.$store.dispatch("_getCloudData", false);
         } else {
           this.error = "Errore bat gertatu da datuak gordetzerakoan.";
         }

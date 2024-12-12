@@ -276,7 +276,33 @@ export default createStore({
             JSON.stringify(response.data.data.resultados),
           ]);
         });
+    },
+    async _getCloudData(context, checkStatus = true) {
+
+      if (checkStatus) {
+        const status = ["wp", "socket", "drive", "mongo"];
+        status.forEach((res) => {
+          context.commit("_SET_STATUS", {
+            desc: res,
+            value: false,
+          });
+        });
+        socket.emit("check-status");
+      }
+
+      // obtener todos los eventos de la carrera (generales)
+      await context.dispatch("_get_events");
+
+      // hasierako atleta guztien excela montatu
+      await context.dispatch("_get_participants");
+
+      // Obtener los cronos iniciales de la/s carrera/s
+      await context.dispatch("_get_cronos");
+
+      // Ordenagailu honentzako splitak ekarri
+      await context.dispatch("_get_current_pc_splits");
     }
+
   },
   getters: {
     canInventory(state) {

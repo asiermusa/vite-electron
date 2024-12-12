@@ -183,7 +183,7 @@
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <pre>{{ status }}</pre>
+        <SystemStatus></SystemStatus>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -194,11 +194,12 @@
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
 import moment from "moment";
-
+import SystemStatus from "./components/SystemStatus.vue";
 export default {
   name: "App",
   components: {
     Chrono,
+    SystemStatus,
   },
   data() {
     return {
@@ -369,15 +370,10 @@ export default {
     race() {
       return this.$store.state.race;
     },
-    status() {
-      return this.$store.state.status;
-    },
     events() {
       return this.$store.state.events;
     },
-    status() {
-      return this.$store.state.status;
-    },
+
     items() {
       return this.$store.state.items;
     },
@@ -416,28 +412,7 @@ export default {
       if (this.$route.path === "/login") return true;
     },
     async _getCloudData() {
-      const status = ["wp", "socket", "drive", "mongo"];
-
-      status.forEach((res) => {
-        this.$store.commit("_SET_STATUS", {
-          desc: res,
-          value: false,
-        });
-      });
-
-      socket.emit("check-status");
-
-      // obtener todos los eventos de la carrera (generales)
-      await this.$store.dispatch("_get_events");
-
-      // hasierako atleta guztien excela montatu
-      await this.$store.dispatch("_get_participants");
-
-      // Obtener los cronos iniciales de la/s carrera/s
-      await this.$store.dispatch("_get_cronos");
-
-      // Ordenagailu honentzako splitak ekarri
-      await this.$store.dispatch("_get_current_pc_splits");
+      this.$store.dispatch("_getCloudData");
     },
     _disconnect() {
       this.connected.map((reader) => {

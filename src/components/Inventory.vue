@@ -41,7 +41,6 @@
     <v-alert
       v-if="!_canInventory"
       text="Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe. Joan Ezarpenak atalera."
-      title="Adi!"
       type="error"
       variant="tonal"
     ></v-alert>

@@ -116,7 +116,7 @@
     <v-btn
       @click="_send_to_server()"
       variant="outlined"
-      class="my-4"
+      class="my-4 ml-3"
       color="primary"
       >Sailkapena bidali
     </v-btn>
