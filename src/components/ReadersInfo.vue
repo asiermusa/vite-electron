@@ -11,7 +11,7 @@
         <div class="ants">
           <template v-for="(ant, i) in reader.ants">
             <div class="ant" :class="{ active: ant }">
-              <v-tooltip activator="parent" location="bottom"
+              <v-tooltip activator="parent" location="bottom" v-if="ant"
                 >{{ reader.power[i] }} dBm</v-tooltip
               >
             </div>

@@ -209,29 +209,64 @@ async function requests(data) {
 
     if (cmd == 'upload-file') {
 
-        const json2csvParser = new Parser();
-        const csvData = json2csvParser.parse(global.startList);
-        const FormData = require('form-data');
+        const items = data[1];
+    
+        const jsonData = JSON.parse(items); // Convertir texto a JSON
+        if (!Array.isArray(jsonData)) throw new Error("El JSON no es un array.");
+        if (jsonData.length === 0) throw new Error("El array está vacío.");
+
+        // Campos del CSV
+        const fields = [
+            "tag",
+            "ant",
+            "timestamp",
+            "id",
+            "dorsal",
+            "name",
+            "city",
+            "pretty_time",
+            "real_time",
+            "event",
+            "split",
+            "split_id",
+            "reader",
+            "host",
+            "race"
+        ];
 
         try {
-            // Wait for the file to be fully written before continuing
-            await fs.promises.writeFile('output.csv', csvData);
-            console.log('CSV file successfully created!');
+            const json2csvParser = new Parser({ fields });
+            const csvData = json2csvParser.parse(jsonData);
+            const FormData = require('form-data');
 
-            const form = new FormData();
-            form.append("file", fs.createReadStream('output.csv'));
+            try {
+                // Wait for the file to be fully written before continuing
+                await fs.promises.writeFile('output.csv', csvData);
 
-            const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload', form, {
-                headers: {
-                    ...form.getHeaders() // ensure correct headers
-                }
-            });
+                const form = new FormData();
+                form.append("file", fs.createReadStream('output.csv'));
+                form.append("post_id", global.race.ID); // Replace "12345" with your actual ID value
+                form.append("user", COMPUTER_NAME); // Replace "12345" with your actual ID value
 
-            console.log('Upload response:', upload.data);
+                const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload', form, {
+                    headers: {
+                        ...form.getHeaders() // ensure correct headers
+                    }
+                });
 
-        } catch (error) {
-            console.error("Error:", error.message);
+                console.log('Upload response:', upload.data);
+
+            } catch (error) {
+                console.error("Error:", error.message);
+            }
+
+        
+        } catch (err) {
+            console.error(err);
         }
+
+
+        
 
     }
 
