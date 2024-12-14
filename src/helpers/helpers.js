@@ -4,6 +4,7 @@ const POLYNOMIAL = 0x8408;
 const moment = require('moment');
 const player = require('play-sound')();
 const path = require('path')
+
 const os = require('os');
 const si = require('systeminformation');
 
@@ -11,28 +12,41 @@ async function generateComputerDescription() {
     // Gather system information
     const userInfo = os.userInfo();
     const platform = os.platform();
-    const arch = os.arch();
-    const release = os.release();
     const system = await si.system();
     const battery = await si.battery();
 
     // Determine if it's a laptop or desktop
-    // Refine system type detection
-    let systemType = "Desktop"; // Default to desktop
+    const isLaptop = battery.hasbattery ? 'Laptop' : 'Desktop';
 
-    if (battery.hasbattery || battery.percent !== -1 || battery.ischarging !== false) {
-        systemType = "Laptop"; // Battery found, likely a laptop
-    }
+    // Friendly platform name
+    const platformFriendlyName = platform === 'darwin' ?
+        'MacBook' :
+        platform === 'win32' ?
+        'Windows' :
+        'Linux';
 
-    const rawDescription = `${userInfo.username || process.env.USERNAME || 'Unknown'}-${system.model || 'Unknown'}`;
-    // Convert to slug (lowercase and replace spaces/special chars with '-')
+    // Friendly username fallback (if Windows returns generic 'user')
+    const username = (userInfo.username || process.env.USERNAME || 'Unknown')
+        .replace(/user-\d+/, 'GenericUser'); // Replace Windows default names like "user-20sm"
+
+    // Include computer model for macOS or Windows
+    const modelName = system.model ?
+        system.model.replace(/\s+/g, '') // Remove extra spaces in model names
+        :
+        'PC';
+
+    // Final human-readable name
+    const rawDescription = `${username}-${platformFriendlyName}`;
+
     const slug = rawDescription
         .toLowerCase() // Convert to lowercase
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with '-'
         .replace(/^-+|-+$/g, ''); // Remove leading or trailing dashes
 
     return slug;
+
 }
+
 
 function getAccurateTime(current = false) {
     let d = moment().add(global.timeOffset, 'milliseconds'); // Adjust local time using the offset
