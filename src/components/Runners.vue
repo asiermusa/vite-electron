@@ -20,7 +20,18 @@
         ></v-alert>
 
         <v-row class="my-1">
-          <v-col cols="4">
+          <v-col cols="2">
+            <v-btn
+              @click="_get_data()"
+              variant="flat"
+              class="my-4"
+              color="primary"
+              prepend-icon="mdi-download"
+              >Eguneratu
+            </v-btn>
+          </v-col>
+
+          <v-col cols="1">
             <v-text-field
               placeholder="Dortsala"
               variant="outlined"
@@ -30,7 +41,7 @@
             ></v-text-field>
           </v-col>
 
-          <v-col cols="4">
+          <v-col cols="3">
             <v-text-field
               placeholder="Izen-abizenak"
               variant="outlined"
@@ -40,11 +51,20 @@
             ></v-text-field>
           </v-col>
 
-          <v-col cols="4">
+          <v-col cols="3">
             <v-text-field
               placeholder="Herria"
               variant="outlined"
               v-model="searchCity"
+              class="my-3"
+              density="compact"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="3">
+            <v-text-field
+              placeholder="Lasterketa"
+              variant="outlined"
+              v-model="searchRace"
               class="my-3"
               density="compact"
             ></v-text-field>
@@ -74,52 +94,7 @@
           </tbody>
         </v-table>
       </v-col>
-
-      <v-col cols="4" v-if="selected">
-        <v-card class="mx-auto" max-width="100%" hover>
-          <v-card-item>
-            <v-card-title>{{ selected[1] }} </v-card-title>
-
-            <v-card-subtitle> Card subtitle secondary text </v-card-subtitle>
-          </v-card-item>
-
-          <v-card-text>
-            <v-text-field
-              label="Label"
-              variant="underlined"
-              v-model="selected[0]"
-            ></v-text-field>
-
-            <v-btn @click="_save_tag()" color="primary">Guardar datos</v-btn>
-
-            <v-text-field
-              label="Write data"
-              variant="underlined"
-              v-model="writeData"
-            ></v-text-field>
-
-            <v-btn @click="_write_tag()" color="primary">Write data</v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
-
-    <v-btn
-      @click="_get_data()"
-      variant="flat"
-      class="my-4"
-      color="primary"
-      prepend-icon="mdi-download"
-      >Zerrenda eguneratu
-    </v-btn>
-
-    <v-btn
-      @click="_send_to_server()"
-      variant="outlined"
-      class="my-4 ml-3"
-      color="primary"
-      >Sailkapena bidali
-    </v-btn>
   </div>
 </template>
 
@@ -136,10 +111,9 @@ export default {
       search: null,
       searchCity: null,
       searchName: null,
+      searchRace: null,
       header: null,
       selected: null,
-      writeData: "",
-      tag: null,
       loader: false,
     };
   },
@@ -147,18 +121,6 @@ export default {
     let items = this.$store.state.startList;
 
     this.header = items[0];
-
-    //konexioak jaso preloadetik
-    let that = this;
-    window.ipc.handle(
-      "fromMain",
-      () =>
-        function (event, data) {
-          if (data[0] == "serial-usb") {
-            that.selected[0] = data[1];
-          }
-        }
-    );
   },
   computed: {
     sortItems() {
@@ -190,6 +152,15 @@ export default {
           return item[3].toLowerCase().includes(this.searchCity.toLowerCase());
         });
       }
+      console.log(response);
+      // Apply search filter if "search" is defined
+      if (this.searchRace) {
+        response = response.filter((item) => {
+          return item[4].name
+            ?.toLowerCase()
+            .includes(this.searchRace.toLowerCase());
+        });
+      }
 
       return response;
     },
@@ -212,35 +183,8 @@ export default {
     },
     async _get_data() {
       this.loader = true;
-
       // hasierako atleta guztien excela montatu
       this.$store.dispatch("_get_participants");
-    },
-    _send_to_server() {
-      window.ipc.send("toMain", ["upload-file"]);
-    },
-    _save_tag() {
-      window.ipc.send("toMain", ["serial-usb", this.serial]);
-
-      // axios
-      //   .post("https://denborak.biklik.eus/wp-json/v1/save", {
-      //     items: this.$store.state.startList,
-      //   })
-      //   .then((response) => {
-      //     console.log(response.data.data);
-      //   });
-    },
-
-    _write_tag() {
-      window.ipc.send("toMain", ["write-serial", this.serial, this.writeData]);
-
-      // axios
-      //   .post("https://denborak.biklik.eus/wp-json/v1/save", {
-      //     items: this.$store.state.startList,
-      //   })
-      //   .then((response) => {
-      //     console.log(response.data.data);
-      //   });
     },
   },
 };

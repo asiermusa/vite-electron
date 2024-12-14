@@ -10,24 +10,24 @@ const {
 async function requests_serial(data) {
     let cmd = data[0];
 
-    if(cmd == 'get-serial') {
+    if (cmd == 'get-serial') {
         let allPorts = [];
         // List all available serial ports
 
         SerialPort.list()
-        .then(ports => {
-            ports.forEach(port => {
-                allPorts.push(port.path);  // Output just the path
+            .then(ports => {
+                ports.forEach(port => {
+                    allPorts.push(port.path); // Output just the path
+                });
+                global.mainWindow.webContents.send('fromMain', ['send-serials', JSON.stringify(allPorts)]);
+            })
+            .catch(err => {
+                console.error('Error listing ports:', err);
             });
-            global.mainWindow.webContents.send('fromMain', ['send-serials', JSON.stringify(allPorts)]);
-        })
-        .catch(err => {
-            console.error('Error listing ports:', err);
-        });
     }
 
 
-    if (cmd == 'serial-usb') {
+    if (cmd == 'read-tag') {
         console.log(data[1])
         let port = new SerialPort({
             path: data[1], //   /dev/cu.usbserial-0001
@@ -53,7 +53,7 @@ async function requests_serial(data) {
         });
     }
 
-    if (cmd == 'write-serial') {
+    if (cmd == 'write-tag') {
 
         // let dig1 = '0x' + data[1][0] + data[1][1];
         // let dig2 = '0x' + data[1][2] + data[1][3];
@@ -61,7 +61,7 @@ async function requests_serial(data) {
         let hexString = data[2];
 
         hexString = hexString.padStart(Math.ceil(hexString.length / 2) * 2, '0');
-    
+
         // Create an array of hex pairs
         let hexPairs = [];
         for (let i = 0; i < hexString.length; i += 2) {
@@ -101,8 +101,8 @@ async function requests_serial(data) {
             port.close()
         });
         console.log(hexPairs)
-        port.on('open', () => {                                                      
-            const query = Buffer.from([0x15, 0x00, 0x04, 0x06, 0x00, 0x00, 0x00, 0x00, hexPairs[0], hexPairs[1],hexPairs[2],hexPairs[3],hexPairs[4],hexPairs[5],hexPairs[6],hexPairs[7],hexPairs[8],hexPairs[9],hexPairs[10],hexPairs[11]]);
+        port.on('open', () => {
+            const query = Buffer.from([0x15, 0x00, 0x04, 0x06, 0x00, 0x00, 0x00, 0x00, hexPairs[0], hexPairs[1], hexPairs[2], hexPairs[3], hexPairs[4], hexPairs[5], hexPairs[6], hexPairs[7], hexPairs[8], hexPairs[9], hexPairs[10], hexPairs[11]]);
             const check = calculateCRC16bit(query); // Example check
             const message = Buffer.concat([query, check]); // Concatenate buffers
             port.write(message, () => {});

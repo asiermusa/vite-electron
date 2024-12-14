@@ -1,17 +1,15 @@
 <template>
   <div class="hello">
-    <v-row align="center" no-gutters v-if="!minimal">
+    <v-row align="center" no-gutters>
       <v-col cols="6"><h2 class="main-title">WordPress Zerbitzaria</h2> </v-col>
       <v-col class="text-right" cols="6">
         <v-btn
           @click="_logout()"
-          prepend-icon="mdi-logout"
+          icon="mdi-logout"
           variant="tonal"
           class="mx-3"
-          size="small"
-          >Saioa itxi</v-btn
-        >
-        <v-icon color="primary" icon="mdi-server-network" size="55"></v-icon>
+          color="error"
+        ></v-btn>
       </v-col>
     </v-row>
 
@@ -49,14 +47,19 @@
         </v-col>
       </v-row>
 
-      <v-row align="center" no-gutters v-if="!minimal">
-        <v-col cols="6">
+      <v-row align="center" no-gutters>
+        <v-col cols="4">
           <v-text-field
             v-model="item.otp"
             label="Lasterketaren kodea (6 digitu)"
             variant="outlined"
           ></v-text-field>
         </v-col>
+
+        <v-checkbox
+          v-model="deleteUsersSplits"
+          label="Ezabatu split guztietako erabiltzaileak"
+        />
       </v-row>
 
       <!-- Repeatable Forms -->
@@ -211,6 +214,7 @@ export default {
       success: false,
       loader: false,
       menu: false,
+      deleteUsersSplits: false,
     };
   },
   mounted() {
@@ -273,6 +277,7 @@ export default {
 
       const params = {
         data: this.item,
+        deleteSplits: this.deleteUsersSplits,
       };
       try {
         let res = await axios.post("/v1/set-race-by-id", params);

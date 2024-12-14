@@ -25,7 +25,7 @@
         type="submit"
         @click="login"
         block
-        variant="outlined"
+        variant="tonal"
         color="white"
         size="large"
         >Saioa hasi</v-btn

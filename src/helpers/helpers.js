@@ -4,6 +4,35 @@ const POLYNOMIAL = 0x8408;
 const moment = require('moment');
 const player = require('play-sound')();
 const path = require('path')
+const os = require('os');
+const si = require('systeminformation');
+
+async function generateComputerDescription() {
+    // Gather system information
+    const userInfo = os.userInfo();
+    const platform = os.platform();
+    const arch = os.arch();
+    const release = os.release();
+    const system = await si.system();
+    const battery = await si.battery();
+
+    // Determine if it's a laptop or desktop
+    // Refine system type detection
+    let systemType = "Desktop"; // Default to desktop
+
+    if (battery.hasbattery || battery.percent !== -1 || battery.ischarging !== false) {
+        systemType = "Laptop"; // Battery found, likely a laptop
+    }
+
+    const rawDescription = `${userInfo.username || process.env.USERNAME || 'Unknown'}-${system.model || 'Unknown'}`;
+    // Convert to slug (lowercase and replace spaces/special chars with '-')
+    const slug = rawDescription
+        .toLowerCase() // Convert to lowercase
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with '-'
+        .replace(/^-+|-+$/g, ''); // Remove leading or trailing dashes
+
+    return slug;
+}
 
 function getAccurateTime(current = false) {
     let d = moment().add(global.timeOffset, 'milliseconds'); // Adjust local time using the offset
@@ -141,15 +170,15 @@ function zeroPrefix(num, digit) {
 function getPrettyTime(time, event, startTime) {
 
     // time: 1729600250917 event: row_66a3c2bd2ae8f9.99315545
-    
+
     let start = null;
     startTime.forEach(res => {
         if (res.unique_id == event) {
             start = res.start;
-            
+
         }
     });
-    
+
     let diff = time - start;
     // milliseconds
     let milli = diff / 1000;
@@ -188,6 +217,7 @@ function uniqueId(str, startTime) {
 
 // Export all functions at once
 module.exports = {
+    generateComputerDescription,
     calculateCRC16bit,
     getAntenna,
     hex2bin,

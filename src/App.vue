@@ -125,7 +125,10 @@
             </template>
 
             <v-list-item title="Reader" to="/settings"></v-list-item>
-            <v-list-item title="USB Reader" to="/usb-reader"></v-list-item>
+            <v-list-item
+              title="TAG Grabatzailea"
+              to="/usb-reader"
+            ></v-list-item>
             <v-list-item
               title="Reader Irakurketa"
               to="/read-delay"
@@ -183,7 +186,7 @@
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <SystemStatus></SystemStatus>
+        <SystemStatus v-if="!_checkRoute()"></SystemStatus>
         <router-view></router-view>
       </v-main>
     </v-layout>

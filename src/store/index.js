@@ -15,7 +15,7 @@ export default createStore({
     items: [],
     hostname: null,
     inventory: false,
-    readDelay: 5, //seconds
+    readDelay: 60, //seconds
     serial: null,
     race: null,
     events: [],
@@ -26,6 +26,11 @@ export default createStore({
       socket: false,
       mongo: false,
       drive: false
+    },
+    tags: {
+      prefix: null,
+      counter: 0,
+      currentTag: null
     }
   },
   mutations: {
@@ -76,6 +81,9 @@ export default createStore({
     },
     _SET_STATUS(state, val) {
       state.status[val.desc] = val.value
+    },
+    _SET_TAG(state, val) {
+      state.tags = val
     }
   },
   actions: {

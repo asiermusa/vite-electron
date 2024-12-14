@@ -7,6 +7,7 @@ const {
 
 const createExcel = require("../helpers/excel.js");
 const {
+    generateComputerDescription,
     CheckSum,
     dec2hex,
     getAccurateTime,
@@ -19,11 +20,23 @@ const {
     inventory_fn,
     get_data
 } = require("./inventory.js");
-const os = require('os');
 const socket = require('../socket-common.js')
 
 
-const COMPUTER_NAME = os.userInfo().username;
+var COMPUTER_NAME;
+// Use async/await to retrieve the value
+(async function () {
+    COMPUTER_NAME = await generateComputerDescription();
+})();
+
+
+// Use environment variables as a fallback
+// const COMPUTER_NAME =
+//     process.env.LOGNAME || // macOS/Linux
+//     process.env.USER || // macOS/Linux
+//     process.env.LNAME || // macOS/Linux
+//     process.env.USERNAME || // Windows
+//     os.userInfo().username;
 
 /** vars */
 global.count = [];
@@ -188,7 +201,7 @@ async function requests(data) {
 
 
         global.count.map((res, i) => {
-            if(item.id == res.id) {
+            if (item.id == res.id) {
                 res.split = item.split;
                 res.split_slug = item.split_slug;
                 // realtime app SOKET.IO (edit TRUE)
@@ -196,7 +209,7 @@ async function requests(data) {
 
                 // porcentajes: Restar el split anterior
                 global.percents.map(res => {
-                    if(res.group == previous.split_slug) res.count--;
+                    if (res.group == previous.split_slug) res.count--;
                 })
                 // porcentajes: Sumar el split actual (cambiado)
                 // Esta funcion es la que se utiliza en el inventario
@@ -210,7 +223,7 @@ async function requests(data) {
     if (cmd == 'upload-file') {
 
         const items = data[1];
-    
+
         const jsonData = JSON.parse(items); // Convertir texto a JSON
         if (!Array.isArray(jsonData)) throw new Error("El JSON no es un array.");
         if (jsonData.length === 0) throw new Error("El array está vacío.");
@@ -235,7 +248,9 @@ async function requests(data) {
         ];
 
         try {
-            const json2csvParser = new Parser({ fields });
+            const json2csvParser = new Parser({
+                fields
+            });
             const csvData = json2csvParser.parse(jsonData);
             const FormData = require('form-data');
 
@@ -260,13 +275,13 @@ async function requests(data) {
                 console.error("Error:", error.message);
             }
 
-        
+
         } catch (err) {
             console.error(err);
         }
 
 
-        
+
 
     }
 
