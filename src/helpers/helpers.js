@@ -5,40 +5,37 @@ const moment = require('moment');
 const player = require('play-sound')();
 const path = require('path')
 
+const { execSync } = require('child_process');
 const os = require('os');
 const si = require('systeminformation');
 
-async function generateComputerDescription() {
-    // Gather system information
-    const userInfo = os.userInfo();
+
+function getUsername() {
     const platform = os.platform();
-    const system = await si.system();
-    const battery = await si.battery();
+    
+    if (platform === 'win32') {
+        return os.hostname();
+    }
 
-    // Determine if it's a laptop or desktop
-    const isLaptop = battery.hasbattery ? 'Laptop' : 'Desktop';
+    // macOS/Linux: Use os.userInfo().username
+    const username = os.userInfo().username || 'unknown';
+    return username;
+}
 
-    // Friendly platform name
-    const platformFriendlyName = platform === 'darwin' ?
-        'MacBook' :
-        platform === 'win32' ?
-        'Windows' :
-        'Linux';
+async function generateComputerDescription() {
+    const osNameMap = {
+        win32: 'windows',
+        darwin: 'macbook',
+        linux: 'linux',
+    };
 
-    // Friendly username fallback (if Windows returns generic 'user')
-    const username = (userInfo.username || process.env.USERNAME || 'Unknown')
-        .replace(/user-\d+/, 'GenericUser'); // Replace Windows default names like "user-20sm"
+    const osName = osNameMap[os.platform()] || os.platform(); // Human-readable OS name
+    const username = getUsername();
 
-    // Include computer model for macOS or Windows
-    const modelName = system.model ?
-        system.model.replace(/\s+/g, '') // Remove extra spaces in model names
-        :
-        'PC';
-
-    // Final human-readable name
-    const rawDescription = `${username}-${platformFriendlyName}`;
-
-    const slug = rawDescription
+    // Generate description: username-platform
+    const raw = `${username}-${osName}`;
+    console.log(raw)
+    const slug = raw
         .toLowerCase() // Convert to lowercase
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with '-'
         .replace(/^-+|-+$/g, ''); // Remove leading or trailing dashes
