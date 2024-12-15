@@ -1,8 +1,8 @@
 <template>
   <div class="hello">
-    <v-navigation-drawer location="right" permanent>
+    <v-navigation-drawer location="right" permanent width="300">
+      <StartRace></StartRace>
       <ReadersInfo></ReadersInfo>
-
       <PercentsComponent :minimal="true"></PercentsComponent>
     </v-navigation-drawer>
 
@@ -171,6 +171,7 @@
 </template>
 
 <script>
+import StartRace from "./StartRace.vue";
 import PercentsComponent from "./Percents.vue";
 import ReadersInfo from "./ReadersInfo.vue";
 export default {
@@ -178,6 +179,7 @@ export default {
   components: {
     PercentsComponent,
     ReadersInfo,
+    StartRace,
   },
   data() {
     return {

@@ -28,7 +28,7 @@ export default createStore({
       drive: false
     },
     tags: {
-      prefix: null,
+      prefix: "0",
       counter: 0,
       currentTag: null
     }

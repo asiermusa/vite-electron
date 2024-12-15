@@ -249,6 +249,9 @@ export default {
         this.loader = false;
       }
     },
+    onDragEnd(event) {
+      console.log("Drag ended!", event);
+    },
     async _editItem(item) {
       this.loader = true;
       this.success = false;
@@ -401,5 +404,16 @@ export default {
   &__row {
     padding: 0;
   }
+}
+
+.draggable-item {
+  border: 1px solid #ccc;
+  margin: 4px 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

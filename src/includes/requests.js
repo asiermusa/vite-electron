@@ -420,6 +420,18 @@ async function requests(data) {
         }, 300)
     }
 
+
+    if (cmd == 'get-server-time') {
+        const time = {
+            timestamp: getAccurateTime().format('x'),
+            pretty: getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS")
+        }
+
+        global.mainWindow.webContents.send('fromMain', ['server-time', time]);
+
+    }
+
+
     if (cmd == 'check-antennas') {
         global.startInventory = false;
         let reader = JSON.parse(data[1])

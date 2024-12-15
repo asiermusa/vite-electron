@@ -168,6 +168,9 @@
         </v-list>
 
         <template v-slot:append>
+          <v-list>
+            <StartRace></StartRace>
+          </v-list>
           <v-list nav density="compact">
             <v-list-item v-for="(event, i) in events" :key="i">
               <div class="d-flex">
@@ -341,6 +344,8 @@ export default {
         let events = that.$store.state.events;
 
         events.map((res) => {
+          if (!msg.events) return;
+
           msg.events.forEach((id) => {
             if (id == res.unique_id) {
               res.start = msg.start;
@@ -523,8 +528,9 @@ export default {
 }
 
 .hello {
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
+  padding-bottom: 120px;
 }
 .main-layout {
   height: calc(100vh - 125px);

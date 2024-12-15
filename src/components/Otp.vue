@@ -11,7 +11,6 @@
     <v-alert
       v-if="error"
       text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
-      title="Errorea!"
       type="error"
       variant="tonal"
       class="my-2"

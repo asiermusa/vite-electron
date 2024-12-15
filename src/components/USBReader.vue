@@ -41,11 +41,26 @@
       </div>
     </v-card>
 
-    <v-card class="mx-auto" max-width="100%" variant="solo">
+    <v-row>
+      <v-col class="py-0">
+        <v-alert
+          v-if="message"
+          class="my-5"
+          color="primary"
+          variant="tonal"
+          closable
+          border="start"
+        >
+          <b>{{ this.writeTag }}</b> zenbakiadun TAGa ondo grabatu da.
+        </v-alert>
+      </v-col>
+    </v-row>
+
+    <v-card class="mx-auto mt-8" max-width="100%" variant="solo">
       <v-card-item>
         <div class="main-title" cols="6">TAG grabatzailea</div>
         <v-card-subtitle>
-          Modu automatikoan Tag berriak idatzeko erabili azpiko formularioa.
+          Modu automatikoan Tag berriak idazteko erabili azpiko formularioa.
           Adibidez, TAG hauek honako formatua izango dute:
           123400000000000000000045</v-card-subtitle
         >
@@ -114,7 +129,6 @@
 </template>
 
 <script>
-import moment from "moment-timezone";
 export default {
   name: "SettingsUSBComponent",
   data() {
@@ -122,13 +136,16 @@ export default {
       serials: null,
       serial: null,
       writeTag: null,
-      prefix: null,
+      prefix: "0",
       counter: 0,
+      message: false,
     };
   },
   mounted() {
     this.serial = this._serial;
-    // set reader info
+
+    this.prefix = this._tags.prefix;
+    this.counter = parseInt(this._tags.counter);
 
     let that = this;
     window.ipc.handle(
@@ -169,27 +186,30 @@ export default {
     },
     _set_prefix() {
       const tag = {
-        prefix: parseInt(this.prefix),
+        prefix: this.prefix,
         counter: parseInt(this.counter),
         currentTag: this._tags.currentTag,
       };
       this.$store.commit("_SET_TAG", tag);
     },
     generateEPC(prefix, counter) {
+      console.log("prefix", prefix);
       const counterString = counter.toString().padStart(12, "0"); // Convierte el contador a un string de 12 dígitos
-      const paddedPrefix = prefix.padEnd(12, "0"); // Completa el prefijo con ceros hasta 20 caracteres
+      const paddedPrefix = prefix.padEnd(12, "0"); // Completa el prefijo con ceros hasta 12 caracteres
       return paddedPrefix + counterString; // Combina el prefijo y el contador
     },
     _read_tag() {
       //window.ipc.send("toMain", ["read-tag", this.serial]);
-
+      console.log(this.prefix, this._tags.counter + 1);
       this.writeTag = this.generateEPC(this.prefix, this._tags.counter + 1);
+      this.message = false;
     },
     _write_tag() {
       //window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
+      this.message = true;
 
       this.counter = parseInt(this.counter) + 1;
-      this.writeTag = null;
+
       const tag = {
         prefix: this.prefix,
         counter: this.counter,

@@ -5,14 +5,16 @@ const moment = require('moment');
 const player = require('play-sound')();
 const path = require('path')
 
-const { execSync } = require('child_process');
+const {
+    execSync
+} = require('child_process');
 const os = require('os');
 const si = require('systeminformation');
 
 
 function getUsername() {
     const platform = os.platform();
-    
+
     if (platform === 'win32') {
         return os.hostname();
     }
@@ -25,7 +27,7 @@ function getUsername() {
 async function generateComputerDescription() {
     const osNameMap = {
         win32: 'windows',
-        darwin: 'macbook',
+        darwin: 'mac',
         linux: 'linux',
     };
 
