@@ -123,8 +123,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Count array orokorrean gordeta dauden baloreetatik ikusi zenbat aldiz irakurri den TAG hau.
-    let hostname = os.userInfo().username;
-    
     let runnerReadings = global.count.filter((res) => {
         return res.tag == tagLength;
     });
@@ -139,7 +137,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // ]
     global.selectedSplits.forEach((split) => {
         current[4].splits.forEach((item) => {
-            if (split.items.includes(hostname) && split.group == item.unique_id) {
+            if (split.items.includes(global.hostname) && split.group == item.unique_id) {
                 splitsConfig.push({
                     name: item.name,
                     unique_id: item.unique_id
@@ -147,6 +145,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
             }
         })
     })
+
 
     let lastReading = 0;
     let lastSplitIndex = 0;
@@ -161,7 +160,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     }
     
-
     // Goiko LOOParen SPLITEN arabera jakin ea daturik gorde behar den ala ez.
     if (!nextSplit) {
         console.log("Ez dago splitik gordetzeko...");
@@ -209,7 +207,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.split = nextSplit.name;
     currentTag.split_id = nextSplit.unique_id;
     currentTag.reader = readerName;
-    currentTag.host = hostname;
+    currentTag.host = global.hostname;
     currentTag.race = global.race.ID
 
     // Count array nagusian gehitu.

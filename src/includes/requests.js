@@ -23,11 +23,7 @@ const {
 const socket = require('../socket-common.js')
 
 
-var COMPUTER_NAME;
-// Use async/await to retrieve the value
-(async function () {
-    COMPUTER_NAME = await generateComputerDescription();
-})();
+
 
 
 // Use environment variables as a fallback
@@ -51,6 +47,13 @@ global.selectedSplits = false;
 global.readDelaySec = 30;
 global.outputPower = false;
 global.race = false;
+global.hostname = false;
+
+
+// Use async/await to retrieve the value
+(async function () {
+    global.hostname = await generateComputerDescription();
+})();
 
 // let currentTag = {
 //     id: 5,
@@ -188,7 +191,7 @@ async function requests(data) {
         let items = data[1];
         await axios.post('https://denborak.online/api/v2/save-data', {
             items,
-            host: COMPUTER_NAME
+            host: global.hostname
         });
         //createExcel(items, app)
     }
@@ -261,7 +264,7 @@ async function requests(data) {
                 const form = new FormData();
                 form.append("file", fs.createReadStream('output.csv'));
                 form.append("post_id", global.race.ID); // Replace "12345" with your actual ID value
-                form.append("user", COMPUTER_NAME); // Replace "12345" with your actual ID value
+                form.append("user", global.hostname); // Replace "12345" with your actual ID value
 
                 const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload', form, {
                     headers: {
@@ -288,7 +291,7 @@ async function requests(data) {
 
     if (cmd == 'get_hostname') {
         setTimeout(() => {
-            global.mainWindow.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
+            global.mainWindow.webContents.send('fromMain', ['hostname', global.hostname]);
         }, 0)
     }
 

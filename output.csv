@@ -1,5 +1,5 @@
 "tag","ant","timestamp","id","dorsal","name","city","pretty_time","real_time","event","split","split_id","reader","host","race"
-"000000000000000000000003",1,"1734098802613","PPSjFEko17","3","HIRU","Mendata","03h:19:39:374","2024-12-13 15:06:42.614","Martxa Luzea","Irteera - Salida","16749c05acd69a","Reader 1","asiermusa",20
-"000000000000000000000003",1,"1734098807614","rXxsTfHijY","3","HIRU","Mendata","03h:19:44:375","2024-12-13 15:06:47.615","Martxa Luzea","Helmuga - Meta","ab4cbb56016320","Reader 1","asiermusa",20
-"000000000000000000000005",1,"1734098809357","PjfaeOjvtU","5","Hibai Muniozguren Bilbao","Forua","03h:19:46:118","2024-12-13 15:06:49.358","Martxa Luzea","Irteera - Salida","16749c05acd69a","Reader 1","asiermusa",20
-"000000000000000000000005",1,"1734098814415","FlFyx4eR5C","5","Hibai Muniozguren Bilbao","Forua","03h:19:51:176","2024-12-13 15:06:54.415","Martxa Luzea","Irteera - Salida","ab4cbb56016320","Reader 1","asiermusa",20
+"000000000000000000000003",1,"1734341508827","qgaJHXChyD","3","HIRU","Mendata","00h:00:01:147","2024-12-16 10:31:48.827","Martxa Luzea","Irteera - Salida","16749c05acd69a","Reader 1","asiermusa-mac",20
+"000000000000000000000005",1,"1734341508872","b529SgcQDj","5","Hibai Muniozguren Bilbao","Forua","00h:00:01:192","2024-12-16 10:31:48.872","Martxa Luzea","Irteera - Salida","16749c05acd69a","Reader 1","asiermusa-mac",20
+"000000000000000000000003",1,"1734341513834","oR5ufnQjv6","3","HIRU","Mendata","00h:00:06:154","2024-12-16 10:31:53.835","Martxa Luzea","Helmuga - Meta","ab4cbb56016320","Reader 1","asiermusa-mac",20
+"000000000000000000000005",1,"1734341513889","jVbdsj0szq","5","Hibai Muniozguren Bilbao","Forua","00h:00:06:209","2024-12-16 10:31:53.890","Martxa Luzea","Helmuga - Meta","ab4cbb56016320","Reader 1","asiermusa-mac",20
