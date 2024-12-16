@@ -34,8 +34,23 @@ async function generateComputerDescription() {
     const osName = osNameMap[os.platform()] || os.platform(); // Human-readable OS name
     const username = getUsername();
 
+
+    // Obtener información de la batería
+    let batteryStatus = 'laptop';
+    try {
+        const battery = await si.battery();
+
+        if (!battery.hasBattery) {
+            batteryStatus = 'desk';
+        }
+
+    } catch (error) {
+        batteryStatus = 'No se pudo obtener información sobre la batería.';
+        console.error('Error al obtener información de la batería:', error);
+    }
+
     // Generate description: username-platform
-    const raw = `${username}-${osName}`;
+    const raw = `${username}-${osName}-${batteryStatus}`;
     console.log(raw)
     const slug = raw
         .toLowerCase() // Convert to lowercase
