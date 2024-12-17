@@ -17,6 +17,7 @@ import Splits from '@/components/Splits.vue'
 import Percents from '@/components/Percents.vue'
 import Otp from '@/components/Otp.vue'
 import ServerWP from '@/components/ServerWP.vue'
+import SystemStatus from '@/components/SystemStatus.vue'
 
 // ROUTER
 const routes = [{
@@ -93,6 +94,13 @@ const routes = [{
   {
     path: '/admin',
     component: Admin,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+  {
+    path: '/system',
+    component: SystemStatus,
     meta: {
       requiresAuth: true,
     }

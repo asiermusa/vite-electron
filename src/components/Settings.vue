@@ -49,10 +49,6 @@
             ></v-text-field>
           </v-row>
 
-          <v-card-item>
-            <template v-slot:subtitle>Deskribapena</template>
-          </v-card-item>
-
           <v-row class="my-3 px-6">
             <v-text-field
               label="Deskribapena"
@@ -140,16 +136,16 @@
       prepend-icon="mdi-chip"
       >Konektatu</v-btn
     >
-
-    <v-btn
-      variant="text"
-      color="black"
-      @click="addInput"
-      class="mx-3"
-      prepend-icon="mdi-plus"
-      >Reader berria gehitu</v-btn
-    >
   </div>
+
+  <v-btn
+    variant="text"
+    color="black"
+    @click="addInput"
+    class="mx-3"
+    prepend-icon="mdi-plus"
+    >Reader berria gehitu</v-btn
+  >
 </template>
 
 <script>

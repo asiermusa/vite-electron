@@ -23,38 +23,19 @@
           >Arakatu</v-btn
         >
       </v-card-item>
-
-      <div v-if="serials" class="pa-3">
-        <v-select
-          label="Serial Port"
-          :items="serials"
-          v-model="serial"
-          variant="outlined"
-        ></v-select>
-        <v-btn
-          @click="_set_serial()"
-          color="primary"
-          class="my-3"
-          variant="flat"
-          >USBa zehaztu</v-btn
-        >
-      </div>
     </v-card>
 
-    <v-row>
-      <v-col class="py-0">
-        <v-alert
-          v-if="message"
-          class="my-5"
-          color="primary"
-          variant="tonal"
-          closable
-          border="start"
-        >
-          <b>{{ this.writeTag }}</b> zenbakiadun TAGa ondo grabatu da.
-        </v-alert>
-      </v-col>
-    </v-row>
+    <div v-if="serials" class="pa-3">
+      <v-select
+        label="Serial Port"
+        :items="serials"
+        v-model="serial"
+        variant="outlined"
+      ></v-select>
+      <v-btn @click="_set_serial()" color="primary" class="my-3" variant="flat"
+        >USBa zehaztu</v-btn
+      >
+    </div>
 
     <v-card class="mx-auto mt-8" max-width="100%" variant="solo">
       <v-card-item>
@@ -89,42 +70,79 @@
             >BALIOAK ZEHAZTU</v-btn
           >
         </v-row>
-
-        <h3>TAG berriak idatzi</h3>
-
-        <v-row class="mt-5 pa-3">
-          <v-text-field
-            label="Irakurritako EPC zenbakia"
-            variant="underlined"
-            disabled
-          ></v-text-field>
-
-          <v-btn
-            @click="_read_tag()"
-            color="primary"
-            variant="tonal"
-            class="mx-3"
-            >Irakurri</v-btn
-          >
-        </v-row>
-
-        <v-row class="pa-3">
-          <v-text-field
-            label="Gordeko den EPC zenbakia"
-            v-model="writeTag"
-            variant="underlined"
-          ></v-text-field>
-
-          <v-btn
-            @click="_write_tag()"
-            color="primary"
-            variant="tonal"
-            class="mx-3"
-            >Idatzi</v-btn
-          >
-        </v-row>
       </v-card-text>
     </v-card>
+
+    <v-btn
+      @click="_read_tag()"
+      color="primary"
+      variant="tonal"
+      class="mx-3"
+      prepend-icon="mdi-tag-edit"
+      size="x-large"
+      >Irakurri</v-btn
+    >
+
+    <v-dialog v-model="read">
+      <v-card class="mx-auto pa-8" width="600">
+        <v-alert
+          v-if="message"
+          class="my-5"
+          color="success"
+          variant="tonal"
+          closable
+          border="start"
+        >
+          TAGa ondo grabatu da.
+        </v-alert>
+
+        <template v-if="read">
+        <p><small>Momentuko TAG zenbakia:</small></p>
+        <h4 class="tag-title mb-8">{{ read }}</h4>
+        </template>
+        <v-alert
+          v-else
+          class="my-5"
+          color="error"
+          variant="tonal"
+          closable
+          border="start"
+        >
+         Ez da TAG bat bera ere ez irakurri
+        </v-alert>
+
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+              label="Gordeko den TAG zenbakia"
+              v-model="writeTag"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-btn
+              @click="_write_tag()"
+              color="primary"
+              variant="flat"
+              block
+              size="large"
+              :disabled="disabledSave"
+              >Gorde</v-btn
+            >
+
+            <v-btn
+              @click="_read_tag()"
+              color="grey-lighten-3"
+              size="large"
+              variant="flat"
+              class="mt-2"
+              block
+            >
+              Irakurri
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -136,9 +154,11 @@ export default {
       serials: null,
       serial: null,
       writeTag: null,
+      read: null,
       prefix: "0",
       counter: 0,
       message: false,
+      disabledSave: false,
     };
   },
   mounted() {
@@ -157,9 +177,39 @@ export default {
             that.serials = JSON.parse(data[1]);
           }
 
-          // usb tag idatzi
+          // usb tag irakurri
           if (data[0] == "serial-usb") {
-            console.log(8);
+            that.read = data[1];
+
+            that.disabledSave = false;
+            
+            if(data[2] || !that.read) {
+                that.disabledSave = true;
+            }
+          }
+
+          // usb tag idatzi
+          if (data[0] == "serial-usb-write") {
+            let response = data[1];
+
+            if (response) {
+
+              that.disabledSave = true;
+
+              //mantener disabled
+              that._read_tag(true)
+
+              that.message = true;
+
+              that.counter = parseInt(that.counter) + 1;
+
+              const tag = {
+                prefix: that.prefix,
+                counter: that.counter,
+                currentTag: that.writeTag,
+              };
+              that.$store.commit("_SET_TAG", tag);
+            }
           }
         }
     );
@@ -193,29 +243,19 @@ export default {
       this.$store.commit("_SET_TAG", tag);
     },
     generateEPC(prefix, counter) {
-      console.log("prefix", prefix);
       const counterString = counter.toString().padStart(12, "0"); // Convierte el contador a un string de 12 dígitos
       const paddedPrefix = prefix.padEnd(12, "0"); // Completa el prefijo con ceros hasta 12 caracteres
       return paddedPrefix + counterString; // Combina el prefijo y el contador
     },
-    _read_tag() {
-      //window.ipc.send("toMain", ["read-tag", this.serial]);
-      console.log(this.prefix, this._tags.counter + 1);
+    _read_tag(disabled = false) {
+      window.ipc.send("toMain", ["read-tag", this.serial, disabled]);
       this.writeTag = this.generateEPC(this.prefix, this._tags.counter + 1);
       this.message = false;
+
     },
     _write_tag() {
-      //window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
-      this.message = true;
-
-      this.counter = parseInt(this.counter) + 1;
-
-      const tag = {
-        prefix: this.prefix,
-        counter: this.counter,
-        currentTag: this.writeTag,
-      };
-      this.$store.commit("_SET_TAG", tag);
+      window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
+      
     },
   },
 };
@@ -224,5 +264,10 @@ export default {
 <style lang="scss">
 .main-card {
   padding: 10px !important;
+}
+
+.tag-title {
+  font-weight: 300;
+  font-size: 28px;
 }
 </style>

@@ -28,7 +28,7 @@ async function requests_serial(data) {
 
 
     if (cmd == 'read-tag') {
-        console.log(data[1])
+        const disabled = data[2]
         let port = new SerialPort({
             path: data[1], //   /dev/cu.usbserial-0001
             baudRate: 57600,
@@ -37,7 +37,8 @@ async function requests_serial(data) {
         port.on('data', (data) => {
             const buf = Buffer.from(data, 'ascii');
             const response = buf.toString('hex', 0, buf.length);
-            global.mainWindow.webContents.send('fromMain', ['serial-usb', response.slice(12, 36), ]);
+            console.log('dis', disabled)
+            global.mainWindow.webContents.send('fromMain', ['serial-usb', response.slice(12, 36), disabled]);
             port.close()
         });
 
@@ -97,10 +98,10 @@ async function requests_serial(data) {
         port.on('data', (data) => {
             const buf = Buffer.from(data, 'ascii');
             const response = buf.toString('hex', 0, buf.length);
-            console.log('write', response)
+            global.mainWindow.webContents.send('fromMain', ['serial-usb-write', true]);
             port.close()
         });
-        console.log(hexPairs)
+
         port.on('open', () => {
             const query = Buffer.from([0x15, 0x00, 0x04, 0x06, 0x00, 0x00, 0x00, 0x00, hexPairs[0], hexPairs[1], hexPairs[2], hexPairs[3], hexPairs[4], hexPairs[5], hexPairs[6], hexPairs[7], hexPairs[8], hexPairs[9], hexPairs[10], hexPairs[11]]);
             const check = calculateCRC16bit(query); // Example check

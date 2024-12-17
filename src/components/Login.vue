@@ -27,7 +27,7 @@
         block
         variant="tonal"
         color="white"
-        size="large"
+        size="x-large"
         >Saioa hasi</v-btn
       >
       <Loader v-if="loader" class="my-2" color="white" />

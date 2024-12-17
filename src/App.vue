@@ -9,16 +9,14 @@
         {{ race.name }}
       </v-btn>
 
-      <v-btn stacked size="x-large">
-        <v-badge
-          color="green"
-          size="small"
-          v-if="_inventoryStatus"
-          @click="_stop()"
-        >
+      <v-btn v-if="_inventoryStatus" stacked size="x-large" @click="_stop()">
+        <v-badge color="green" size="small" v-if="_inventoryStatus">
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
-        <v-badge color="red" size="small" v-else @click="_inventory()">
+      </v-btn>
+
+      <v-btn v-else stacked size="x-large" @click="_inventory()">
+        <v-badge color="red" size="small">
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
       </v-btn>
@@ -180,16 +178,15 @@
                 </div>
               </div>
             </v-list-item>
-            <v-divider></v-divider>
-
-            <v-list-item>
-              <div class="copyright">www.biklik.eus<br />Bertsioa 1.0.0</div>
-            </v-list-item>
+            <v-list-item
+              title="Sistemaren egoera"
+              to="/system"
+              prepend-icon="mdi-cogs"
+            ></v-list-item>
           </v-list>
         </template>
       </v-navigation-drawer>
       <v-main class="main-layout">
-        <SystemStatus v-if="!_checkRoute()"></SystemStatus>
         <router-view></router-view>
       </v-main>
     </v-layout>
@@ -200,12 +197,10 @@
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
 import moment from "moment";
-import SystemStatus from "./components/SystemStatus.vue";
 export default {
   name: "App",
   components: {
     Chrono,
-    SystemStatus,
   },
   data() {
     return {
@@ -529,8 +524,9 @@ export default {
 
 .hello {
   overflow-y: auto;
-  height: 100%;
-  padding-bottom: 120px;
+  height: 96%;
+  padding-bottom: 0px;
+  overflow-x: hidden;
 }
 .main-layout {
   height: calc(100vh - 125px);
@@ -541,7 +537,7 @@ export default {
 }
 
 .main-title {
-  font-size: 45px !important;
+  font-size: 30px !important;
   font-weight: 300;
 }
 
@@ -589,5 +585,14 @@ export default {
 
 .v-badge__badge {
   border: 3px solid white;
+}
+
+.system-status {
+  position: fixed;
+  bottom: 0;
+  width: auto;
+  left: 10px;
+  overflow: hidden !important;
+  background: transparent;
 }
 </style>

@@ -8,7 +8,7 @@
       :text="message"
     ></v-alert>
 
-    <v-tabs v-model="tab" bg-color="primary">
+    <v-tabs v-model="tab">
       <v-tab v-for="(event, i) in eventsSplitsHosts" :key="i">{{
         event.name
       }}</v-tab>
