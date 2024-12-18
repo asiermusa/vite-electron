@@ -272,7 +272,11 @@ async function requests(data) {
                     }
                 });
 
-                console.log('Upload response:', upload.data);
+                if(upload.data.data.length) {
+                    global.mainWindow.webContents.send('fromMain', ['upload-response', true]);
+                } else {
+                    global.mainWindow.webContents.send('fromMain', ['upload-response', false]);
+                }
 
             } catch (error) {
                 console.error("Error:", error.message);

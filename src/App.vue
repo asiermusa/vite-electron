@@ -62,7 +62,7 @@
 
     <v-layout style="margin-top: 65px" :class="{ 'login-page': _checkRoute() }">
       <v-navigation-drawer v-model="drawer" permanent>
-        <v-list-item
+        <!-- <v-list-item
           prepend-avatar="https://randomuser.me/api/portraits/men/85.jpg"
           title="2klik Timing"
           nav
@@ -74,7 +74,7 @@
               @click.stop="rail = !rail"
             ></v-btn>
           </template>
-        </v-list-item>
+        </v-list-item> -->
 
         <v-divider></v-divider>
 

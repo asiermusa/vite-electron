@@ -2,16 +2,14 @@
   <div class="hello">
     <v-navigation-drawer location="right" permanent width="300">
       <StartRace></StartRace>
-      <ReadersInfo></ReadersInfo>
       <PercentsComponent :minimal="true"></PercentsComponent>
     </v-navigation-drawer>
 
-    <v-progress-linear
-      color="lime"
-      indeterminate
-      reverse
-      v-if="loader"
-    ></v-progress-linear>
+    <Loader v-if="loader" class="my-3"></Loader>
+
+    <v-alert v-if="message" class="mb-6" :color="color" variant="tonal">
+      {{ message }}
+    </v-alert>
 
     <v-dialog v-model="changeSplit" width="400">
       <v-card class="pa-3">
@@ -172,14 +170,14 @@
 
 <script>
 import StartRace from "./StartRace.vue";
+import Loader from "./Loader.vue";
 import PercentsComponent from "./Percents.vue";
-import ReadersInfo from "./ReadersInfo.vue";
 export default {
   name: "InventoryComponent",
   components: {
     PercentsComponent,
-    ReadersInfo,
     StartRace,
+    Loader,
   },
   data() {
     return {
@@ -197,9 +195,37 @@ export default {
       changeItem: null,
       changeSplit: null,
       changeSplitSelected: null,
+      message: null,
+      color: null,
     };
   },
+  mounted() {
+    let that = this;
 
+    window.ipc.handle(
+      "fromMain",
+      () =>
+        function (event, data) {
+          if (data[0] == "upload-response") {
+            that.loader = false;
+            that.message = null;
+
+            const response = data[1];
+
+            if (response) {
+              that.message = "Fitxategia ondo igo da zerbitzarira";
+              that.color = "success";
+            } else {
+              that.message =
+                "Fitxategia igotzerakoan errore bat gertatu da edo hutsik zegoen...";
+              that.color = "error";
+            }
+
+            console.log("respo", that.message);
+          }
+        }
+    );
+  },
   computed: {
     events() {
       return this.$store.state.events;
@@ -341,6 +367,8 @@ export default {
       ]);
     },
     _saveData() {
+      this.loader = true;
+      this.message = false;
       window.ipc.send("toMain", ["upload-file", JSON.stringify(this.items)]);
     },
     _addData() {

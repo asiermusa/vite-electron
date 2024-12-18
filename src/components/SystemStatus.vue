@@ -21,7 +21,12 @@
                   color="error"
                 ></v-icon>
 
-                <v-icon v-else icon="mdi-check-circle" color="success"></v-icon>
+                <v-icon
+                  v-else
+                  icon="mdi-check-circle"
+                  color="success"
+                  style="opacity: 1"
+                ></v-icon>
               </template>
 
               <v-list-item-title>{{ _statusNames(k) }}</v-list-item-title>
@@ -33,18 +38,23 @@
       <v-col cols="4" v-for="(reader, r) in connected" :key="r">
         <!-- <template v-if="reader.active"> -->
 
-        <v-card variant="outlined">
-          <v-list nav>
+        <v-card variant="outlined" v-if="reader.active">
+          <v-list nav density="compact">
             <v-list-item>
               <h3 class="main-title-2">{{ reader.name }}</h3>
               <p>{{ reader.desc }}</p>
             </v-list-item>
             <v-list-item v-for="(ant, i) in reader.ants" :key="i">
               <template v-slot:prepend>
-                <v-icon v-if="!ant" icon="mdi-close-circle" color="error">
+                <v-icon v-if="!ant" icon="mdi-close-circle" color="grey">
                 </v-icon>
 
-                <v-icon v-else icon="mdi-check-circle" color="success"></v-icon>
+                <v-icon
+                  v-else
+                  icon="mdi-check-circle"
+                  color="success"
+                  style="opacity: 1"
+                ></v-icon>
               </template>
 
               <v-list-item-title

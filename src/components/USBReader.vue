@@ -79,8 +79,7 @@
       variant="tonal"
       class="mx-3"
       prepend-icon="mdi-tag-edit"
-      size="x-large"
-      >Irakurri</v-btn
+      >Tag berriak idatzi</v-btn
     >
 
     <v-dialog v-model="read">
@@ -97,8 +96,8 @@
         </v-alert>
 
         <template v-if="read">
-        <p><small>Momentuko TAG zenbakia:</small></p>
-        <h4 class="tag-title mb-8">{{ read }}</h4>
+          <p><small>Momentuko TAG zenbakia:</small></p>
+          <div class="tag-title mb-8">{{ read }}</div>
         </template>
         <v-alert
           v-else
@@ -108,7 +107,7 @@
           closable
           border="start"
         >
-         Ez da TAG bat bera ere ez irakurri
+          Ez da TAG bat bera ere ez irakurri
         </v-alert>
 
         <v-row>
@@ -182,9 +181,9 @@ export default {
             that.read = data[1];
 
             that.disabledSave = false;
-            
-            if(data[2] || !that.read) {
-                that.disabledSave = true;
+
+            if (data[2] || !that.read) {
+              that.disabledSave = true;
             }
           }
 
@@ -193,11 +192,10 @@ export default {
             let response = data[1];
 
             if (response) {
-
               that.disabledSave = true;
 
               //mantener disabled
-              that._read_tag(true)
+              that._read_tag(true);
 
               that.message = true;
 
@@ -251,11 +249,9 @@ export default {
       window.ipc.send("toMain", ["read-tag", this.serial, disabled]);
       this.writeTag = this.generateEPC(this.prefix, this._tags.counter + 1);
       this.message = false;
-
     },
     _write_tag() {
       window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
-      
     },
   },
 };
@@ -267,7 +263,11 @@ export default {
 }
 
 .tag-title {
-  font-weight: 300;
-  font-size: 28px;
+  font-weight: 500;
+  font-size: 24px;
+  background: #111;
+  padding: 15px;
+  color: rgb(0, 255, 170);
+  border-radius: 3px;
 }
 </style>
