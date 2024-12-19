@@ -48,7 +48,7 @@ global.readDelaySec = 30;
 global.outputPower = false;
 global.race = false;
 global.hostname = false;
-
+global.sound = false;
 
 // Use async/await to retrieve the value
 (async function () {
@@ -388,6 +388,7 @@ async function requests(data) {
         global.readDelaySec = data[1];
         global.selectedSplits = JSON.parse(data[2]);
         global.race = JSON.parse(data[3]);
+        global.sound = data[4]
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)
@@ -433,7 +434,6 @@ async function requests(data) {
             timestamp: getAccurateTime().format('x'),
             pretty: getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS")
         }
-
         global.mainWindow.webContents.send('fromMain', ['server-time', time]);
 
     }

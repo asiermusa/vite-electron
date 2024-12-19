@@ -16,6 +16,7 @@ export default createStore({
     hostname: null,
     inventory: false,
     readDelay: 60, //seconds
+    sound: false,
     serial: null,
     race: null,
     events: [],
@@ -63,6 +64,9 @@ export default createStore({
     },
     _SET_READ_DELAY(state, val) {
       state.readDelay = val
+    },
+    _SET_SOUND(state, val) {
+      state.sound = val
     },
     _SET_HOSTNAME(state, val) {
       state.hostname = val

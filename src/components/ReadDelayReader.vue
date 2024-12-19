@@ -30,8 +30,13 @@
           class="my-3"
         ></v-text-field>
 
+        <v-checkbox
+          v-model="sound"
+          label="Soinu aktibatu irakurketa bat jasotzerakoan"
+        />
+
         <v-btn @click="_set_read_delay()" variant="flat" color="primary"
-          >Atzerapena zehaztu
+          >Aldaketak gorde
         </v-btn>
       </v-card-item>
     </v-card>
@@ -44,15 +49,17 @@ export default {
   data() {
     return {
       readDelay: null,
+      sound: false,
     };
   },
   mounted() {
     this.readDelay = this.$store.state.readDelay;
+    this.sound = this.$store.state.sound;
   },
   methods: {
     _set_read_delay() {
       this.$store.commit("_SET_READ_DELAY", this.readDelay);
-      this.$store.commit("_SET_BEEP", this.beep);
+      this.$store.commit("_SET_SOUND", this.sound);
     },
   },
 };

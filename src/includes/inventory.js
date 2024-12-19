@@ -218,9 +218,9 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     percentsSum(currentTag)
 
-
     // Soinua egin
-    //onTagDetected(currentTag);
+    if (global.sound) 
+        onTagDetected(currentTag);
 
     if (currentTag) {
 

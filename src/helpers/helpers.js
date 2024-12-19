@@ -79,7 +79,7 @@ function percentsSum(currentTag) {
     } else {
         let exist = 'no';
         global.percents.forEach((p, i) => {
-            if (p.group == currentTag.split_slug) exist = i;
+            if (p.group == currentTag.split_id) exist = i;
         })
 
         if (exist == 'no') {
@@ -91,8 +91,9 @@ function percentsSum(currentTag) {
         } else {
             global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
         }
-
     }
+
+    console.log(global.percents)
 }
 
 function onTagDetected(tagId) {

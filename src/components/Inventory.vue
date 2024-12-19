@@ -132,28 +132,28 @@
           <tr>
             <th class="text-left" style="width: 50px">Dortsala</th>
             <th class="text-left">Izen-abizenak</th>
-            <th class="text-left">Herria</th>
+            <!-- <th class="text-left">Herria</th> -->
             <th class="text-left" style="width: 130px">Denbora</th>
-            <th class="text-left">Irak. ordua</th>
+            <!-- <th class="text-left">Irak. ordua</th> -->
             <th class="text-left">Lasterketa</th>
             <th class="text-left">Split</th>
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
-            <th class="text-left" style="width: 50px">ID</th>
+            <!-- <th class="text-left" style="width: 50px">ID</th> -->
           </tr>
           <tr v-for="(item, i) in sortItems" :key="i">
             <td>{{ item.dorsal }}</td>
             <td>{{ item.name }}</td>
-            <td>{{ item.city }}</td>
+            <!-- <td>{{ item.city }}</td> -->
             <td>{{ item.pretty_time }}</td>
-            <td>{{ item.real_time }}</td>
+            <!-- <td>{{ item.real_time }}</td> -->
             <td>{{ item.event }}</td>
             <td @click="_changeRow(item)" class="td-hover">
               {{ item.split }}
             </td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
-            <td>{{ item.id }}</td>
+            <!-- <td>{{ item.id }}</td> -->
           </tr>
         </tbody>
       </v-table>
@@ -232,6 +232,9 @@ export default {
     },
     readDelay() {
       return this.$store.state.readDelay;
+    },
+    sound() {
+      return this.$store.state.sound;
     },
     selectedSplits() {
       return this.$store.state.selectedSplits;
@@ -364,6 +367,7 @@ export default {
         this.readDelay * 1000,
         JSON.stringify(this.selectedSplits),
         JSON.stringify(this.race),
+        this.sound,
       ]);
     },
     _saveData() {
