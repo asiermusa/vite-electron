@@ -78,18 +78,25 @@
               <th class="text-left" style="width: 50px">Dorsala</th>
               <th class="text-left">Izena</th>
               <th class="text-left">Herria</th>
-              <th class="text-left">Ekintza</th>
+              <th class="text-left">Lasterketa</th>
+              <th class="text-left">Sexua</th>
+              <th class="text-left">Kategoria</th>
             </tr>
             <tr
               v-for="(item, i) in sortItems"
               :key="i"
-              :class="{ deactive: !_filterColumn(item[4]) }"
+              :class="{
+                isWoman: _isWoman(item[5]),
+                deactive: !_filterColumn(item[4]),
+              }"
             >
               <td>{{ item[0] }}</td>
               <td @click="_select(i)">{{ item[1] }}</td>
               <td>{{ item[2] }}</td>
               <td>{{ item[3] }}</td>
               <td>{{ _filterColumn(item[4], i) }}</td>
+              <td>{{ item[5] }}</td>
+              <td>{{ item[6] }}</td>
             </tr>
           </tbody>
         </v-table>
@@ -174,6 +181,9 @@ export default {
     },
   },
   methods: {
+    _isWoman(s) {
+      if (s == "E" || s == "F") return true;
+    },
     _select(val) {
       this.selected = this.$store.state.startList[val];
     },
@@ -194,5 +204,8 @@ export default {
 <style lang="scss" scoped>
 .deactive {
   background: rgba(202, 79, 79, 0.15);
+}
+.isWoman {
+  background: rgb(116, 32, 91, 0.2) !important;
 }
 </style>

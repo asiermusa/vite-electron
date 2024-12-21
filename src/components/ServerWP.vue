@@ -109,6 +109,15 @@
             :key="s"
             class="splits__row"
           >
+            <v-col cols="12" v-if="errors.length">
+              <v-alert
+                v-if="errors[index][s]"
+                :text="errors[index][s]"
+                type="error"
+                class="my-4"
+                variant="tonal"
+              ></v-alert>
+            </v-col>
             <v-col cols="4">
               <v-text-field
                 label="Splitaren izena"
@@ -123,6 +132,9 @@
                 v-model="split.min_time"
                 density="compact"
                 variant="outlined"
+                placeholder="Adibidez 10 minutu: 00:10:00"
+                :error="!!errors[index]?.[s]"
+                :error-messages="errors[index]?.[s] || ''"
               ></v-text-field>
             </v-col>
 
@@ -154,6 +166,7 @@
         <v-col cols="12">
           <v-btn
             color="success"
+            variant="flat"
             @click="_submitForm()"
             prepend-icon="mdi-cloud-upload"
             >Datuak gorde</v-btn
@@ -211,6 +224,7 @@ export default {
       items: null,
       item: null,
       error: false,
+      errors: [],
       success: false,
       loader: false,
       menu: false,
@@ -230,6 +244,24 @@ export default {
     },
   },
   methods: {
+    validateTimeInput() {
+      this.errors = []; // Reset errors
+      const timeRegex = /^([0-1]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+      let isValid = true;
+
+      this.item.events.forEach((event, eventIndex) => {
+        this.errors[eventIndex] = [];
+        event.splits.forEach((split, splitIndex) => {
+          if (!timeRegex.test(split.min_time)) {
+            isValid = false;
+            this.errors[eventIndex][splitIndex] =
+              "Denbora formatua HH:MM:SS izan behar da";
+          }
+        });
+      });
+
+      return isValid;
+    },
     async _get_races() {
       this.loader = true;
       try {
@@ -276,6 +308,20 @@ export default {
     async _submitForm() {
       this.error = false;
       this.success = false;
+
+      this.errors = this.item.events.map((event) => ({
+        splits: event.splits.map((split) => {
+          if (!split.min_time) {
+            return "Denbora ezin da hutsik egon"; // Cannot be empty
+          }
+          if (!/^\d{2}:\d{2}:\d{2}$/.test(split.min_time)) {
+            return "Denbora formatua HH:MM:SS izan behar da"; // Invalid format
+          }
+          return ""; // No error
+        }),
+      }));
+
+      if (!this.validateTimeInput()) return;
       this.loader = true;
 
       const params = {
@@ -415,5 +461,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.v-messages__message {
+  display: block !important;
 }
 </style>

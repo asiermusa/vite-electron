@@ -141,7 +141,11 @@
             <th class="text-left" style="width: 50px">Antena</th>
             <!-- <th class="text-left" style="width: 50px">ID</th> -->
           </tr>
-          <tr v-for="(item, i) in sortItems" :key="i">
+          <tr
+            v-for="(item, i) in sortItems"
+            :key="i"
+            :class="{ isWoman: _isWoman(item.sex) }"
+          >
             <td>{{ item.dorsal }}</td>
             <td>{{ item.name }}</td>
             <!-- <td>{{ item.city }}</td> -->
@@ -311,6 +315,9 @@ export default {
   //   },
   // },
   methods: {
+    _isWoman(s) {
+      if (s == "E" || s == "F") return true;
+    },
     _changeRow(item) {
       this.changeSplit = null;
       let find = this.startList.filter((res) => {

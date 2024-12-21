@@ -150,7 +150,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     let lastReading = 0;
     let lastSplitIndex = 0;
     let setSplitIndex = 0;
-    if(runnerReadings.length) {
+    if (runnerReadings.length) {
         lastReading = runnerReadings.at(-1);
         lastSplitIndex = splitsConfig.findIndex(s => s.unique_id === lastReading.split_id);
         nextSplit = splitsConfig[lastSplitIndex + 1];
@@ -159,7 +159,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         nextSplit = splitsConfig[0];
 
     }
-    
+
     // Goiko LOOParen SPLITEN arabera jakin ea daturik gorde behar den ala ez.
     if (!nextSplit) {
         console.log("Ez dago splitik gordetzeko...");
@@ -188,7 +188,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Irteera errealearen ordua ikusi + split jakin baten min_time gehitu.
-    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000)) 
+    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000))
 
 
     if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
@@ -201,6 +201,8 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.dorsal = current[1];
     currentTag.name = current[2];
     currentTag.city = current[3];
+    currentTag.sex = current[5];
+    currentTag.cat = current[6];
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, global.startTime), global.startTime);
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
     currentTag.event = current[4].name;
@@ -208,6 +210,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.split_id = nextSplit.unique_id;
     currentTag.reader = readerName;
     currentTag.host = global.hostname;
+    ``
     currentTag.race = global.race.ID
 
     // Count array nagusian gehitu.
@@ -219,7 +222,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     percentsSum(currentTag)
 
     // Soinua egin
-    if (global.sound) 
+    if (global.sound)
         onTagDetected(currentTag);
 
     if (currentTag) {

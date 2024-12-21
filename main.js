@@ -52,10 +52,9 @@ async function createWindow() {
     // Show confirmation dialog
     dialog
       .showMessageBox(global.mainWindow, {
-        type: 'warning',
-        buttons: ['Cancel', 'Close'],
-        title: 'Confirm Close',
-        message: 'Are you sure you want to close the application?',
+        buttons: ['Ez', 'Bai'],
+        title: 'Aplikazioa itxi',
+        message: 'Aplikaziotik atera nahi duzu?',
       })
       .then(async (result) => {
         if (result.response === 1) { // Index 1 corresponds to 'Close'
