@@ -61,13 +61,6 @@ export default {
               start_pretty: pretty,
             };
 
-            let r = await axios.post("/v1/start-race", {
-              post_id: that.race.ID,
-              starts: JSON.stringify(params),
-            });
-
-            console.log("r", r);
-
             await axios.get("https://denborak.online/api/v2", {
               params: {
                 post_id: that.race.ID,
@@ -75,6 +68,13 @@ export default {
                 start_date: start,
               },
             });
+
+            let wp = await axios.post("/v1/start-race", {
+              post_id: that.race.ID,
+              starts: JSON.stringify(params),
+            });
+
+            console.log("wp", wp);
           }
         }
     );
