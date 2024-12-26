@@ -46,8 +46,53 @@
           123400000000000000000045</v-card-subtitle
         >
       </v-card-item>
+    </v-card>
 
-      <v-card-text>
+    <v-btn
+      @click="_read_tag()"
+      color="primary"
+      variant="tonal"
+      class="mx-3"
+      prepend-icon="mdi-tag-edit"
+      >Tag berriak grabatu</v-btn
+    >
+
+    <v-btn
+      @click="_assign_tag()"
+      color="primary"
+      variant="tonal"
+      class="mx-3"
+      prepend-icon="mdi-tag-edit"
+      >Asignatu</v-btn
+    >
+
+    <!-- dialog 1 -->
+    <v-dialog v-model="dialog1">
+      <v-card class="mx-auto pa-8" width="750">
+        <v-row align="center" no-gutters>
+          <v-col class="main-title2" cols="10">Txipak EPC Grabatu</v-col>
+
+          <v-col class="text-right" cols="2">
+            <v-btn
+              density="comfortable"
+              icon="mdi-close"
+              variant="flat"
+              @click="dialog1 = null"
+            ></v-btn>
+          </v-col>
+        </v-row>
+
+        <v-alert
+          v-if="message"
+          class="my-5"
+          color="success"
+          variant="tonal"
+          closable
+          border="start"
+        >
+          TAGa ondo grabatu da.
+        </v-alert>
+
         <v-row class="my-5 pa-3">
           <v-text-field
             label="Prefijoa"
@@ -70,30 +115,6 @@
             >BALIOAK ZEHAZTU</v-btn
           >
         </v-row>
-      </v-card-text>
-    </v-card>
-
-    <v-btn
-      @click="_read_tag()"
-      color="primary"
-      variant="tonal"
-      class="mx-3"
-      prepend-icon="mdi-tag-edit"
-      >Tag berriak idatzi</v-btn
-    >
-
-    <v-dialog v-model="read">
-      <v-card class="mx-auto pa-8" width="600">
-        <v-alert
-          v-if="message"
-          class="my-5"
-          color="success"
-          variant="tonal"
-          closable
-          border="start"
-        >
-          TAGa ondo grabatu da.
-        </v-alert>
 
         <template v-if="read">
           <p><small>Momentuko TAG zenbakia:</small></p>
@@ -112,12 +133,20 @@
 
         <v-row>
           <v-col cols="12">
-            <v-text-field
-              label="Gordeko den TAG zenbakia"
-              v-model="writeTag"
-            ></v-text-field>
+            <p><small>Gordeko den TAG zenbakia:</small></p>
+            <input type="text" v-model="writeTag" class="bib-input" />
           </v-col>
           <v-col cols="12">
+            <v-btn
+              @click="_read_tag()"
+              color="grey-lighten-3"
+              size="large"
+              variant="flat"
+              class="mb-2"
+              block
+            >
+              Irakurri
+            </v-btn>
             <v-btn
               @click="_write_tag()"
               color="primary"
@@ -127,17 +156,85 @@
               :disabled="disabledSave"
               >Gorde</v-btn
             >
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-dialog>
 
+    <!-- dialog 2 -->
+    <v-dialog v-model="dialog2">
+      <v-card class="mx-auto pa-8" width="600">
+        <v-row align="center" no-gutters>
+          <v-col class="main-title2" cols="10">Dortsalak asignatu</v-col>
+
+          <v-col class="text-right" cols="2">
             <v-btn
-              @click="_read_tag()"
+              density="comfortable"
+              icon="mdi-close"
+              variant="flat"
+              @click="dialog2 = null"
+            ></v-btn>
+          </v-col>
+        </v-row>
+
+        <v-alert
+          v-if="message"
+          class="my-5"
+          color="success"
+          variant="tonal"
+          border="start"
+        >
+          {{ this.message }}
+        </v-alert>
+
+        <v-alert
+          class="my-5"
+          color="error"
+          variant="tonal"
+          border="start"
+          v-model="error"
+        >
+          {{ error }}
+        </v-alert>
+
+        <template v-if="read">
+          <p><small>Momentuko TAG zenbakia:</small></p>
+          <div class="tag-title mb-8">{{ read }}</div>
+        </template>
+        <v-alert
+          v-else
+          class="my-5"
+          color="error"
+          variant="tonal"
+          border="start"
+        >
+          Ez da TAG bat bera ere ez irakurri
+        </v-alert>
+
+        <v-row>
+          <v-col cols="12">
+            <p><small>Asignaziorako dortsala:</small></p>
+            <input type="text" v-model="bibNumber" class="bib-input" />
+          </v-col>
+          <v-col cols="12">
+            <v-btn
+              @click="_assign_tag()"
               color="grey-lighten-3"
               size="large"
               variant="flat"
-              class="mt-2"
+              class="mb-2"
               block
             >
               Irakurri
             </v-btn>
+            <v-btn
+              @click="_save_items_tag()"
+              color="primary"
+              variant="flat"
+              block
+              size="large"
+              >Gorde</v-btn
+            >
           </v-col>
         </v-row>
       </v-card>
@@ -146,6 +243,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "SettingsUSBComponent",
   data() {
@@ -158,6 +256,11 @@ export default {
       counter: 0,
       message: false,
       disabledSave: false,
+      bibNumber: 1,
+      assign: false,
+      dialog1: false,
+      dialog2: false,
+      error: false,
     };
   },
   mounted() {
@@ -219,6 +322,9 @@ export default {
     _tags() {
       return this.$store.state.tags;
     },
+    _items() {
+      return this.$store.state.startList;
+    },
   },
   methods: {
     _get_serial() {
@@ -246,12 +352,60 @@ export default {
       return paddedPrefix + counterString; // Combina el prefijo y el contador
     },
     _read_tag(disabled = false) {
+      this.dialog1 = true;
       window.ipc.send("toMain", ["read-tag", this.serial, disabled]);
       this.writeTag = this.generateEPC(this.prefix, this._tags.counter + 1);
       this.message = false;
     },
     _write_tag() {
       window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
+    },
+    _assign_tag(disabled = false) {
+      this.dialog2 = true;
+      this.error = false;
+      this.message = false;
+
+      window.ipc.send("toMain", ["read-tag", this.serial, disabled]);
+      this.message = false;
+    },
+    async _save_items_tag() {
+      let items = this._items;
+      let exist = false;
+      let success = false;
+      this.message = false;
+
+      items.filter((res) => {
+        if (res[0] == this.read) exist = true;
+      });
+
+      if (exist) {
+        this.error = "Txip hau beste dortsal bati asignatuta dago.";
+        return true;
+      }
+
+      items.map((res) => {
+        if (res[1] == this.bibNumber) {
+          res[0] = this.read;
+          success = "Txip hau ondo asignatu da.";
+        }
+      });
+
+      if (success) {
+        this.$store.commit("_SET_START_LIST", items);
+        this.message = success;
+        this.bibNumber++;
+      }
+      // items.map((res) => {
+      //   if (res[1] == this.bibNumber) res[0] = this.read;
+      // });
+
+      // this.$store.commit("_SET_START_LIST", items);
+
+      // const response = await axios.post("/v1/save", {
+      //   items: JSON.stringify(items),
+      // });
+
+      // console.log("response", response);
     },
   },
 };
@@ -264,10 +418,27 @@ export default {
 
 .tag-title {
   font-weight: 500;
-  font-size: 24px;
+  font-size: 22px;
   background: #111;
+  text-align: center;
   padding: 15px;
   color: rgb(0, 255, 170);
   border-radius: 3px;
+}
+
+.main-title2 {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.bib-input {
+  font-size: 22px;
+  text-align: center;
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid rgba(black, 0.1);
+  border-radius: 3px;
+  outline: 0;
 }
 </style>

@@ -31,7 +31,7 @@ export default createStore({
     tags: {
       prefix: "0",
       counter: 0,
-      currentTag: null
+      currentTag: null,
     }
   },
   mutations: {
