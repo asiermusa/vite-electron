@@ -9,7 +9,7 @@
     </v-row>
 
     <v-row class="mb-5">
-      <v-col cols="4">
+      <v-col lg="4" md="12" sm="12">
         <v-card variant="outlined">
           <v-list nav>
             <v-list-item> <h3 class="main-title-2">Cloud</h3> </v-list-item>
@@ -35,7 +35,7 @@
         </v-card>
       </v-col>
 
-      <v-col cols="4" v-for="(reader, r) in connected" :key="r">
+      <v-col lg="4" md="12" sm="12" v-for="(reader, r) in connected" :key="r">
         <!-- <template v-if="reader.active"> -->
 
         <v-card variant="outlined" v-if="reader.active">

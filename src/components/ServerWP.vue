@@ -62,6 +62,24 @@
         />
       </v-row>
 
+      <v-row align="center">
+        <v-col cols="6">
+          <v-text-field
+            v-model="item.google_drive_id"
+            label="Google Drive karpeta"
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="6">
+          <v-text-field
+            v-model="item.excel_name"
+            label="Excel fitxategiaren izena"
+            variant="outlined"
+          ></v-text-field>
+        </v-col>
+      </v-row>
+
       <!-- Repeatable Forms -->
 
       <v-row
@@ -140,7 +158,7 @@
 
             <v-col cols="2">
               <v-btn
-                color="error"
+                color="default"
                 @click="_removeSplit(index, s)"
                 variant="tonal"
                 density="comfortable"
@@ -443,7 +461,9 @@ export default {
 }
 .events {
   &__row:nth-child(odd) {
-    background: rgba(white, 0.2);
+    padding: 40px 10px 20px 10px;
+    background: rgba(#1867c0, 0.07);
+    border-radius: 5px;
   }
 }
 .splits {

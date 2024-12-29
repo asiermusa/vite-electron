@@ -69,7 +69,14 @@
     <Loader v-if="loader" />
 
     <v-row class="mb-5">
-      <v-col cols="4" v-for="(event, i) in events" :key="i">
+      <v-col
+        xs="12"
+        sm="12"
+        md="12"
+        lg="4"
+        v-for="(event, i) in events"
+        :key="i"
+      >
         <v-card class="main-card" variant="outlined">
           <v-card-item :title="event.name">
             <template v-slot:subtitle>

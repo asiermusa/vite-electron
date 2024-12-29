@@ -247,47 +247,54 @@ export default createStore({
         });
       });
 
-      console.log(final)
-
       context.commit('_SET_EVENTS_SPLITS_HOSTS', final);
     },
     async _get_participants(context) {
       let race = context.state.race;
       if (!race) return;
       let params = {
-        id: race.ID
+        post_id: race.ID
       };
 
       let events = context.state.events;
-      axios
-        .get("/v1/resultados", {
+
+      try {
+        let response = await axios.get("/v1/get-drive", {
           params
         })
-        .then((response) => {
-          if (events) {
-            events.forEach((split) => {
-              response.data.data.resultados.map((res) => {
-                if (split.name == res[4]) {
-                  res[4] = split;
-                }
-              });
+
+        if (!response.data.success) return response;
+
+
+        if (events) {
+          events.forEach((split) => {
+            response.data.data.resultados.map((res) => {
+              if (split.name == res[4]) {
+                res[4] = split;
+              }
             });
-          }
-
-          response.data.data.resultados.splice(0, 1)
-
-          context.commit("_SET_START_LIST", response.data.data.resultados);
-
-          context.commit("_SET_STATUS", {
-            desc: "drive",
-            value: true,
           });
+        }
 
-          window.ipc.send("toMain", [
-            "start-list",
-            JSON.stringify(response.data.data.resultados),
-          ]);
+        response.data.data.resultados.splice(0, 1)
+
+        context.commit("_SET_START_LIST", response.data.data.resultados);
+
+        context.commit("_SET_STATUS", {
+          desc: "drive",
+          value: true,
         });
+
+        window.ipc.send("toMain", [
+          "start-list",
+          JSON.stringify(response.data.data.resultados),
+        ]);
+
+        return response;
+      } catch (err) {
+        return 'error';
+      }
+
     },
     async _getCloudData(context, checkStatus = true) {
 

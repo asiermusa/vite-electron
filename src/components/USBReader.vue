@@ -1,70 +1,148 @@
 <template>
   <div class="hello">
-    <!-- serial port -->
+    <v-row>
+      <!-- serial port -->
 
-    <v-card class="main-card mb-6" variant="outlined">
-      <v-card-text class="py-3">
-        <v-row align="center" no-gutters>
-          <v-col class="main-title" cols="6">USB Reader</v-col>
+      <v-col cols="12">
+        <v-card class="main-card mb-6" variant="outlined">
+          <v-card-text class="py-3">
+            <v-row align="center" no-gutters>
+              <v-col class="main-title" cols="6">USB Reader</v-col>
 
-          <v-col class="text-right" cols="6">
-            <v-icon color="primary" icon="mdi-usb-port" size="55"></v-icon>
-          </v-col>
-        </v-row>
-      </v-card-text>
+              <v-col class="text-right" cols="6">
+                <v-icon color="primary" icon="mdi-usb-port" size="55"></v-icon>
+              </v-col>
+            </v-row>
+          </v-card-text>
 
-      <v-card-item title="USB konexioak arakatu">
-        <v-btn
-          @click="_get_serial()"
-          variant="outlined"
-          color="primary"
-          class="my-3"
-          prepend-icon="mdi-usb-c-port"
-          >Arakatu</v-btn
+          <v-card-item title="USB konexioak arakatu">
+            <v-btn
+              @click="_get_serial()"
+              variant="outlined"
+              color="primary"
+              class="my-3"
+              prepend-icon="mdi-usb-c-port"
+              >Arakatu</v-btn
+            >
+          </v-card-item>
+        </v-card>
+
+        <div v-if="serials" class="pa-3">
+          <v-select
+            label="Serial Port"
+            :items="serials"
+            v-model="serial"
+            variant="outlined"
+          ></v-select>
+          <v-btn
+            @click="_set_serial()"
+            color="primary"
+            class="my-3"
+            variant="flat"
+            >USBa zehaztu</v-btn
+          >
+        </div>
+
+        <v-card class="mx-auto mt-8" max-width="100%" variant="solo">
+          <v-card-item>
+            <div class="main-title" cols="6">TAG grabatzailea</div>
+          </v-card-item>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12">
+        <Loader v-if="loader" class="mb-2" />
+
+        <v-alert
+          v-if="googleSuccess"
+          class="my-5"
+          color="success"
+          variant="tonal"
+          closable
+          border="start"
         >
-      </v-card-item>
-    </v-card>
+          {{ googleSuccess }}
+        </v-alert>
 
-    <div v-if="serials" class="pa-3">
-      <v-select
-        label="Serial Port"
-        :items="serials"
-        v-model="serial"
-        variant="outlined"
-      ></v-select>
-      <v-btn @click="_set_serial()" color="primary" class="my-3" variant="flat"
-        >USBa zehaztu</v-btn
-      >
-    </div>
-
-    <v-card class="mx-auto mt-8" max-width="100%" variant="solo">
-      <v-card-item>
-        <div class="main-title" cols="6">TAG grabatzailea</div>
-        <v-card-subtitle>
-          Modu automatikoan Tag berriak idazteko erabili azpiko formularioa.
-          Adibidez, TAG hauek honako formatua izango dute:
-          123400000000000000000045</v-card-subtitle
+        <v-alert
+          v-if="googleError"
+          class="my-5"
+          color="error"
+          variant="tonal"
+          closable
+          border="start"
         >
-      </v-card-item>
-    </v-card>
+          {{ googleError }}
+        </v-alert>
+      </v-col>
+    </v-row>
 
-    <v-btn
-      @click="_read_tag()"
-      color="primary"
-      variant="tonal"
-      class="mx-3"
-      prepend-icon="mdi-tag-edit"
-      >Tag berriak grabatu</v-btn
-    >
+    <v-row>
+      <v-col lg="4" md="12" sm="12">
+        <v-card class="main-card" variant="solo">
+          <v-card-text>
+            <p class="text-h6 font-weight-black">EPC zebakiak aldatu</p>
 
-    <v-btn
-      @click="_assign_tag()"
-      color="primary"
-      variant="tonal"
-      class="mx-3"
-      prepend-icon="mdi-tag-edit"
-      >Asignatu</v-btn
-    >
+            <div class="text-medium-emphasis">
+              TAG baten kodea (EPC) aldatzeko, erabili azpiko botoia.
+            </div>
+
+            <v-btn
+              @click="_read_tag()"
+              variant="tonal"
+              prepend-icon="mdi-tag-edit"
+              class="my-3"
+              >Tag berriak grabatu</v-btn
+            >
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col lg="4" md="12" sm="12">
+        <v-card class="main-card" variant="solo">
+          <v-card-text>
+            <p class="text-h6 font-weight-black">Dortsalak asignatu</p>
+
+            <div class="text-medium-emphasis">
+              TAG bat dortsal bati asignatzeko <br />erabili azpiko botoia.<br />
+              Hau da normalean egingo duguna.
+            </div>
+
+            <v-btn
+              @click="_assign_tag()"
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-account-tag"
+              class="my-3"
+              >Asignatu</v-btn
+            >
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col lg="4" md="12" sm="12">
+        <v-card class="main-card" variant="solo">
+          <v-card-text>
+            <p class="text-h6 font-weight-black">Google Drive Gorde</p>
+
+            <div class="text-medium-emphasis">
+              Parte-hartzaileen zerrendan egindako<br />aldaketak DRIVEan
+              gordetzeko<br />
+              sakatu azpiko botoia.
+            </div>
+
+            <v-btn
+              @click="_save_to_google()"
+              color="success"
+              variant="flat"
+              prepend-icon="mdi-tag-arrow-up"
+              class="my-3"
+              >Zerrenda eguneratu</v-btn
+            >
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
     <!-- dialog 1 -->
     <v-dialog v-model="dialog1">
@@ -244,8 +322,12 @@
 
 <script>
 import axios from "axios";
+import Loader from "./Loader.vue";
 export default {
   name: "SettingsUSBComponent",
+  components: {
+    Loader,
+  },
   data() {
     return {
       serials: null,
@@ -261,11 +343,15 @@ export default {
       dialog1: false,
       dialog2: false,
       error: false,
+      items: false,
+      loader: false,
+      googleSuccess: false,
+      googleError: false,
     };
   },
   mounted() {
+    this.items = this._items;
     this.serial = this._serial;
-
     this.prefix = this._tags.prefix;
     this.counter = parseInt(this._tags.counter);
 
@@ -325,6 +411,9 @@ export default {
     _items() {
       return this.$store.state.startList;
     },
+    _race() {
+      return this.$store.state.race;
+    },
   },
   methods: {
     _get_serial() {
@@ -369,53 +458,61 @@ export default {
       this.message = false;
     },
     async _save_items_tag() {
-      let items = this._items;
       let exist = false;
       let success = false;
       this.message = false;
 
-      items.filter((res) => {
+      this.items.filter((res) => {
         if (res[0] == this.read) exist = true;
       });
 
       if (exist) {
-        this.error = "Txip hau beste dortsal bati asignatuta dago.";
+        this.error = "TAG hau dortsal bati asignatuta dago.";
         return true;
       }
 
-      items.map((res) => {
+      this.items.map((res) => {
         if (res[1] == this.bibNumber) {
           res[0] = this.read;
-          success = "Txip hau ondo asignatu da.";
+          success = "TAG hau ondo asignatu da.";
         }
       });
 
       if (success) {
-        this.$store.commit("_SET_START_LIST", items);
+        this.$store.commit("_SET_START_LIST", this.items);
         this.message = success;
         this.bibNumber++;
       }
-      // items.map((res) => {
-      //   if (res[1] == this.bibNumber) res[0] = this.read;
-      // });
+    },
+    async _save_to_google() {
+      this.googleError = false;
+      this.googleSuccess = false;
 
-      // this.$store.commit("_SET_START_LIST", items);
+      this.loader = true;
+      this.$store.commit("_SET_START_LIST", this.items);
 
-      // const response = await axios.post("/v1/save", {
-      //   items: JSON.stringify(items),
-      // });
+      try {
+        const response = await axios.post("/v1/save-drive", {
+          items: JSON.stringify(this.items),
+          post_id: this._race.ID,
+        });
 
-      // console.log("response", response);
+        this.loader = false;
+        if (response.data.success == true)
+          this.googleSuccess =
+            "Egindako aldaketak Google Driven ondo gorde dira";
+        else this.googleError = response.data.data.message;
+      } catch (err) {
+        this.loader = false;
+        this.googleError =
+          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
+      }
     },
   },
 };
 </script>
 
 <style lang="scss">
-.main-card {
-  padding: 10px !important;
-}
-
 .tag-title {
   font-weight: 500;
   font-size: 22px;
@@ -431,6 +528,9 @@ export default {
   font-weight: 300;
 }
 
+.main-card {
+  max-width: 100% !important;
+}
 .bib-input {
   font-size: 22px;
   text-align: center;

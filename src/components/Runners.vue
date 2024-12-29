@@ -13,6 +13,28 @@
         <Loader v-if="loader" class="mb-2" />
 
         <v-alert
+          v-if="googleSuccess"
+          class="my-5"
+          color="success"
+          variant="tonal"
+          closable
+          border="start"
+        >
+          {{ googleSuccess }}
+        </v-alert>
+
+        <v-alert
+          v-if="googleError"
+          class="my-5"
+          color="error"
+          variant="tonal"
+          closable
+          border="start"
+        >
+          {{ googleError }}
+        </v-alert>
+
+        <v-alert
           text="Datu hauek Google Driveko excel fitxategi batetik ekarri dira eta ezin dira hemen zuzenean editatu."
           type="info"
           icon="mdi-microsoft-excel"
@@ -20,13 +42,14 @@
         ></v-alert>
 
         <v-row class="my-1">
-          <v-col cols="2">
+          <v-col cols="3">
             <v-btn
               @click="_get_data()"
               variant="flat"
               class="my-4"
               color="primary"
               prepend-icon="mdi-download"
+              block
               >Eguneratu
             </v-btn>
           </v-col>
@@ -51,7 +74,7 @@
             ></v-text-field>
           </v-col>
 
-          <v-col cols="3">
+          <v-col cols="2">
             <v-text-field
               placeholder="Herria"
               variant="outlined"
@@ -122,6 +145,8 @@ export default {
       header: null,
       selected: null,
       loader: false,
+      googleSuccess: false,
+      googleError: false,
     };
   },
   mounted() {
@@ -193,8 +218,21 @@ export default {
     },
     async _get_data() {
       this.loader = true;
+      this.googleError = false;
+      this.googleSuccess = false;
       // hasierako atleta guztien excela montatu
-      this.$store.dispatch("_get_participants");
+      let response = await this.$store.dispatch("_get_participants");
+
+      this.loader = false;
+
+      if (response == "error") {
+        this.googleError =
+          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
+      } else if (response.data.success == true) {
+        this.googleSuccess = "Datuak ondo eskuratu dira!";
+      } else {
+        this.googleError = response.data.data.message;
+      }
     },
   },
 };
@@ -207,5 +245,11 @@ export default {
 }
 .isWoman {
   background: rgb(116, 32, 91, 0.2) !important;
+}
+.v-row {
+  margin: 0;
+}
+.v-col {
+  padding: 5px;
 }
 </style>

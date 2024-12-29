@@ -17,7 +17,7 @@ export default {
       stoppedDuration: 0,
       started: null,
       running: false,
-      clock: "00:00:00",
+      clock: "00:00:00.0",
       timeDiff: null,
     };
   },
@@ -58,21 +58,12 @@ export default {
     start(val) {
       if (this.running) return;
 
-      console.log("vali", val);
-
       if (this.timeBegan === null) {
         this.reset();
 
         this.timeBegan = parseInt(val);
 
         this._getTimeServer();
-
-        console.log(
-          "acu",
-          this.timeBegan,
-          moment().format("x"),
-          this._getAccurateTime().format("x")
-        );
       }
 
       if (this.timeStopped !== null) {
@@ -90,7 +81,7 @@ export default {
     },
 
     reset() {
-      this.clock = "00:00:00"; //00:00:00.00
+      this.clock = "00:00:00.0"; //00:00:00.00
       this.running = false;
       clearInterval(this.started);
       this.stoppedDuration = 0;
@@ -125,6 +116,9 @@ export default {
 
       // milliseconds
       let milli = timeElapsed / 1000;
+      // centésimas
+      let centiseconds = Math.floor((timeElapsed % 1000) / 100); // Dividir milisegundos en bloques de 10 y redondear hacia abajo
+
       let decimalValue = milli.toString().indexOf(".");
       let resultMilli = milli.toString().substring(decimalValue + 1);
 
@@ -132,9 +126,11 @@ export default {
       hour.push(moment.utc(timeElapsed).format("HH"));
       hour.push(moment.utc(timeElapsed).format("mm"));
       hour.push(moment.utc(timeElapsed).format("ss"));
-      hour.push(this.zeroPrefix(resultMilli, 2));
 
-      this.clock = hour[0] + ":" + hour[1] + ":" + hour[2];
+      // hau aldatu centesimak kentzeko
+      hour.push(this.zeroPrefix(centiseconds, 1));
+
+      this.clock = hour[0] + ":" + hour[1] + ":" + hour[2] + "." + hour[3];
     },
     zeroPrefix(num, digit) {
       var zero = "";

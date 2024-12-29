@@ -16,7 +16,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col v-for="(item, key) in tabs" :key="key" cols="6">
+      <v-col v-for="(item, key) in tabs" :key="key" lg="6" md="12">
         <v-card class="main-card mb-6" variant="outlined">
           <v-card-text class="py-3">
             <v-row align="center" no-gutters>
@@ -128,14 +128,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <v-btn
-      @click="_connect()"
-      variant="flat"
-      color="primary"
-      prepend-icon="mdi-chip"
-      >Konektatu</v-btn
-    >
   </div>
 
   <v-btn
@@ -145,6 +137,14 @@
     class="mx-3"
     prepend-icon="mdi-plus"
     >Reader berria gehitu</v-btn
+  >
+
+  <v-btn
+    @click="_connect()"
+    variant="flat"
+    color="primary"
+    prepend-icon="mdi-chip"
+    >Konektatu</v-btn
   >
 </template>
 

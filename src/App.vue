@@ -530,7 +530,7 @@ export default {
 }
 .main-layout {
   height: calc(100vh - 125px);
-  margin: 30px;
+  margin: 30px !important;
 }
 .logo {
   height: 50px;
