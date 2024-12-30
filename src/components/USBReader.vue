@@ -452,6 +452,11 @@ export default {
     _write_tag() {
       window.ipc.send("toMain", ["write-tag", this.serial, this.writeTag]);
     },
+    _normalize(str) {
+      if (!str) return null;
+      return str.replace(/^0+(?=\d)/, "");
+    },
+
     _assign_tag(disabled = false) {
       this.dialog2 = true;
       this.error = false;
@@ -466,7 +471,8 @@ export default {
       this.message = false;
 
       this.items.filter((res) => {
-        if (res.tag == this.read) exist = true;
+        if (this._normalize(res.tag) == this._normalize(this.read))
+          exist = true;
       });
 
       if (exist) {

@@ -113,7 +113,26 @@
                 deactive: !_filterColumn(item.event),
               }"
             >
-              <td>{{ item.tag }}</td>
+              <td>
+                <v-icon
+                  v-if="!item.tag"
+                  icon="mdi-close-circle"
+                  color="grey"
+                  style="opacity: 0.6"
+                ></v-icon>
+
+                <div v-else>
+                  <v-icon
+                    icon="mdi-check-circle"
+                    color="success"
+                    style="opacity: 1"
+                  >
+                  </v-icon>
+                  <v-tooltip activator="parent" location="right"
+                    >Tag: {{ item.tag }}</v-tooltip
+                  >
+                </div>
+              </td>
               <td @click="_select(i)">{{ item.bib }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.city }}</td>
@@ -187,7 +206,7 @@ export default {
             .includes(this.searchCity.toLowerCase());
         });
       }
-      console.log(response);
+
       // Apply search filter if "search" is defined
       if (this.searchRace) {
         response = response.filter((item) => {
@@ -220,8 +239,22 @@ export default {
     },
   },
   methods: {
+    _toSlug(s) {
+      return s
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "") // Remove special characters
+        .replace(/[\s_-]+/g, "-"); // Replace spaces and underscores with hyphens
+    },
+
     _isWoman(s) {
-      if (s == "E" || s == "F") return true;
+      if (!s) return false;
+      const normalized = this._toSlug(s);
+      // Valid words normalized
+      const validWords = ["e", "f", "emakumea", "femenina", "feminas"].map(
+        this._toSlug
+      );
+      return validWords.includes(normalized);
     },
     _select(val) {
       this.selected = this.$store.state.startList[val];
@@ -253,7 +286,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
 .deactive {
-  background: rgba(202, 79, 79, 0.15);
+  background: rgba(202, 79, 79, 0.15) !important;
 }
 .isWoman {
   background: rgb(116, 32, 91, 0.2) !important;

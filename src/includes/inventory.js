@@ -215,7 +215,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // Count array nagusian gehitu.
     global.count.push(currentTag)
 
-    // realtime app SOKET.IO
+    // realtime app SOCKET.IO (stream option)
     socket.emit("currentTag", currentTag);
 
     percentsSum(currentTag)

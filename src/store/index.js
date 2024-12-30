@@ -5,6 +5,20 @@ import {
 import axios from 'axios'
 import socket from "../socket";
 
+function toSlug(str) {
+
+  if (typeof str !== 'string') {
+    return null;
+  }
+
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+    .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
+}
+
 export default createStore({
   state: {
     _auth: null,
@@ -69,7 +83,6 @@ export default createStore({
     },
     _SET_START_LIST_HEADERS(state, val) {
       state.startListHeaders = val
-      console.log(val)
     },
     _SET_READ_DELAY(state, val) {
       state.readDelay = val
@@ -144,7 +157,6 @@ export default createStore({
 
       } catch (error) {
 
-        console.log('errorea', error);
       }
 
     },
@@ -214,8 +226,6 @@ export default createStore({
           let splits = [];
           if (resp != '') splits = resp;
           context.commit("_SET_SELECTED_SPLITS", splits);
-          console.log(splits)
-
 
         });
 
@@ -292,12 +302,16 @@ export default createStore({
       data1,
       data2
     }) {
+
+
+
+
       let events = context.state.events;
       if (events) {
         events.forEach((event) => {
           data1.map((res) => {
-            console.log(88, event.name)
-            if (event.name == res.event) {
+            console.log(toSlug(event.name), toSlug(res.event))
+            if (toSlug(event.name) == toSlug(res.event)) {
               res.event = event;
             }
           });

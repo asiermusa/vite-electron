@@ -49,12 +49,12 @@ global.sound = false;
 
 // Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
 global.validacionesCabeceras = {
-    tag: ["tag", "txipa"], // Variantes aceptables
-    bib: ['dorsal', 'bib', 'zenbakia'],
-    name: ["nombre", "izena", "izen-abizenak"],
-    city: ["ciudad", "herria"],
+    tag: ["tag", "txip"], // Variantes aceptables
+    bib: ['dorsal', 'bib', 'zenbakia', "dortsala"],
+    name: ["nombre", "izena", "izen-abizenak", "nombre y apellidos"],
+    city: ["ciudad", "herria", "provincia", "probintzia", "pais", ],
     event: ['lasterketa', 'evento'],
-    sex: ['sexua', 'sexo'],
+    sex: ['sexua', 'sexo', 'genero'],
     cat: ['kategoria', 'categoria', 'cat']
 };
 
@@ -370,7 +370,7 @@ async function requests(data) {
 
             const error = {
                 success: false,
-                message: `Errorea: Ezusteko akats bat geratu d datuak prozesatzerakoan...`,
+                message: err,
             };
             global.mainWindow.webContents.send('fromMain', ['global-error', error]);
         }

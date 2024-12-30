@@ -48,7 +48,7 @@
       </v-row>
 
       <v-row align="center" no-gutters>
-        <v-col cols="4">
+        <v-col cols="3">
           <v-text-field
             v-model="item.otp"
             label="Lasterketaren kodea (6 digitu)"
@@ -61,6 +61,22 @@
           label="Ezabatu split guztietako erabiltzaileak"
         />
       </v-row>
+
+      <v-alert
+        type="info"
+        class="my-8"
+        variant="tonal"
+        prominent
+        border="bottom"
+      >
+        Zuzeneko emisoa aktibatuta, online jarraipena egingo da cloud bidez
+        mongo datu basearekin.
+        <v-checkbox
+          v-model="item.stream"
+          label="Zuzeneko jarraipena"
+          class="pa-0 ma-0"
+        />
+      </v-alert>
 
       <v-row align="center">
         <v-col cols="6">
@@ -127,7 +143,7 @@
             :key="s"
             class="splits__row"
           >
-            <v-col cols="12" v-if="errors.length">
+            <div v-if="errors.length">
               <v-alert
                 v-if="errors[index][s]"
                 :text="errors[index][s]"
@@ -135,7 +151,7 @@
                 class="my-4"
                 variant="tonal"
               ></v-alert>
-            </v-col>
+            </div>
             <v-col cols="4">
               <v-text-field
                 label="Splitaren izena"
@@ -462,8 +478,8 @@ export default {
 .events {
   &__row:nth-child(odd) {
     padding: 40px 10px 20px 10px;
-    background: rgba(#1867c0, 0.07);
-    border-radius: 5px;
+    background: rgba(grey, 0.08);
+    border-radius: 5px !important;
   }
 }
 .splits {
@@ -485,5 +501,10 @@ export default {
 
 .v-messages__message {
   display: block !important;
+}
+
+.stream {
+  background: rgba(#1867c0, 0.2);
+  margin: 30px 0 !important;
 }
 </style>

@@ -262,7 +262,10 @@ function organizeExcelData(datos, validacionesCabeceras) {
     for (const [clave, variantes] of Object.entries(validacionesCabeceras)) {
         const cabeceraValida = cabeceras.find(cabecera => variantes.includes(cabecera));
         if (!cabeceraValida) {
-            throw new Error(`Falta una cabecera válida para: ${clave} (variantes aceptables: ${variantes.join(", ")})`);
+            return {
+                success: false,
+                message: `Errorea: Goiburu bat ez dago ondo excelean. Onartzen direnak: ${variantes.join(", ")}`,
+            };
         }
         mapeoCabeceras[clave] = cabeceras.indexOf(cabeceraValida);
     }
@@ -274,7 +277,7 @@ function organizeExcelData(datos, validacionesCabeceras) {
     if (columnasInvalidas.length > 0) {
         return {
             success: false,
-            message: `Errorea: Goiburu bat ez dago ondo excelean. Onartzen direnak: ${variantes.join(", ")}`,
+            message: `Errorea: Errenkada kopurua gaizki dagoela ematen du.`,
         };
     }
 
