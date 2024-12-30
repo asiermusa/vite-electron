@@ -181,7 +181,7 @@ function filterName(tag, startList) {
     let find = null;
     find = startList.filter((res, i) => {
         if (i == 0) return;
-        if (res[0].padStart(24, '0') == tag) return res;
+        if (res.tag.padStart(24, '0') == tag) return res;
     });
 
     if (!find.length) return ["UNKNOWN"];
@@ -244,6 +244,76 @@ function uniqueId(str, startTime) {
     return id;
 }
 
+
+
+function organizeExcelData(datos, validacionesCabeceras) {
+    if (!Array.isArray(datos) || datos.length < 2) {
+        return {
+            success: false,
+            message: "Errorea: Ez da daturik eskuratu. Gutxienez errenkada bat izan behar duzu excelean.",
+        };
+    }
+
+    // Extraer y normalizar las cabeceras
+    const cabeceras = datos[0].map(cabecera => cabecera.trim().toLowerCase());
+
+    // Crear el mapeo de cabeceras validado
+    const mapeoCabeceras = {};
+    for (const [clave, variantes] of Object.entries(validacionesCabeceras)) {
+        const cabeceraValida = cabeceras.find(cabecera => variantes.includes(cabecera));
+        if (!cabeceraValida) {
+            throw new Error(`Falta una cabecera válida para: ${clave} (variantes aceptables: ${variantes.join(", ")})`);
+        }
+        mapeoCabeceras[clave] = cabeceras.indexOf(cabeceraValida);
+    }
+
+    // Validar si hay columnas que no son válidas
+    const columnasInvalidas = cabeceras.filter(
+        cabecera => !Object.values(validacionesCabeceras).flat().includes(cabecera)
+    );
+    if (columnasInvalidas.length > 0) {
+        return {
+            success: false,
+            message: `Errorea: Goiburu bat ez dago ondo excelean. Onartzen direnak: ${variantes.join(", ")}`,
+        };
+    }
+
+    // Convertir las filas de datos en objetos usando el mapeo de cabeceras
+    const filas = datos.slice(1);
+    const resultado = filas.map(fila => {
+        const obj = {};
+        for (const [clave, indice] of Object.entries(mapeoCabeceras)) {
+            obj[clave] = fila[indice] || null; // Asignar null si el valor está vacío
+        }
+        return obj;
+    });
+
+
+    // Mapear las cabeceras originales a sus nuevos nombres
+    const cabecerasOriginales = [...datos[0]];
+
+    const cabecerasRenombradas = cabecerasOriginales.map(cabeceraOriginal => {
+        const cabeceraNormalizada = cabeceraOriginal.trim().toLowerCase();
+
+        // Buscar un nuevo nombre para esta cabecera
+        for (const [nuevoNombre, variantes] of Object.entries(global.validacionesCabeceras)) {
+            if (variantes.includes(cabeceraNormalizada)) {
+                return nuevoNombre; // Encontramos un nombre válido
+            }
+        }
+
+        // // Si no hay un nombre válido, lanzar un error
+        // throw new Error(`Cabecera inválida encontrada: "${cabeceraOriginal}".`);
+    });
+
+    return {
+        success: true,
+        result: resultado,
+        headers: cabecerasRenombradas // Clonar para preservar el orden
+    };
+}
+
+
 // Export all functions at once
 module.exports = {
     generateComputerDescription,
@@ -260,5 +330,6 @@ module.exports = {
     getAccurateTime,
     onTagDetected,
     percentsSum,
-    generateRandomString
+    generateRandomString,
+    organizeExcelData
 };

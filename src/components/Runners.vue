@@ -109,17 +109,17 @@
               v-for="(item, i) in sortItems"
               :key="i"
               :class="{
-                isWoman: _isWoman(item[5]),
-                deactive: !_filterColumn(item[4]),
+                isWoman: _isWoman(item.sex),
+                deactive: !_filterColumn(item.event),
               }"
             >
-              <td>{{ item[0] }}</td>
-              <td @click="_select(i)">{{ item[1] }}</td>
-              <td>{{ item[2] }}</td>
-              <td>{{ item[3] }}</td>
-              <td>{{ _filterColumn(item[4], i) }}</td>
-              <td>{{ item[5] }}</td>
-              <td>{{ item[6] }}</td>
+              <td>{{ item.tag }}</td>
+              <td @click="_select(i)">{{ item.bib }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.city }}</td>
+              <td>{{ _filterColumn(item.event, i) }}</td>
+              <td>{{ item.sex }}</td>
+              <td>{{ item.cat }}</td>
             </tr>
           </tbody>
         </v-table>
@@ -151,12 +151,11 @@ export default {
   },
   mounted() {
     let items = this.$store.state.startList;
-
     this.header = items[0];
   },
   computed: {
     sortItems() {
-      let items = this.$store.state.startList;
+      let items = this.startList;
 
       if (!items.length) return;
       // if (!this.search) return items;
@@ -167,28 +166,32 @@ export default {
       // Apply search filter if "search" is defined
       if (this.search) {
         response = response.filter((item) => {
-          return item[1].toLowerCase().includes(this.search.toLowerCase());
+          return item.bib.toLowerCase().includes(this.search.toLowerCase());
         });
       }
 
       // Apply searchHerria filter if "searchHerria" is defined
       if (this.searchName) {
         response = response.filter((item) => {
-          return item[2].toLowerCase().includes(this.searchName.toLowerCase());
+          return item.name
+            .toLowerCase()
+            .includes(this.searchName.toLowerCase());
         });
       }
 
       // Apply searchHerria filter if "searchHerria" is defined
       if (this.searchCity) {
         response = response.filter((item) => {
-          return item[3].toLowerCase().includes(this.searchCity.toLowerCase());
+          return item.city
+            .toLowerCase()
+            .includes(this.searchCity.toLowerCase());
         });
       }
       console.log(response);
       // Apply search filter if "search" is defined
       if (this.searchRace) {
         response = response.filter((item) => {
-          return item[4].name
+          return item.event.name
             ?.toLowerCase()
             .includes(this.searchRace.toLowerCase());
         });
@@ -199,10 +202,21 @@ export default {
     serial() {
       return this.$store.state.serial;
     },
+    startList() {
+      return this.$store.state.startList;
+    },
+    _globalError() {
+      return this.$store.state._globalError;
+    },
   },
   watch: {
     sortItems() {
       this.loader = false;
+    },
+    _globalError(val) {
+      if (val) {
+        this.googleError = val.message;
+      }
     },
   },
   methods: {
@@ -228,9 +242,7 @@ export default {
       if (response == "error") {
         this.googleError =
           "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
-      } else if (response.data.success == true) {
-        this.googleSuccess = "Datuak ondo eskuratu dira!";
-      } else {
+      } else if (response.data.success == false) {
         this.googleError = response.data.data.message;
       }
     },

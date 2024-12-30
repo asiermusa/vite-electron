@@ -225,12 +225,25 @@ export default {
       "fromMain",
       () =>
         function (event, data) {
+          // global error
+          if (data[0] == "global-error") {
+            that.$store.commit("_GLOBAL_ERROR", data[1]);
+          }
+
           if (data[0] == "connection") {
             let readers = that.connected;
             readers.map((res, i) => {
               if (res.name == data[1]) res.active = true;
             });
             that.$store.commit("_CONNECTED", readers);
+          }
+
+          // start list
+          if (data[0] == "start-list") {
+            that.$store.dispatch("_assocEventsSplits", {
+              data1: data[1],
+              data2: data[2],
+            });
           }
 
           if (data[0] == "no-ants") {

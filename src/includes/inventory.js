@@ -112,7 +112,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     if (current == "UNKNOWN") return false;
 
     // Parte-hartzaile honi dagokion lasterketaren datuak ekarri (Parte-hartzaile honen lasterketa zein ordutan hasi den zehazki).
-    let currentEventTime = moment(current[4].start_date).unix(
+    let currentEventTime = moment(current.event.start_date).unix(
         moment().tz("Europe/Madrid").format()
     );
 
@@ -136,7 +136,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     //     { name: 'Helmuga - Meta', slug: '0_helmuga - meta' }
     // ]
     global.selectedSplits.forEach((split) => {
-        current[4].splits.forEach((item) => {
+        current.event.splits.forEach((item) => {
             if (split.items.includes(global.hostname) && split.group == item.unique_id) {
                 splitsConfig.push({
                     name: item.name,
@@ -157,7 +157,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         setSplitIndex = lastSplitIndex + 1;
     } else {
         nextSplit = splitsConfig[0];
-
     }
 
     // Goiko LOOParen SPLITEN arabera jakin ea daturik gorde behar den ala ez.
@@ -167,8 +166,8 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress backendean dagoen informazioa da hau).
-    console.log('min time', current[4].splits[setSplitIndex].min_time)
-    let splitDiffSeconds = moment.duration(current[4].splits[setSplitIndex].min_time).asSeconds();
+    console.log('min time', current.event.splits[setSplitIndex].min_time)
+    let splitDiffSeconds = moment.duration(current.event.splits[setSplitIndex].min_time).asSeconds();
 
     if (parseInt(currentTime) < parseInt(currentEventTime + splitDiffSeconds)) {
         console.log("Split hau oraindik ezin da irakurri...");
@@ -178,7 +177,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // Parte-hartzaile honen lasterketa hasita dagoen ala ez ikusi (benetako hasiera eta ez WordPressean zehaztu dena).
     let start = null;
     global.startTime.forEach(res => {
-        if (res.unique_id == uniqueId(current[4].name, global.startTime)) {
+        if (res.unique_id == uniqueId(current.event.name, global.startTime)) {
             start = res.start;
         }
     });
@@ -198,14 +197,14 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
     currentTag.id = generateRandomString(10);
-    currentTag.dorsal = current[1];
-    currentTag.name = current[2];
-    currentTag.city = current[3];
-    currentTag.sex = current[5];
-    currentTag.cat = current[6];
-    currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current[4].name, global.startTime), global.startTime);
+    currentTag.dorsal = current.bib;
+    currentTag.name = current.name;
+    currentTag.city = current.city;
+    currentTag.sex = current.sex;
+    currentTag.cat = current.cat;
+    currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current.event.name, global.startTime), global.startTime);
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
-    currentTag.event = current[4].name;
+    currentTag.event = current.event.name;
     currentTag.split = nextSplit.name;
     currentTag.split_id = nextSplit.unique_id;
     currentTag.reader = readerName;

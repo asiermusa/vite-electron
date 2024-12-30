@@ -117,11 +117,16 @@ const router = createRouter({
 })
 
 
+
+router.beforeEach((to, from, next) => {
+  // Update the store status based on route change
+  store.commit("_GLOBAL_ERROR", false);
+  next(); // Always call next() to proceed with the navigation
+});
+
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     let auth = store.state._auth;
-
-    console.log('router', auth)
 
     if (!auth) {
       next({

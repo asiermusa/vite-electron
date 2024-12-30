@@ -414,6 +414,9 @@ export default {
     _race() {
       return this.$store.state.race;
     },
+    _headers() {
+      return this.$store.state.startListHeaders;
+    },
   },
   methods: {
     _get_serial() {
@@ -463,7 +466,7 @@ export default {
       this.message = false;
 
       this.items.filter((res) => {
-        if (res[0] == this.read) exist = true;
+        if (res.tag == this.read) exist = true;
       });
 
       if (exist) {
@@ -472,8 +475,8 @@ export default {
       }
 
       this.items.map((res) => {
-        if (res[1] == this.bibNumber) {
-          res[0] = this.read;
+        if (res.bib == this.bibNumber) {
+          res.tag = this.read;
           success = "TAG hau ondo asignatu da.";
         }
       });
@@ -491,11 +494,19 @@ export default {
       this.loader = true;
       this.$store.commit("_SET_START_LIST", this.items);
 
+      const response = await axios.post("/v1/save-drive", {
+        items: JSON.stringify(this.items),
+        post_id: this._race.ID,
+      });
+
       try {
         const response = await axios.post("/v1/save-drive", {
           items: JSON.stringify(this.items),
           post_id: this._race.ID,
+          excel_headers: this._headers,
         });
+
+        console.log(response);
 
         this.loader = false;
         if (response.data.success == true)

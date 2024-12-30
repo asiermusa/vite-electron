@@ -11,7 +11,8 @@ const {
     CheckSum,
     dec2hex,
     getAccurateTime,
-    percentsSum
+    percentsSum,
+    organizeExcelData
 } = require("../helpers/helpers.js");
 const {
     Socket
@@ -21,10 +22,6 @@ const {
     get_data
 } = require("./inventory.js");
 const socket = require('../socket-common.js')
-
-
-
-
 
 // Use environment variables as a fallback
 // const COMPUTER_NAME =
@@ -50,29 +47,21 @@ global.race = false;
 global.hostname = false;
 global.sound = false;
 
+// Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
+global.validacionesCabeceras = {
+    tag: ["tag", "txipa"], // Variantes aceptables
+    bib: ['dorsal', 'bib', 'zenbakia'],
+    name: ["nombre", "izena", "izen-abizenak"],
+    city: ["ciudad", "herria"],
+    event: ['lasterketa', 'evento'],
+    sex: ['sexua', 'sexo'],
+    cat: ['kategoria', 'categoria', 'cat']
+};
+
 // Use async/await to retrieve the value
 (async function () {
     global.hostname = await generateComputerDescription();
 })();
-
-// let currentTag = {
-//     id: 5,
-//     tag: '000000000000000001',
-//     ant: 1,
-//     time: 'denboria',
-//     dorsal: 1,
-//     name: 'invent decarlos',
-//     city: 'inventlandia',
-//     pretty_time: '00:01:30:00:345',
-//     real_time: '6363738383',
-//     event: 'Martxa Luzea',
-//     split: 'Irteera - Salida',
-//     split_slug: '0_irteer - salida',
-//     reader: 'Reader 1'
-// };
-
-// global.count.push(currentTag)
-
 
 
 async function requests(data) {
@@ -272,7 +261,7 @@ async function requests(data) {
                     }
                 });
 
-                if(upload.data.data.length) {
+                if (upload.data.data.length) {
                     global.mainWindow.webContents.send('fromMain', ['upload-response', true]);
                 } else {
                     global.mainWindow.webContents.send('fromMain', ['upload-response', false]);
@@ -364,7 +353,28 @@ async function requests(data) {
     }
 
     if (cmd == 'start-list') {
-        global.startList = JSON.parse(data[1]);
+
+        try {
+            const result = organizeExcelData(JSON.parse(data[1]), global.validacionesCabeceras);
+
+            if (!result.success) {
+                global.mainWindow.webContents.send('fromMain', ['global-error', result]);
+                return
+            }
+
+            global.startList = result.result;
+            global.mainWindow.webContents.send('fromMain', ['start-list', result.result, result.headers]);
+        } catch (err) {
+            global.startList = null;
+            global.mainWindow.webContents.send('fromMain', ['start-list', null]);
+
+            const error = {
+                success: false,
+                message: `Errorea: Ezusteko akats bat geratu d datuak prozesatzerakoan...`,
+            };
+            global.mainWindow.webContents.send('fromMain', ['global-error', error]);
+        }
+
     }
 
     if (cmd == 'real-time') {

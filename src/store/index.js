@@ -8,10 +8,12 @@ import socket from "../socket";
 export default createStore({
   state: {
     _auth: null,
+    _globalError: false,
     connected: null,
     startChrono: false,
     startTime: null,
     startList: [],
+    startListHeaders: [],
     items: [],
     hostname: null,
     inventory: false,
@@ -38,6 +40,9 @@ export default createStore({
     _AUTH(state, val) {
       state._auth = val
     },
+    _GLOBAL_ERROR(state, val) {
+      state._globalError = val
+    },
     _CONNECTED(state, val) {
       state.connected = val
     },
@@ -61,6 +66,10 @@ export default createStore({
     },
     _SET_START_LIST(state, val) {
       state.startList = val
+    },
+    _SET_START_LIST_HEADERS(state, val) {
+      state.startListHeaders = val
+      console.log(val)
     },
     _SET_READ_DELAY(state, val) {
       state.readDelay = val
@@ -256,29 +265,12 @@ export default createStore({
         post_id: race.ID
       };
 
-      let events = context.state.events;
-
       try {
         let response = await axios.get("/v1/get-drive", {
           params
         })
 
         if (!response.data.success) return response;
-
-
-        if (events) {
-          events.forEach((split) => {
-            response.data.data.resultados.map((res) => {
-              if (split.name == res[4]) {
-                res[4] = split;
-              }
-            });
-          });
-        }
-
-        response.data.data.resultados.splice(0, 1)
-
-        context.commit("_SET_START_LIST", response.data.data.resultados);
 
         context.commit("_SET_STATUS", {
           desc: "drive",
@@ -295,6 +287,24 @@ export default createStore({
         return 'error';
       }
 
+    },
+    async _assocEventsSplits(context, {
+      data1,
+      data2
+    }) {
+      let events = context.state.events;
+      if (events) {
+        events.forEach((event) => {
+          data1.map((res) => {
+            console.log(88, event.name)
+            if (event.name == res.event) {
+              res.event = event;
+            }
+          });
+        });
+      }
+      context.commit("_SET_START_LIST_HEADERS", data2);
+      context.commit("_SET_START_LIST", data1);
     },
     async _getCloudData(context, checkStatus = true) {
 
