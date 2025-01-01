@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"npm:electron-dev\"",
     "electron-dev": "nodemon --quiet \"electron .\"",
-    "build": "vite build && electron-builder --win"
+    "build": "vite build && electron-builder --mac"
   },
   "nodemonConfig": {
     "watch": [
@@ -17,9 +17,9 @@
     "quiet": true
   },
   "build": {
-    "appId": "com.denborak.online",
+    "appId": "com.azkar.online",
     "asar": true,
-    "productName": "DenborakWin",
+    "productName": "Azkar - Kirol kronometrajea",
     "files": [
       "dist/index.html",
       "dist/assets/**/*",

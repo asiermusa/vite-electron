@@ -73,8 +73,6 @@ export default {
               post_id: that.race.ID,
               starts: JSON.stringify(params),
             });
-
-            console.log("wp", wp);
           }
         }
     );

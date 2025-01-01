@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar :elevation="1">
       <v-app-bar-title
-        ><img class="logo" src="./assets/logo.png"
+        ><img class="logo" src="./assets/azkar.svg"
       /></v-app-bar-title>
 
       <v-btn v-if="race" stacked size="large" @click="_removeRace()">
@@ -133,7 +133,7 @@
             ></v-list-item>
           </v-list-group>
 
-          <v-divider></v-divider>
+          <v-divider class="mb-10"></v-divider>
 
           <v-list-item
             v-if="_auth"
@@ -154,7 +154,6 @@
           </v-list-item>
 
           <v-list-item
-            v-if="race"
             @click="_getCloudData()"
             prepend-icon="mdi-web-check"
             title="Datuak Sync"
@@ -338,7 +337,6 @@ export default {
     });
 
     socket.on("connected-mongo", (msg) => {
-      console.log("mess", msg);
       if (msg.connected)
         this.$store.commit("_SET_STATUS", {
           desc: "mongo",
@@ -466,7 +464,6 @@ export default {
         return true;
       }
 
-      console.log(this.selectedSplits);
       window.ipc.send("toMain", [
         "inventory",
         this.readDelay * 1000,
@@ -532,7 +529,7 @@ export default {
 // }
 
 .login-page {
-  background-image: linear-gradient(45deg, #1867c0, #0d5f8f);
+  background-image: linear-gradient(45deg, #1867c0, #33cccc);
 }
 
 .hello {
@@ -546,7 +543,10 @@ export default {
   margin: 30px !important;
 }
 .logo {
-  height: 50px;
+  height: 55px !important;
+  max-height: 70px;
+  padding: 10px 0 0 0 !important;
+  margin: 0 !important;
 }
 
 .main-title {
@@ -572,11 +572,6 @@ export default {
   font-family: "Upper-Clock";
   font-weight: normal;
   width: 100%;
-}
-
-.chrono {
-  text-align: center;
-  font-size: 40px;
 }
 
 .v-timeline-item__body {

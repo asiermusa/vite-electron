@@ -80,10 +80,6 @@ async function requests_serial(data) {
         while (hexPairs.length < 12) {
             hexPairs.unshift('00'); // Add '00' at the beginning
         }
-        // Log the pairs or use them as needed
-        // hexPairs.forEach((pair, index) => {
-        //     console.log(`Pair ${index + 1}: 0x${pair}`);
-        // });
 
         //serial USB
         let {

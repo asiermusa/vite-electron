@@ -27,22 +27,6 @@
 
       <v-row>
         <v-col cols="12" class="my-6">
-          <v-alert
-            v-if="error"
-            :text="error"
-            type="error"
-            class="my-4"
-            variant="tonal"
-          ></v-alert>
-
-          <v-alert
-            v-if="success"
-            :text="success"
-            type="success"
-            class="my-4"
-            variant="tonal"
-          ></v-alert>
-
           <h2>{{ item.title }}</h2>
         </v-col>
       </v-row>
@@ -143,15 +127,17 @@
             :key="s"
             class="splits__row"
           >
-            <div v-if="errors.length">
-              <v-alert
-                v-if="errors[index][s]"
-                :text="errors[index][s]"
-                type="error"
-                class="my-4"
-                variant="tonal"
-              ></v-alert>
-            </div>
+            <template v-if="errors.length">
+              <v-col cols="12">
+                <v-alert
+                  v-if="errors[index][s]"
+                  :text="errors[index][s]"
+                  type="error"
+                  class="my-4"
+                  variant="tonal"
+                ></v-alert>
+              </v-col>
+            </template>
             <v-col cols="4">
               <v-text-field
                 label="Splitaren izena"
@@ -198,6 +184,24 @@
 
       <v-row>
         <v-col cols="12">
+          <div class="mb-6">
+            <Loader v-if="loader" />
+
+            <v-alert
+              v-if="error"
+              :text="error"
+              type="error"
+              variant="tonal"
+            ></v-alert>
+
+            <v-alert
+              v-if="success"
+              :text="success"
+              type="success"
+              variant="tonal"
+            ></v-alert>
+          </div>
+
           <v-btn
             color="success"
             variant="flat"

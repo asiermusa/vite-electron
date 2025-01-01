@@ -1,12 +1,6 @@
 <template>
   <div class="hello">
-    <v-alert
-      v-if="message"
-      class="my-5"
-      color="success"
-      icon="$success"
-      :text="message"
-    ></v-alert>
+    <v-alert v-if="error" :text="error" type="error" variant="tonal"></v-alert>
 
     <v-tabs v-model="tab">
       <v-tab v-for="(event, i) in eventsSplitsHosts" :key="i">{{
@@ -111,7 +105,7 @@ export default {
   data() {
     return {
       selectedSplit: [],
-      message: null,
+      error: false,
       tab: null,
       loader: false,
     };
@@ -157,8 +151,10 @@ export default {
 
       return result;
     },
-    setSplit() {
+    async setSplit() {
       let race = this.race;
+      this.error = false;
+
       if (!race) return;
 
       this.loader = true;
@@ -171,13 +167,14 @@ export default {
         });
       });
 
-      axios
-        .post("/v1/set-split", {
+      try {
+        const response = await axios.post("/v1/set-split", {
           splits: JSON.stringify(array),
           name: this.hostname,
           id: race.ID,
-        })
-        .then((response) => {
+        });
+
+        if (response.data.success) {
           this.$store.commit("_SET_SELECTED_SPLITS", response.data.data);
 
           this.selectedSplit = [];
@@ -190,9 +187,16 @@ export default {
           });
 
           this.$store.dispatch("_mountEventsSplitsHosts");
+        } else {
+          this.error = response.data.data.message;
+        }
 
-          this.loader = false;
-        });
+        this.loader = false;
+      } catch (err) {
+        this.error =
+          "Errorea: Arazo bat gertatu da zerbitzarian datuak gordetzerakoan.";
+        this.loader = false;
+      }
     },
   },
 };

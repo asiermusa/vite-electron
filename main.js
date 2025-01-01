@@ -5,7 +5,8 @@ const {
   BrowserWindow,
   session,
   dialog,
-  ipcMain
+  ipcMain,
+  Menu
 } = require('electron')
 
 const path = require('path')
@@ -43,7 +44,10 @@ async function createWindow() {
     global.mainWindow.loadURL('http://localhost:5173'); // Development URL
   }
 
-  global.mainWindow.webContents.openDevTools();
+  // global.mainWindow.webContents.openDevTools();
+
+  global.mainWindow.setMenu(null);
+
 
   // Prevent the default close action and show a confirmation dialog
   global.mainWindow.on('close', (event) => {
@@ -63,6 +67,8 @@ async function createWindow() {
       });
   });
 
+
+
 }
 
 // This is for only ONE ELECTRON INSTACE
@@ -77,7 +83,10 @@ if (!gotTheLock) {
     }
   });
 
-  app.whenReady().then(createWindow);
+  app.whenReady().then(() => {
+    // Remove all menus
+    createWindow();
+  });
 }
 
 app.on('window-all-closed', () => {

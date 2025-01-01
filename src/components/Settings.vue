@@ -62,51 +62,58 @@
             <template v-slot:subtitle>Aktibatu eta potentzia</template>
           </v-card-item>
 
-          <!-- ANTENAK -->
+          <!-- ANTENNAS -->
           <div class="ants mx-3">
             <div
-              class="ants__item"
-              v-for="(ant, i) in item.ants"
-              :key="i"
-              cols="1"
+              class="ants__row"
+              v-for="(group, groupIndex) in chunkArray(item.ants, 4)"
+              :key="groupIndex"
             >
-              <v-checkbox
-                :label="_toString(i + 1)"
-                v-model="item.ants[i]"
-              ></v-checkbox>
+              <div
+                class="ants__item"
+                v-for="(ant, i) in group"
+                :key="i"
+                cols="1"
+              >
+                <v-checkbox
+                  :label="_toString(groupIndex * 4 + i + 1)"
+                  v-model="item.ants[groupIndex * 4 + i]"
+                ></v-checkbox>
 
-              <v-text-field
-                label="dBm"
-                variant="outlined"
-                v-model="item.power[i]"
-              ></v-text-field>
+                <v-text-field
+                  label="dBm"
+                  variant="outlined"
+                  v-model="item.power[groupIndex * 4 + i]"
+                ></v-text-field>
+              </div>
             </div>
           </div>
+          <!-- ANTENNAS -->
 
           <div class="ma-3 my-6">
             <v-btn
               @click="_setOutputPower(item)"
               color="primary"
-              variant="outlined"
+              variant="tonal"
               size="small"
             >
-              Aldatu potentzia
+              Aldatu pot.
             </v-btn>
 
             <v-btn
               @click="_getOutputPower(item)"
               color="primary"
               class="mx-2"
-              variant="outlined"
+              variant="tonal"
               size="small"
             >
-              Ikusi potentzia
+              Ikusi pot.
             </v-btn>
 
             <v-btn
               @click="_checkAnts(item)"
               color="success"
-              variant="outlined"
+              variant="tonal"
               size="small"
             >
               Frogatu antenak
@@ -166,25 +173,23 @@ export default {
     let system_datetime = moment().unix();
     let real_datetime = moment().unix(moment().tz("Europe/Madrid").format());
     if (system_datetime == real_datetime)
-      console.log("time", real_datetime, system_datetime);
-    //change format as needed…
+      //change format as needed…
 
-    let that = this;
-    window.ipc.handle(
-      "fromMain",
-      () =>
-        function (event, data) {
-          if (data[0] == "checking") {
-            let read = data[1][6];
-            that.message = "Irakurritako tag kopurua: " + read;
-          }
+      window.ipc.handle(
+        "fromMain",
+        () =>
+          function (event, data) {
+            if (data[0] == "checking") {
+              let read = data[1][6];
+              that.message = "Irakurritako tag kopurua: " + read;
+            }
 
-          if (data[0] == "checking") {
-            let read = data[1][6];
-            that.message = "Irakurritako tag kopurua: " + read;
+            if (data[0] == "checking") {
+              let read = data[1][6];
+              that.message = "Irakurritako tag kopurua: " + read;
+            }
           }
-        }
-    );
+      );
   },
   computed: {
     connected() {
@@ -206,6 +211,13 @@ export default {
     _checkAnts(item) {
       this.currentReader = item;
       window.ipc.send("toMain", ["check-antennas", JSON.stringify(item)]);
+    },
+    chunkArray(array, size) {
+      const chunks = [];
+      for (let i = 0; i < array.length; i += size) {
+        chunks.push(array.slice(i, i + size));
+      }
+      return chunks;
     },
     _connect() {
       window.ipc.send("toMain", [
@@ -257,10 +269,16 @@ export default {
   padding: 10px !important;
 }
 .ants {
-  display: flex;
   &__item {
     margin-right: 15px;
     max-width: 85px;
   }
+}
+
+.ants__row {
+  display: flex;
+}
+.ants__item {
+  flex: 1;
 }
 </style>

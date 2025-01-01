@@ -78,68 +78,67 @@
     </v-row>
 
     <v-row>
-      <v-col lg="4" md="12" sm="12">
-        <v-card class="main-card" variant="solo">
-          <v-card-text>
-            <p class="text-h6 font-weight-black">EPC zebakiak aldatu</p>
+      <v-col lg="12" md="12" sm="12" no-gutter>
+        <v-card class="main-card" variant="outlined">
+          <v-row>
+            <v-col lg="4" md="12" sm="12">
+              <v-card-text>
+                <p class="text-h6 font-weight-black">EPC zebakiak aldatu</p>
 
-            <div class="text-medium-emphasis">
-              TAG baten kodea (EPC) aldatzeko, erabili azpiko botoia.
-            </div>
+                <!-- <div class="text-medium-emphasis">
+                  TAG baten kodea (EPC) aldatzeko, erabili azpiko botoia.
+                </div> -->
 
-            <v-btn
-              @click="_read_tag()"
-              variant="tonal"
-              prepend-icon="mdi-tag-edit"
-              class="my-3"
-              >Tag berriak grabatu</v-btn
-            >
-          </v-card-text>
-        </v-card>
-      </v-col>
+                <v-btn
+                  @click="_read_tag()"
+                  variant="tonal"
+                  prepend-icon="mdi-tag-edit"
+                  class="my-3"
+                  >Tag berriak grabatu</v-btn
+                >
+              </v-card-text>
+            </v-col>
+            <v-col lg="4" md="12" sm="12">
+              <v-card-text>
+                <p class="text-h6 font-weight-black">Dortsalak asignatu</p>
 
-      <v-col lg="4" md="12" sm="12">
-        <v-card class="main-card" variant="solo">
-          <v-card-text>
-            <p class="text-h6 font-weight-black">Dortsalak asignatu</p>
+                <!-- <div class="text-medium-emphasis">
+                  TAG bat dortsal bati asignatzeko <br />erabili azpiko
+                  botoia.<br />
+                  Hau da normalean egingo duguna.
+                </div> -->
 
-            <div class="text-medium-emphasis">
-              TAG bat dortsal bati asignatzeko <br />erabili azpiko botoia.<br />
-              Hau da normalean egingo duguna.
-            </div>
+                <v-btn
+                  @click="_assign_tag()"
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="mdi-account-tag"
+                  class="my-3"
+                  >Asignatu</v-btn
+                >
+              </v-card-text>
+            </v-col>
+            <v-col lg="4" md="12" sm="12">
+              <v-card-text>
+                <p class="text-h6 font-weight-black">Google Drive Gorde</p>
 
-            <v-btn
-              @click="_assign_tag()"
-              color="primary"
-              variant="tonal"
-              prepend-icon="mdi-account-tag"
-              class="my-3"
-              >Asignatu</v-btn
-            >
-          </v-card-text>
-        </v-card>
-      </v-col>
+                <!-- <div class="text-medium-emphasis">
+                  Parte-hartzaileen zerrendan egindako<br />aldaketak DRIVEan
+                  gordetzeko<br />
+                  sakatu azpiko botoia.
+                </div> -->
 
-      <v-col lg="4" md="12" sm="12">
-        <v-card class="main-card" variant="solo">
-          <v-card-text>
-            <p class="text-h6 font-weight-black">Google Drive Gorde</p>
-
-            <div class="text-medium-emphasis">
-              Parte-hartzaileen zerrendan egindako<br />aldaketak DRIVEan
-              gordetzeko<br />
-              sakatu azpiko botoia.
-            </div>
-
-            <v-btn
-              @click="_save_to_google()"
-              color="success"
-              variant="flat"
-              prepend-icon="mdi-tag-arrow-up"
-              class="my-3"
-              >Zerrenda eguneratu</v-btn
-            >
-          </v-card-text>
+                <v-btn
+                  @click="_save_to_google()"
+                  color="success"
+                  variant="flat"
+                  prepend-icon="mdi-tag-arrow-up"
+                  class="my-3"
+                  >Zerrenda eguneratu</v-btn
+                >
+              </v-card-text>
+            </v-col>
+          </v-row>
         </v-card>
       </v-col>
     </v-row>
@@ -361,7 +360,6 @@ export default {
       () =>
         function (event, data) {
           if (data[0] == "send-serials") {
-            console.log(JSON.parse(data[1]));
             that.serials = JSON.parse(data[1]);
           }
 
@@ -456,7 +454,6 @@ export default {
       if (!str) return null;
       return str.replace(/^0+(?=\d)/, "");
     },
-
     _assign_tag(disabled = false) {
       this.dialog2 = true;
       this.error = false;
@@ -511,8 +508,6 @@ export default {
           post_id: this._race.ID,
           excel_headers: this._headers,
         });
-
-        console.log(response);
 
         this.loader = false;
         if (response.data.success == true)

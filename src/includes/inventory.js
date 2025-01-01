@@ -1,6 +1,5 @@
 const moment = require('moment');
 const socket = require('../socket-common.js')
-const axios = require('axios');
 
 const {
     CheckSum,
@@ -74,7 +73,7 @@ function inventory_fn(data, reader, readerInfo) {
         // Zein antenak jaso duen zehaztu
         let ant = getAntenna('0x' + resp[4], '0x' + resp[resp.length - 2]);
 
-        // Ikusi ea count array nagusko 1. TAG den ala ez eta hau gorde.
+        // Ikusi ea count array nagusiko 1. TAG den ala ez eta hau gorde.
         if (!global.count.length) {
             _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
         }

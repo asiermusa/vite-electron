@@ -303,14 +303,10 @@ export default createStore({
       data2
     }) {
 
-
-
-
       let events = context.state.events;
       if (events) {
         events.forEach((event) => {
           data1.map((res) => {
-            console.log(toSlug(event.name), toSlug(res.event))
             if (toSlug(event.name) == toSlug(res.event)) {
               res.event = event;
             }
@@ -331,6 +327,14 @@ export default createStore({
           });
         });
         socket.emit("check-status");
+      }
+
+      const check_wp = await axios.get("/v1/check")
+      if (check_wp.data.success) {
+        context.commit("_SET_STATUS", {
+          desc: "wp",
+          value: true,
+        });
       }
 
       // obtener todos los eventos de la carrera (generales)

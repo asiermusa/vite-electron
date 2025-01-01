@@ -224,8 +224,6 @@ export default {
                 "Fitxategia igotzerakoan errore bat gertatu da edo hutsik zegoen...";
               that.color = "error";
             }
-
-            console.log("respo", that.message);
           }
         }
     );
@@ -324,7 +322,6 @@ export default {
         if (res[1] == item.dorsal) return res;
       });
 
-      console.log(item);
       this.changeSplit = find[0][4].splits;
       this.changeItem = item;
       this.changeSplitSelected = item.split;

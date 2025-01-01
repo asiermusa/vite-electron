@@ -56,6 +56,16 @@
 
           <v-col cols="1">
             <v-text-field
+              placeholder="Tag"
+              variant="outlined"
+              v-model="searchTag"
+              class="my-3"
+              density="compact"
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="1">
+            <v-text-field
               placeholder="Dortsala"
               variant="outlined"
               v-model="search"
@@ -83,7 +93,7 @@
               density="compact"
             ></v-text-field>
           </v-col>
-          <v-col cols="3">
+          <v-col cols="2">
             <v-text-field
               placeholder="Lasterketa"
               variant="outlined"
@@ -129,7 +139,7 @@
                   >
                   </v-icon>
                   <v-tooltip activator="parent" location="right"
-                    >Tag: {{ item.tag }}</v-tooltip
+                    >Tag: {{ this._normalize(item.tag) }}</v-tooltip
                   >
                 </div>
               </td>
@@ -158,6 +168,7 @@ export default {
   data() {
     return {
       search: null,
+      searchTag: null,
       searchCity: null,
       searchName: null,
       searchRace: null,
@@ -186,6 +197,12 @@ export default {
       if (this.search) {
         response = response.filter((item) => {
           return item.bib.toLowerCase().includes(this.search.toLowerCase());
+        });
+      }
+
+      if (this.searchTag) {
+        response = response.filter((item) => {
+          return item.tag.toLowerCase().includes(this.searchTag.toLowerCase());
         });
       }
 
@@ -246,7 +263,10 @@ export default {
         .replace(/[^\w\s-]/g, "") // Remove special characters
         .replace(/[\s_-]+/g, "-"); // Replace spaces and underscores with hyphens
     },
-
+    _normalize(str) {
+      if (!str) return null;
+      return str.replace(/^0+(?=\d)/, "");
+    },
     _isWoman(s) {
       if (!s) return false;
       const normalized = this._toSlug(s);

@@ -1,6 +1,6 @@
 <template>
   <div class="chrono-div">
-    <div class="chrono">{{ clock }}</div>
+    <div class="chrono" v-html="formattedTime"></div>
   </div>
 </template>
 
@@ -38,6 +38,13 @@ export default {
     setInterval(() => {
       this._getTimeServer();
     }, 60000);
+  },
+  computed: {
+    formattedTime() {
+      // Split the time into two parts: before and after the decimal point
+      const [mainTime, decimal] = this.clock.split(".");
+      return `${mainTime}<span class="decimal">.${decimal}</span>`;
+    },
   },
   watch: {
     time(val) {
@@ -170,6 +177,11 @@ $digital: "DS-Digital";
 }
 
 .chrono {
-  font-size: 22px;
+  text-align: center;
+  font-size: 40px;
+}
+
+.decimal {
+  font-size: 30px;
 }
 </style>

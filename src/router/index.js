@@ -102,7 +102,7 @@ const routes = [{
     path: '/system',
     component: SystemStatus,
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
     }
   }
 ]

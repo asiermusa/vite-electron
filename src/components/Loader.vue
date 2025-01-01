@@ -1,10 +1,10 @@
 <template>
   <v-row>
-    <v-col>
-      <v-progress-linear
-        :color="color"
-        indeterminate
-      ></v-progress-linear> </v-col
+    <v-progress-linear
+      :color="color"
+      indeterminate
+      class="my-3"
+    ></v-progress-linear
   ></v-row>
 </template>
 

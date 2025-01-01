@@ -13,7 +13,7 @@
         <v-card variant="outlined">
           <v-list nav>
             <v-list-item> <h3 class="main-title-2">Cloud</h3> </v-list-item>
-            <v-list-item v-for="(item, k) in status" :key="k">
+            <v-list-item v-for="(item, k) in filteredStatus" :key="k">
               <template v-slot:prepend>
                 <v-icon
                   v-if="!item"
@@ -75,13 +75,24 @@
 export default {
   name: "SystemStatusComponent",
   computed: {
-    status() {
-      return this.$store.state.status;
+    filteredStatus() {
+      const status = this.$store.state.status || {}; // Ensure status is an object
+      // Create a new object excluding the `drive` key based on the condition
+      return Object.fromEntries(
+        Object.entries(status).filter(([key, value]) => {
+          // Exclude the `drive` key if `value` is true and `this.race` is falsy
+          return !(key == "drive" && !this.race);
+        })
+      );
     },
     connected() {
       return this.$store.state.connected;
     },
+    race() {
+      return this.$store.state.race;
+    },
   },
+
   methods: {
     _statusNames(name) {
       switch (name) {

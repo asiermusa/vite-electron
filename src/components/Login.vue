@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <div>
-      <img src="../assets/logo.png" class="logo" />
+      <img src="../assets/azkar-white.svg" class="logo-login" />
 
       <v-text-field
         label="Erabiltzailea"
@@ -30,7 +30,10 @@
         size="x-large"
         >Saioa hasi</v-btn
       >
-      <Loader v-if="loader" class="my-2" color="white" />
+
+      <v-col>
+        <Loader v-if="loader" class="my-2" color="white" />
+      </v-col>
       <v-alert v-if="error" :text="error" type="error" class="my-4"></v-alert>
     </div>
   </div>
@@ -143,9 +146,9 @@ ion-button {
   box-shadow: none;
 }
 
-.logo {
+.logo-login {
   margin: 0 0 20px 0;
-  max-height: 40px;
+  height: 65px !important;
 }
 
 .copy {

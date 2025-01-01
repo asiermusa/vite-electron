@@ -1,7 +1,6 @@
 const {
     contextBridge,
     ipcRenderer,
-    session
 } = require('electron');
 
 // contextBridge lets us define a varible ('window.ipc' here) which
