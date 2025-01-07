@@ -1,2 +1,4 @@
-"tag","ant","timestamp","id","dorsal","name","city","pretty_time","real_time","event","split","split_id","reader","host","race"
-"000000000000000000000003",3,"1734546054657","yeWbKzqjrd","3","HIRU","Mendata","00h:27:35:424","2024-12-18 19:20:54.658","Martxa Luzea","Irteera - Salida","16749c05acd69a","Reader 1","asiermusa-mac-desk",20
+"tag","bib","name","city","event","sex","cat"
+"90","1","Asier","","Martxa Luzea","Ezezaguna",""
+"4","2","Jon Landa","","Martxa Luzea","Emakumea",""
+"111000000000000000000008","3","Oier Elorriaga","","Martxa Laburra","Gizona",""

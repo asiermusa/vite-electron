@@ -41,6 +41,16 @@
           variant="tonal"
         ></v-alert>
 
+        <v-btn
+          @click="_saveData()"
+          variant="outlined"
+          color="primary"
+          prepend-icon="mdi-upload"
+          class="mx-2 mt-4"
+        >
+          CSV gorde</v-btn
+        >
+
         <v-row class="my-1">
           <v-col cols="3">
             <v-btn
@@ -182,6 +192,29 @@ export default {
   mounted() {
     let items = this.$store.state.startList;
     this.header = items[0];
+
+    let that = this;
+
+    window.ipc.handle(
+      "fromMain",
+      () =>
+        function (event, data) {
+          if (data[0] == "upload-response") {
+            that.loader = false;
+            that.googleSuccess = null;
+            that.googleError = null;
+            const response = data[1];
+
+            if (response) {
+              that.googleSuccess = "Fitxategia ondo igo da zerbitzarira";
+              that.color = "success";
+            } else {
+              that.googleError =
+                "Fitxategia igotzerakoan errore bat gertatu da edo hutsik zegoen...";
+            }
+          }
+        }
+    );
   },
   computed: {
     sortItems() {
@@ -278,6 +311,11 @@ export default {
     },
     _select(val) {
       this.selected = this.$store.state.startList[val];
+    },
+    _saveData() {
+      this.loader = true;
+      this.message = false;
+      window.ipc.send("toMain", ["upload-inscritos"]);
     },
     _filterColumn(col, i) {
       if (col.name) return col.name;

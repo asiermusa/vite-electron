@@ -275,9 +275,79 @@ async function requests(data) {
         } catch (err) {
             console.error(err);
         }
+    }
 
 
+    // inscritos
+    if (cmd == 'upload-inscritos') {
 
+        const items = global.startList;
+
+        const jsonData = items; // Convertir texto a JSON
+        if (!Array.isArray(jsonData)) throw new Error("El JSON no es un array.");
+        if (jsonData.length === 0) throw new Error("El array está vacío.");
+
+        // Campos del CSV
+        const fields = ['tag', 'bib', 'name', 'city', 'event', 'sex', 'cat'];
+
+        // Sanitize data
+        const sanitizedData = jsonData.map(item => ({
+            tag: item.tag || '',
+            bib: item.bib || '',
+            name: item.name || '',
+            city: item.city || '',
+            event: item.event || '',
+            sex: item.sex || '',
+            cat: item.cat || ''
+        }));
+
+        try {
+            const json2csvParser = new Parser({
+                fields
+            });
+            const csvData = json2csvParser.parse(sanitizedData);
+
+            const FormData = require('form-data');
+
+            try {
+                // Write CSV to file
+                await fs.promises.writeFile('output.csv', csvData, 'utf8');
+
+
+                const form = new FormData();
+                form.append("file", fs.createReadStream('output.csv'));
+                form.append("post_id", 20); // global.race.ID
+                form.append("user", global.hostname);
+
+
+                const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload-inscritos', form, {
+                    headers: {
+                        ...form.getHeaders()
+                    }
+                });
+
+                if (upload.data.success) {
+                    global.mainWindow.webContents.send('fromMain', ['upload-response', true]);
+                } else {
+                    global.mainWindow.webContents.send('fromMain', ['upload-response', false]);
+                }
+
+
+                const leer = await axios.get('https://denborak.biklik.eus/wp-json/v1/get-inscritos', {
+                    params: {
+                        post_id: 20
+                    }
+                });
+
+                console.log(leer.data.data)
+
+            } catch (error) {
+                console.error("Error uploading file:", error.message);
+            }
+
+        } catch (err) {
+            console.error("Error during JSON-to-CSV process:", err.message);
+        }
 
     }
 

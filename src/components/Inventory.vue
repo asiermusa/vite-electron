@@ -81,7 +81,7 @@
         prepend-icon="mdi-upload"
         class="mx-2"
       >
-        Internetera bidali</v-btn
+        Datuak zerbitzarian gorde</v-btn
       >
 
       <v-row class="my-1">
