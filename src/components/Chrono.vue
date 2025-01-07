@@ -177,11 +177,12 @@ $digital: "DS-Digital";
 }
 
 .chrono {
+  font-weight: 600;
   text-align: center;
-  font-size: 40px;
+  font-size: 24px;
 }
 
 .decimal {
-  font-size: 30px;
+  font-size: 17px;
 }
 </style>

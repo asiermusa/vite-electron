@@ -569,8 +569,7 @@ export default {
 }
 
 .chrono-div {
-  font-family: "Upper-Clock";
-  font-weight: normal;
+  // font-family: "Upper-Clock";
   width: 100%;
 }
 
