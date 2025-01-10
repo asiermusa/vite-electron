@@ -72,7 +72,6 @@ function inventory_fn(data, reader, readerInfo) {
 
         // Zein antenak jaso duen zehaztu
         let ant = getAntenna('0x' + resp[4], '0x' + resp[resp.length - 2]);
-
         // Ikusi ea count array nagusiko 1. TAG den ala ez eta hau gorde.
         if (!global.count.length) {
             _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
@@ -134,6 +133,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     //     { name: 'Tartekoa - Intermedio', slug: '0_tartekoa - intermedio' },
     //     { name: 'Helmuga - Meta', slug: '0_helmuga - meta' }
     // ]
+
     global.selectedSplits.forEach((split) => {
         current.event.splits.forEach((item) => {
             if (split.items.includes(global.hostname) && split.group == item.unique_id) {
@@ -165,7 +165,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress backendean dagoen informazioa da hau).
-    console.log('min time', current.event.splits[setSplitIndex].min_time)
     let splitDiffSeconds = moment.duration(current.event.splits[setSplitIndex].min_time).asSeconds();
 
     if (parseInt(currentTime) < parseInt(currentEventTime + splitDiffSeconds)) {
@@ -186,8 +185,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Irteera errealearen ordua ikusi + split jakin baten min_time gehitu.
-    console.log('start', parseInt(currentTime), parseInt(start) + parseInt(splitDiffSeconds * 1000))
-
 
     if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
         console.log("Split hau oraindik ezin da irakurri MIN TIME...");

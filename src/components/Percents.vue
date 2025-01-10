@@ -58,9 +58,9 @@ export default {
   mounted() {
     window.ipc.send("toMain", ["get-read-percents"]);
 
+    // grafikoak vuen erakusteko beharrezkoa da
     let eventsQty = [];
-    this.startList.forEach((res, ind) => {
-      if (ind == 0) return;
+    this.startList.forEach((res) => {
       if (!eventsQty.length) {
         eventsQty.push({
           name: res.event.name,
@@ -84,7 +84,7 @@ export default {
         }
       }
     });
-
+    // grafikoak vuen erakusteko beharrezkoa da
     let that = this;
     window.ipc.handle(
       "fromMain",
@@ -95,6 +95,7 @@ export default {
             let percents = data[1];
             let current = that.eventsSplitsHosts;
 
+            console.log(percents);
             if (percents.length) {
               current.map((res) => {
                 res.splits.map((s) => {

@@ -300,9 +300,6 @@ export default {
     _inventoryStatus() {
       return this.$store.state.inventory;
     },
-    startList() {
-      return this.$store.state.startList;
-    },
   },
   // watch: {
   //   items: {

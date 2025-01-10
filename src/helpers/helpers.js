@@ -51,7 +51,7 @@ async function generateComputerDescription() {
 
     // Generate description: username-platform
     const raw = `${username}-${osName}-${batteryStatus}`;
-    console.log(raw)
+
     const slug = raw
         .toLowerCase() // Convert to lowercase
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with '-'
@@ -92,8 +92,6 @@ function percentsSum(currentTag) {
             global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
         }
     }
-
-    console.log(global.percents)
 }
 
 function onTagDetected(tagId) {
@@ -180,7 +178,6 @@ function filterName(tag, startList) {
 
     let find = null;
     find = startList.filter((res, i) => {
-        if (i == 0) return;
         if (res.tag.padStart(24, '0') == tag) return res;
     });
 
@@ -316,6 +313,19 @@ function organizeExcelData(datos, validacionesCabeceras) {
     };
 }
 
+function toSlug(str) {
+
+    if (typeof str !== 'string') {
+      return null;
+    }
+  
+    return str
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
+  }
 
 // Export all functions at once
 module.exports = {
@@ -334,5 +344,6 @@ module.exports = {
     onTagDetected,
     percentsSum,
     generateRandomString,
-    organizeExcelData
+    organizeExcelData,
+    toSlug
 };

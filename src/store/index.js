@@ -287,11 +287,16 @@ export default createStore({
           value: true,
         });
 
+        let participants = response.data.data.resultados;
+        let events = context.state.events;
+      
+   
         window.ipc.send("toMain", [
           "start-list",
-          JSON.stringify(response.data.data.resultados),
+          JSON.stringify(participants),
+          JSON.stringify(events),
         ]);
-
+        
         return response;
       } catch (err) {
         return 'error';
@@ -313,6 +318,7 @@ export default createStore({
           });
         });
       }
+
       context.commit("_SET_START_LIST_HEADERS", data2);
       context.commit("_SET_START_LIST", data1);
     },

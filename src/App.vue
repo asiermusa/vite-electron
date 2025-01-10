@@ -240,9 +240,11 @@ export default {
           // start list
           if (data[0] == "start-list") {
             that.$store.dispatch("_assocEventsSplits", {
-              data1: data[1],
-              data2: data[2],
+              data1: data[1], //zerrenda
+              data2: data[2], //goiburuak
             });
+
+            console.log("zerrenda", data[1]);
           }
 
           if (data[0] == "no-ants") {

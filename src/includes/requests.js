@@ -12,7 +12,8 @@ const {
     dec2hex,
     getAccurateTime,
     percentsSum,
-    organizeExcelData
+    organizeExcelData,
+    toSlug
 } = require("../helpers/helpers.js");
 const {
     Socket
@@ -209,7 +210,6 @@ async function requests(data) {
             }
         })
 
-        console.log(global.percents)
     }
 
     if (cmd == 'upload-file') {
@@ -339,8 +339,6 @@ async function requests(data) {
                     }
                 });
 
-                console.log(leer.data.data)
-
             } catch (error) {
                 console.error("Error uploading file:", error.message);
             }
@@ -426,14 +424,27 @@ async function requests(data) {
 
         try {
             const result = organizeExcelData(JSON.parse(data[1]), global.validacionesCabeceras);
+            const events = JSON.parse(data[2]);
 
             if (!result.success) {
                 global.mainWindow.webContents.send('fromMain', ['global-error', result]);
                 return
             }
 
+            if (events) {
+                events.forEach((event) => {
+                    result.result.map((res) => {
+                    if (toSlug(event.name) == toSlug(res.event)) {
+                      res.event = event;
+                    }
+                  });
+                });
+              }
+
+
             global.startList = result.result;
             global.mainWindow.webContents.send('fromMain', ['start-list', result.result, result.headers]);
+
         } catch (err) {
             global.startList = null;
             global.mainWindow.webContents.send('fromMain', ['start-list', null]);
