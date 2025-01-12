@@ -113,6 +113,13 @@
             to="/runners"
           ></v-list-item>
 
+          <v-list-item
+            v-if="race"
+            prepend-icon="mdi-format-list-numbered"
+            title="Sailkapenak"
+            to="/results"
+          ></v-list-item>
+
           <v-list-group value="Ezarpenak">
             <template v-slot:activator="{ props }">
               <v-list-item
@@ -414,6 +421,9 @@ export default {
     _inventoryStatus() {
       return this.$store.state.inventory;
     },
+    sound() {
+      return this.$store.state.sound;
+    },
   },
   watch: {
     connected(val) {
@@ -471,6 +481,7 @@ export default {
         this.readDelay * 1000,
         JSON.stringify(this.selectedSplits),
         JSON.stringify(this.race),
+        this.sound,
       ]);
     },
 

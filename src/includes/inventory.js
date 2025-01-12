@@ -38,9 +38,9 @@ function inventory_fn(data, reader, readerInfo) {
     }
 
     // ANTENA TXEKEOA egin behar denean soilik.
-    // Hau ez da inbentarioa
     if (response.substring(6, 8) == '8a' && global.checkAntennas && response.substring(2, 4) == '0a') {
         global.mainWindow.webContents.send('fromMain', ['checking', resp]);
+        console.log( global.mainWindow)
         global.checkAntennas = false;
         return false;
     }

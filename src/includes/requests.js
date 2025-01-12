@@ -179,11 +179,12 @@ async function requests(data) {
 
     if (cmd == 'excel') {
         let items = data[1];
-        await axios.post('https://denborak.online/api/v2/save-data', {
-            items,
-            host: global.hostname
-        });
-        //createExcel(items, app)
+        // await axios.post('https://denborak.online/api/v2/save-data', {
+        //     items,
+        //     host: global.hostname
+        // });
+
+        createExcel(items)
     }
 
 
@@ -384,41 +385,7 @@ async function requests(data) {
         global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
     }
 
-    if (cmd == 'get-output-power') {
-        let reader = JSON.parse(data[1]);
-        let selectedReader;
-
-        global.readersInfo.forEach((r, i) => {
-            if (r.name == reader.name) selectedReader = global.readers[i]
-        })
-
-        const query = Buffer.from([0xA0, 0x03, 0x01, 0x97]);
-        const check = CheckSum(query); // Example check
-        const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
-        selectedReader.write(message, () => {
-            global.outputPower = true;
-        });
-    }
-
-    if (cmd == 'set-output-power') {
-        let reader = JSON.parse(data[1]);
-        let selectedReader;
-
-        global.readersInfo.forEach((r, i) => {
-            if (r.name == reader.name) selectedReader = global.readers[i]
-        })
-
-        let power = [];
-        reader.power.forEach((res, i) => {
-            if (res) power[i] = dec2hex(res)
-        })
-        const query = Buffer.from([0xA0, 0x0B, 0x01, 0x76, power[0], power[1], power[2], power[3], power[4], power[5], power[6], power[7]]);
-        const check = CheckSum(query); // Example check
-        const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
-        selectedReader.write(message, () => {
-            global.outputPower = true;
-        });
-    }
+    
 
     if (cmd == 'start-list') {
 
@@ -480,6 +447,7 @@ async function requests(data) {
         global.selectedSplits = JSON.parse(data[2]);
         global.race = JSON.parse(data[3]);
         global.sound = data[4]
+        console.log('sound', global.sound)
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)
@@ -530,9 +498,46 @@ async function requests(data) {
     }
 
 
+    if (cmd == 'get-output-power') {
+        let reader = JSON.parse(data[1]);
+        let selectedReader;
+
+        global.readersInfo.forEach((r, i) => {
+            if (r.name == reader.name) selectedReader = global.readers[i]
+        })
+
+        const query = Buffer.from([0xA0, 0x03, 0x01, 0x97]);
+        const check = CheckSum(query); // Example check
+        const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
+        selectedReader.write(message, () => {
+            global.outputPower = true;
+        });
+    }
+
+    if (cmd == 'set-output-power') {
+        let reader = JSON.parse(data[1]);
+        let selectedReader;
+
+        global.readersInfo.forEach((r, i) => {
+            if (r.name == reader.name) selectedReader = global.readers[i]
+        })
+
+        let power = [];
+        reader.power.forEach((res, i) => {
+            if (res) power[i] = dec2hex(res)
+        })
+        const query = Buffer.from([0xA0, 0x0B, 0x01, 0x76, power[0], power[1], power[2], power[3], power[4], power[5], power[6], power[7]]);
+        const check = CheckSum(query); // Example check
+        const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
+        selectedReader.write(message, () => {
+            global.outputPower = true;
+        });
+    }
+
     if (cmd == 'check-antennas') {
         global.startInventory = false;
         let reader = JSON.parse(data[1])
+
         let antennas = [];
         reader.ants.filter((res, i) => {
             if (res) antennas[i] = '0x01'

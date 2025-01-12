@@ -108,6 +108,8 @@ export default {
       error: false,
       tab: null,
       loader: false,
+      selectedChips: [],
+      devices: false,
     };
   },
   mounted() {
@@ -196,6 +198,35 @@ export default {
         this.error =
           "Errorea: Arazo bat gertatu da zerbitzarian datuak gordetzerakoan.";
         this.loader = false;
+      }
+    },
+
+    async getClasificacionDevices() {
+      this.loader = true;
+      try {
+        const response = await axios.get("/v1/clasificacion-devices", {
+          params: {
+            post_id: this.race.ID,
+          },
+        });
+
+        if (response.data.success) {
+          this.devices = response.data.data;
+        } else {
+          this.error = response.data.data.message;
+        }
+        this.loader = false;
+      } catch (err) {
+        this.error =
+          "Errorea: Arazo bat gertatu da zerbitzarian datuak gordetzerakoan.";
+        this.loader = false;
+      }
+    },
+    async sendData() {
+      if (this.selectedChips.length > 0) {
+        console.log(this.selectedChips);
+      } else {
+        console.log("No chips selected");
       }
     },
   },

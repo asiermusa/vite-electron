@@ -51,6 +51,16 @@
           CSV gorde</v-btn
         >
 
+        <v-btn
+          @click="this.$router.push('/usb-reader')"
+          variant="outlined"
+          color="primary"
+          prepend-icon="mdi-account-tag"
+          class="mx-2 mt-4"
+        >
+          Tag grabatzailea</v-btn
+        >
+
         <v-row class="my-1">
           <v-col cols="3">
             <v-btn

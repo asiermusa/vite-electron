@@ -38,7 +38,7 @@ async function requests_serial(data) {
             const buf = Buffer.from(data, 'ascii');
             const response = buf.toString('hex', 0, buf.length);
             console.log('dis', response)
-            global.mainWindow.webContents.send('fromMain', ['serial-usb', response.slice(12, 36), disabled]);
+            global.mainWindow.webContents.send('fromMain', ['serial-usb-read', response.slice(12, 36), disabled]);
             port.close()
         });
 

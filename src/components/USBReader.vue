@@ -120,7 +120,7 @@
             </v-col>
             <v-col lg="4" md="12" sm="12">
               <v-card-text>
-                <p class="text-h6 font-weight-black">Google Drive Gorde</p>
+                <p class="text-h6 font-weight-black">Google Drivean Gorde</p>
 
                 <!-- <div class="text-medium-emphasis">
                   Parte-hartzaileen zerrendan egindako<br />aldaketak DRIVEan
@@ -364,7 +364,7 @@ export default {
           }
 
           // usb tag irakurri
-          if (data[0] == "serial-usb") {
+          if (data[0] == "serial-usb-read") {
             that.read = data[1];
 
             that.disabledSave = false;
@@ -467,6 +467,20 @@ export default {
       let success = false;
       this.message = false;
 
+      // ea dortsala existitzen den ala ez
+      this.items.filter((res) => {
+        if (res.bib == this.bibNumber) exist = true;
+      });
+
+      if (!exist) {
+        this.error = "Dortsal hau ez dago parte-hartzaile zerrendan.";
+        return true;
+      }
+
+      // reiniciar EXIST
+      exist = false;
+
+      // ea tag hau jadanik dortsal baten duen ala ez
       this.items.filter((res) => {
         if (this._normalize(res.tag) == this._normalize(this.read))
           exist = true;

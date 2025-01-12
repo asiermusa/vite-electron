@@ -1,53 +1,39 @@
 const ExcelJS = require('exceljs');
 const path = require('path');
 
-const workbook = new ExcelJS.Workbook();
-const worksheet = workbook.addWorksheet('My Sheet');
-
-async function createExcel(items, app) {
-    worksheet.columns = [{
-            header: 'Izena',
-            key: 'name',
-            width: 30
-        },
-        {
-            header: 'Herria',
-            key: 'city',
-            width: 20
-        },
-        {
-            header: 'Denbora',
-            key: 'time',
-            width: 15
-        },
-        {
-            header: 'Tag',
-            key: 'tag',
-            width: 30
-        },
-        {
-            header: 'Antena',
-            key: 'ant',
-            width: 10
+async function createExcel(responseData) {
+    try {
+        // Validate the input structure
+        if (!responseData || !responseData.data || !responseData.data.headers || !responseData.data.data) {
+            throw new Error('Invalid data format: Missing headers or rows.');
         }
-    ];
 
-    items = JSON.parse(items);
+        const headers = responseData.data.head; // Extract headers
+        const rows = responseData.data.data;     // Extract data rows
 
-    items.forEach(res => {
-        worksheet.addRow({
-            name: res.name,
-            city: res.city,
-            time: res.pretty_time,
-            tag: res.tag,
-            ant: res.ant
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Results');
+
+        // Add headers as the first row
+        worksheet.addRow(headers);
+
+        // Add each row of data
+        rows.forEach(row => {
+            const rowValues = headers.map(header => row[header] || ''); // Ensure values match headers
+            worksheet.addRow(rowValues);
         });
-    })
 
-    const filePath = path.join(app.getPath('downloads'), 'time.xlsx');
-    await workbook.xlsx.writeFile(filePath);
+        // Save the workbook to a file
+        const filePath = path.join(__dirname, 'results.xlsx');
+        await workbook.xlsx.writeFile(filePath);
 
-    return filePath;
+        console.log(`Excel file created successfully at: ${filePath}`);
+        return filePath; // Return the file path for further use
+    } catch (error) {
+        console.error('Error creating Excel file:', error.message);
+        throw error; // Re-throw the error for the caller to handle
+    }
 }
 
 module.exports = createExcel;

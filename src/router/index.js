@@ -18,6 +18,7 @@ import Percents from '@/components/Percents.vue'
 import Otp from '@/components/Otp.vue'
 import ServerWP from '@/components/ServerWP.vue'
 import SystemStatus from '@/components/SystemStatus.vue'
+import Results from '@/components/Results.vue'
 
 // ROUTER
 const routes = [{
@@ -45,6 +46,13 @@ const routes = [{
   {
     path: '/percents',
     component: Percents,
+    meta: {
+      requiresAuth: false,
+    }
+  },
+  {
+    path: '/results',
+    component: Results,
     meta: {
       requiresAuth: false,
     }

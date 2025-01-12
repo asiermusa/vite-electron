@@ -169,27 +169,18 @@ export default {
   mounted() {
     // set reader info
     this.tabs = this.connected;
+    let that = this;
 
-    let system_datetime = moment().unix();
-    let real_datetime = moment().unix(moment().tz("Europe/Madrid").format());
-    if (system_datetime == real_datetime)
-      //change format as needed…
-
-      window.ipc.handle(
-        "fromMain",
-        () =>
-          function (event, data) {
-            if (data[0] == "checking") {
-              let read = data[1][6];
-              that.message = "Irakurritako tag kopurua: " + read;
-            }
-
-            if (data[0] == "checking") {
-              let read = data[1][6];
-              that.message = "Irakurritako tag kopurua: " + read;
-            }
+    window.ipc.handle(
+      "fromMain",
+      () =>
+        function (event, data) {
+          if (data[0] == "checking") {
+            let read = data[1][6];
+            that.message = "Irakurritako tag kopurua: " + read;
           }
-      );
+        }
+    );
   },
   computed: {
     connected() {
