@@ -385,7 +385,7 @@ async function requests(data) {
         global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
     }
 
-    
+
 
     if (cmd == 'start-list') {
 
@@ -401,12 +401,12 @@ async function requests(data) {
             if (events) {
                 events.forEach((event) => {
                     result.result.map((res) => {
-                    if (toSlug(event.name) == toSlug(res.event)) {
-                      res.event = event;
-                    }
-                  });
+                        if (toSlug(event.name) == toSlug(res.event)) {
+                            res.event = event;
+                        }
+                    });
                 });
-              }
+            }
 
 
             global.startList = result.result;

@@ -65,6 +65,7 @@
             class="my-3"
             :items="eventsSplitsHosts"
             item-title="name"
+            item-value="unique_id"
             density="compact"
           ></v-select>
 
@@ -113,7 +114,7 @@ export default {
             post_id: this.race.ID,
           },
         });
-        console.log(response.data);
+
         if (response.data.success) {
           this.devices = response.data.data;
         } else {
@@ -128,6 +129,7 @@ export default {
     },
     async sendData() {
       if (this.selectedChips.length > 0) {
+        console.log(this.event);
         try {
           const response = await axios.get("/v1/process-results", {
             params: {
@@ -136,9 +138,10 @@ export default {
               event: this.event,
             },
           });
+
+          console.log(response.data.data);
           if (response.data.success) {
             this.success = "Sailkapena ondo sortu da.";
-
             window.ipc.send("toMain", [
               "excel",
               JSON.stringify(response.data.data),

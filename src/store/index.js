@@ -241,6 +241,7 @@ export default createStore({
           name: e.name,
           distance: e.distance,
           start_date: e.start_date,
+          unique_id: e.unique_id,
           splits: [],
         });
 
@@ -289,14 +290,14 @@ export default createStore({
 
         let participants = response.data.data.resultados;
         let events = context.state.events;
-      
-   
+
+
         window.ipc.send("toMain", [
           "start-list",
           JSON.stringify(participants),
           JSON.stringify(events),
         ]);
-        
+
         return response;
       } catch (err) {
         return 'error';
