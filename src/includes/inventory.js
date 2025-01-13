@@ -205,7 +205,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.split_id = nextSplit.unique_id;
     currentTag.reader = readerName;
     currentTag.host = global.hostname;
-    ``
     currentTag.race = global.race.ID
 
     // Count array nagusian gehitu.

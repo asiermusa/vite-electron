@@ -230,6 +230,8 @@ async function requests(data) {
             "dorsal",
             "name",
             "city",
+            "cat",
+            "sex",
             "pretty_time",
             "real_time",
             "event",

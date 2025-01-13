@@ -244,7 +244,9 @@ export default {
       }
 
       if (this.searchTag) {
+        console.log(this.searchTag);
         response = response.filter((item) => {
+          if (!item.tag) return;
           return item.tag.toLowerCase().includes(this.searchTag.toLowerCase());
         });
       }

@@ -69,6 +69,37 @@
             density="compact"
           ></v-select>
 
+          <div v-if="event" class="my-3">
+            <h4>Select Chips</h4>
+
+            <!-- Chip Group for Selection -->
+            <v-chip-group v-model="selectedRows" multiple column>
+              <v-chip
+                v-for="(chip, index) in _computedRows"
+                :key="index"
+                :value="chip"
+                color="primary"
+                class="ma-2"
+              >
+                {{ Object.values(chip)[0] }}
+              </v-chip>
+            </v-chip-group>
+
+            <h4>Selected Chips</h4>
+            <v-row>
+              <v-chip
+                v-for="(chip, index) in selectedRows"
+                :key="'selected-' + index"
+                color="pink"
+                class="ma-2"
+                closable
+                @click:close="removeChip(chip)"
+              >
+                {{ Object.values(chip)[0] }}
+              </v-chip>
+            </v-row>
+          </div>
+
           <v-btn @click="sendData" variant="tonal" color="primary"
             >Sailkapena sortu</v-btn
           >
@@ -94,6 +125,8 @@ export default {
       success: false,
       loader: false,
       event: null,
+      selectedSplits: null,
+      selectedRows: [],
     };
   },
   mounted() {},
@@ -103,6 +136,32 @@ export default {
     },
     eventsSplitsHosts() {
       return this.$store.state.eventsSplitsHosts;
+    },
+    _computedRows() {
+      if (!this.selectedSplits) return;
+
+      let rows = [
+        { dorsal: "Dorsala" },
+        { name: "Izen-abizenak" },
+        { sex: "Sexua" },
+        { city: "Herria" },
+        { cat: "Kategoria" },
+      ];
+      this.selectedSplits.splits.forEach((res, index) => {
+        rows.push({
+          ["split_" + res.unique_id]: res.name,
+        });
+      });
+      return rows;
+    },
+  },
+  watch: {
+    event(val) {
+      let sel = this.eventsSplitsHosts.filter((res) => {
+        if (res.unique_id == val) return res;
+      });
+
+      this.selectedSplits = sel[0];
     },
   },
   methods: {
@@ -129,23 +188,26 @@ export default {
     },
     async sendData() {
       if (this.selectedChips.length > 0) {
-        console.log(this.event);
+        const newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
+
         try {
           const response = await axios.get("/v1/process-results", {
             params: {
               post_id: this.race.ID,
               devices: JSON.stringify(this.selectedChips),
               event: this.event,
+              rows: JSON.stringify(newRows),
             },
           });
 
-          console.log(response.data.data);
+          console.log(response.data.data.data.data);
+
           if (response.data.success) {
             this.success = "Sailkapena ondo sortu da.";
-            window.ipc.send("toMain", [
-              "excel",
-              JSON.stringify(response.data.data),
-            ]);
+            // window.ipc.send("toMain", [
+            //   "excel",
+            //   JSON.stringify(response.data.data),
+            // ]);
           } else {
             this.error = response.data.data.message;
           }
@@ -157,6 +219,9 @@ export default {
       } else {
         console.log("No chips selected");
       }
+    },
+    removeChip(chip) {
+      this.selectedRows = this.selectedRows.filter((item) => item !== chip);
     },
   },
 };
