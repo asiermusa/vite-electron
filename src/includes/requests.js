@@ -1,3 +1,10 @@
+const {
+    BrowserWindow,
+} = require('electron')
+const {
+    download
+} = require('electron-dl'); // Install this package: npm install electron-dl
+
 const moment = require("moment-timezone");
 const fs = require('fs');
 const axios = require("axios");
@@ -559,6 +566,19 @@ async function requests(data) {
             global.checkAntennas = true;
         });
     }
+
+
+    if (cmd == 'download-pdf') {
+        try {
+            await download(BrowserWindow.getFocusedWindow(), data[1], {
+                filename: data[2] || 'download.pdf', // Default name
+            });
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
 
     if (cmd == 'manual') {
         // Example date string

@@ -35,7 +35,7 @@
       color="primary"
       variant="flat"
       class="my-3"
-      >Sailkapenak sortzeko gailuak</v-btn
+      >Sailkapenak sortu</v-btn
     >
 
     <div v-if="devices" class="my-12">
@@ -69,11 +69,11 @@
             density="compact"
           ></v-select>
 
-          <div v-if="event" class="my-3">
-            <h4>Select Chips</h4>
+          <div v-if="event" class="mt-8">
+            <v-card-title>Aukeratu erakusteko zutabeak eta ordena</v-card-title>
 
             <!-- Chip Group for Selection -->
-            <v-chip-group v-model="selectedRows" multiple column>
+            <v-chip-group v-model="selectedRows" multiple column class="my-4">
               <v-chip
                 v-for="(chip, index) in _computedRows"
                 :key="index"
@@ -85,26 +85,47 @@
               </v-chip>
             </v-chip-group>
 
-            <h4>Selected Chips</h4>
-            <v-row>
-              <v-chip
-                v-for="(chip, index) in selectedRows"
-                :key="'selected-' + index"
-                color="pink"
-                class="ma-2"
-                closable
-                @click:close="removeChip(chip)"
-              >
-                {{ Object.values(chip)[0] }}
-              </v-chip>
-            </v-row>
+            <v-chip
+              v-for="(chip, index) in selectedRows"
+              :key="'selected-' + index"
+              color="success"
+              class="ma-2"
+              closable
+              @click:close="removeChip(chip)"
+            >
+              {{ Object.values(chip)[0] }}
+            </v-chip>
           </div>
 
-          <v-btn @click="sendData" variant="tonal" color="primary"
+          <v-btn
+            @click="sendData"
+            variant="outlined"
+            color="primary"
+            class="mt-6"
             >Sailkapena sortu</v-btn
           >
         </v-card-item>
       </v-card>
+
+      <v-alert
+        v-if="pdf"
+        class="my-5"
+        prepend-icon="mdi-select-download"
+        title="PDF deskargatu"
+        text="Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak ikusteko."
+        color="info"
+        variant="tonal"
+        type="info"
+        border="start"
+        ><br />
+        <v-btn
+          @click="downloadPDF(pdf)"
+          variant="outlined"
+          color="primary"
+          class="mt-3"
+          >Deskargatu</v-btn
+        >
+      </v-alert>
     </div>
   </div>
 </template>
@@ -127,6 +148,7 @@ export default {
       event: null,
       selectedSplits: null,
       selectedRows: [],
+      pdf: false,
     };
   },
   mounted() {},
@@ -187,41 +209,74 @@ export default {
       }
     },
     async sendData() {
-      if (this.selectedChips.length > 0) {
-        const newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
+      if (
+        this.selectedChips.length < 1 ||
+        this.selectedRows.length < 1 ||
+        !this.event
+      ) {
+        this.error = "Errorea: Aukeraketak egin behar dituzu.";
+        return;
+      }
 
-        try {
-          const response = await axios.get("/v1/process-results", {
-            params: {
-              post_id: this.race.ID,
-              devices: JSON.stringify(this.selectedChips),
-              event: this.event,
-              rows: JSON.stringify(newRows),
-            },
-          });
+      this.pdf = false;
+      this.error = false;
+      this.success = false;
+      this.loader = true;
+      const newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
+      try {
+        const response = await axios.get("/v1/process-results", {
+          params: {
+            post_id: this.race.ID,
+            devices: JSON.stringify(this.selectedChips),
+            event: this.event,
+            rows: JSON.stringify(newRows),
+          },
+        });
 
-          console.log(response.data.data.data.data);
-
-          if (response.data.success) {
-            this.success = "Sailkapena ondo sortu da.";
-            // window.ipc.send("toMain", [
-            //   "excel",
-            //   JSON.stringify(response.data.data),
-            // ]);
-          } else {
-            this.error = response.data.data.message;
-          }
-          this.loader = false;
-        } catch (err) {
-          this.error = err;
-          this.loader = false;
+        if (response.data.success) {
+          this.success = "Sailkapena ondo sortu da.";
+          this.pdf = response.data.data.pdf;
+          // window.ipc.send("toMain", [
+          //   "excel",
+          //   JSON.stringify(response.data.data),
+          // ]);
+        } else {
+          this.error = response.data.data.message;
         }
-      } else {
-        console.log("No chips selected");
+        this.loader = false;
+      } catch (err) {
+        this.error = err;
+        this.loader = false;
       }
     },
     removeChip(chip) {
       this.selectedRows = this.selectedRows.filter((item) => item !== chip);
+    },
+
+    _toSlug(str) {
+      if (typeof str !== "string") {
+        return null;
+      }
+
+      return str
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "") // Remove non-alphanumeric characters
+        .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
+        .replace(/^-+|-+$/g, ""); // Remove leading or trailing hyphens
+    },
+    downloadPDF(ruta) {
+      const pdfUrl = ruta; // Reemplaza con tu URL
+
+      let eventName = this.eventsSplitsHosts.filter((res) => {
+        if (res.unique_id == this.event) return res;
+      });
+
+      const fileName = `${this._toSlug(this.race.name)}-${this._toSlug(
+        eventName[0].name
+      )}.pdf`; // Nombre del archivo que se descargará
+
+      window.ipc.send("toMain", ["download-pdf", pdfUrl, fileName]);
     },
   },
 };

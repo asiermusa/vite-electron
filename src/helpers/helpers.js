@@ -316,16 +316,16 @@ function organizeExcelData(datos, validacionesCabeceras) {
 function toSlug(str) {
 
     if (typeof str !== 'string') {
-      return null;
+        return null;
     }
-  
+
     return str
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric characters
-      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-      .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
-  }
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove non-alphanumeric characters
+        .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+        .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
+}
 
 // Export all functions at once
 module.exports = {
