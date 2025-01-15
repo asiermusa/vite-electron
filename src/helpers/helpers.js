@@ -195,8 +195,6 @@ function zeroPrefix(num, digit) {
 
 function getPrettyTime(time, event, startTime) {
 
-    // time: 1729600250917 event: row_66a3c2bd2ae8f9.99315545
-
     let start = null;
     startTime.forEach(res => {
         if (res.unique_id == event) {
@@ -212,12 +210,12 @@ function getPrettyTime(time, event, startTime) {
     let resultMilli = milli.toString().substring(decimalValue + 1);
 
     let hour = [];
-    hour.push(moment.utc(diff).format("HH"));
+    hour.push(moment.utc(diff).format("H"));
     hour.push(moment.utc(diff).format("mm"));
     hour.push(moment.utc(diff).format("ss"));
     hour.push(zeroPrefix(resultMilli, 3));
 
-    return `${hour[0]}h:${hour[1]}:${hour[2]}:${hour[3]}`;
+    return `${hour[0]}:${hour[1]}:${hour[2]}:${hour[3]}`;
 }
 
 

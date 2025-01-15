@@ -1,7 +1,8 @@
 <template>
   <div class="hello">
     <v-navigation-drawer location="right" permanent width="300">
-      <StartRace></StartRace>
+      <StartRace />
+      <ReadDelayReader />
       <PercentsComponent :minimal="true"></PercentsComponent>
     </v-navigation-drawer>
 
@@ -146,7 +147,7 @@
             :key="i"
             :class="{ isWoman: _isWoman(item.sex) }"
           >
-            <td>{{ item.dorsal }}</td>
+            <td>{{ item.bib }}</td>
             <td>{{ item.name }}</td>
             <!-- <td>{{ item.city }}</td> -->
             <td>{{ item.pretty_time }}</td>
@@ -176,12 +177,15 @@
 import StartRace from "./StartRace.vue";
 import Loader from "./Loader.vue";
 import PercentsComponent from "./Percents.vue";
+import ReadDelayReader from "./ReadDelayReader.vue";
+
 export default {
   name: "InventoryComponent",
   components: {
     PercentsComponent,
     StartRace,
     Loader,
+    ReadDelayReader,
   },
   data() {
     return {
@@ -268,7 +272,7 @@ export default {
       // Apply search filter if "search" is defined
       if (this.search) {
         response = response.filter((item) => {
-          return item.tag.toLowerCase().includes(this.search.toLowerCase());
+          return item.bib.toLowerCase().includes(this.search.toLowerCase());
         });
       }
       if (this.searchName) {
@@ -316,7 +320,7 @@ export default {
     _changeRow(item) {
       this.changeSplit = null;
       let find = this.startList.filter((res) => {
-        if (res[1] == item.dorsal) return res;
+        if (res[1] == item.bib) return res;
       });
 
       this.changeSplit = find[0][4].splits;
@@ -326,7 +330,7 @@ export default {
     _saveRow() {
       let find = null;
       this.startList.forEach((res) => {
-        if (res[1] == this.changeItem.dorsal) {
+        if (res[1] == this.changeItem.bib) {
           res[4].splits.forEach((s) => {
             if (s.name == this.changeSplitSelected) {
               find = s;

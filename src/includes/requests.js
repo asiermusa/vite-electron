@@ -234,7 +234,7 @@ async function requests(data) {
             "ant",
             "timestamp",
             "id",
-            "dorsal",
+            "bib",
             "name",
             "city",
             "cat",

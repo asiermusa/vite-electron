@@ -163,7 +163,7 @@ export default {
       if (!this.selectedSplits) return;
 
       let rows = [
-        { dorsal: "Dorsala" },
+        { bib: "Dorsala" },
         { name: "Izen-abizenak" },
         { sex: "Sexua" },
         { city: "Herria" },

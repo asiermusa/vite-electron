@@ -1,22 +1,8 @@
 <template>
-  <div class="hello">
+  <div>
     <!-- serial port -->
 
-    <v-card class="main-card mb-6" variant="outlined">
-      <v-card-text class="py-3">
-        <v-row align="center" no-gutters>
-          <v-col class="main-title" cols="6">Irakurketa</v-col>
-
-          <v-col class="text-right" cols="6">
-            <v-icon
-              color="primary"
-              icon="mdi-timer-edit-outline"
-              size="55"
-            ></v-icon>
-          </v-col>
-        </v-row>
-      </v-card-text>
-
+    <div class="main-card my-3">
       <v-card-item title="Irakurketaren interbaloa">
         <template v-slot:subtitle
           >Zehaztu irakurketa bakoitzaren denbora azerapen minimoa
@@ -35,11 +21,15 @@
           label="Soinu aktibatu irakurketa bat jasotzerakoan"
         />
 
-        <v-btn @click="_set_read_delay()" variant="flat" color="primary"
+        <v-btn
+          @click="_set_read_delay()"
+          variant="flat"
+          color="primary"
+          size="small"
           >Aldaketak gorde
         </v-btn>
       </v-card-item>
-    </v-card>
+    </div>
   </div>
 </template>
 

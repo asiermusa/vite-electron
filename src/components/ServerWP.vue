@@ -127,8 +127,8 @@
             :key="s"
             class="splits__row"
           >
-            <template v-if="errors.length">
-              <v-col cols="12">
+            <template v-if="errors[0]">
+              <v-col cols="12" class="py-0">
                 <v-alert
                   v-if="errors[index][s]"
                   :text="errors[index][s]"
@@ -146,7 +146,7 @@
                 variant="outlined"
               ></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 label="Denbora minimoa"
                 v-model="split.min_time"
@@ -158,13 +158,25 @@
               ></v-text-field>
             </v-col>
 
+            <v-col cols="3">
+              <v-text-field
+                label="Denbora maximoa"
+                v-model="split.max_time"
+                density="compact"
+                variant="outlined"
+                placeholder="Adibidez irteerako baliogarria da"
+                :error="!!errors[index]?.[s]"
+                :error-messages="errors[index]?.[s] || ''"
+              ></v-text-field>
+            </v-col>
+
             <v-col cols="2">
               <v-btn
                 color="default"
                 @click="_removeSplit(index, s)"
-                variant="tonal"
+                variant="flat"
                 density="comfortable"
-                icon="mdi-delete"
+                icon="mdi-close"
               >
               </v-btn>
             </v-col>

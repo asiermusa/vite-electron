@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div>
     <v-row align="center" no-gutters v-if="!minimal">
       <v-col cols="6"><h2 class="main-title">Irakurketa tasa</h2> </v-col>
 

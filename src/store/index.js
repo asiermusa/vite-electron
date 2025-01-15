@@ -31,7 +31,7 @@ export default createStore({
     items: [],
     hostname: null,
     inventory: false,
-    readDelay: 60, //seconds
+    readDelay: 10, //seconds
     sound: false,
     serial: null,
     race: null,

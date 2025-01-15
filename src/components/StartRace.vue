@@ -1,4 +1,5 @@
 <template>
+  <v-card-item title="Lasterketa abiarazi/geratu"> </v-card-item>
   <div v-if="events" class="start">
     <div v-for="(event, i) in events" :key="i">
       <v-checkbox
@@ -97,7 +98,7 @@ export default {
 
 <style lang="scss">
 .start {
-  padding: 15px !important;
+  padding: 0 15px !important;
   & > div {
     margin: 0;
     padding: 0;

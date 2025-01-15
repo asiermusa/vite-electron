@@ -128,11 +128,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     // Parte-hartzaile honen lasterketak zein SPLIT dituen ekarri (IRTEERA, TARTEKOAK, HELMUGA...)
     let nextSplit = false;
     const splitsConfig = [];
-    // [
-    //     { name: 'Irteera - Salida', slug: '0_irteera - salida' },
-    //     { name: 'Tartekoa - Intermedio', slug: '0_tartekoa - intermedio' },
-    //     { name: 'Helmuga - Meta', slug: '0_helmuga - meta' }
-    // ]
 
     global.selectedSplits.forEach((split) => {
         current.event.splits.forEach((item) => {
@@ -144,7 +139,6 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
             }
         })
     })
-
 
     let lastReading = 0;
     let lastSplitIndex = 0;
@@ -164,9 +158,8 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         return true;
     }
 
-    // Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress backendean dagoen informazioa da hau).
+    // ONA: Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress ACFbackendean dagoen informazioa da hau).
     let splitDiffSeconds = moment.duration(current.event.splits[setSplitIndex].min_time).asSeconds();
-
     if (parseInt(currentTime) < parseInt(currentEventTime + splitDiffSeconds)) {
         console.log("Split hau oraindik ezin da irakurri...");
         return false;
@@ -184,8 +177,28 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         return false;
     }
 
-    // Irteera errealearen ordua ikusi + split jakin baten min_time gehitu.
+    // Validar si el tiempo actual está por ENCIMA del maximo permitido para este split. Por ejemplo importante para las salidas.
+    if(current.event.splits[setSplitIndex].max_time) {
+        let splitMaxSeconds = moment.duration(current.event.splits[setSplitIndex].max_time).asSeconds() * 1000; // Convertir max_time a milisegundos
+        // Validar si el tiempo actual está fuera del rango permitido para este split
+        if (parseInt(currentTime) > parseInt(start) + parseInt(splitMaxSeconds)) {
+            console.log("Split hau oraindik ezin da irakurri MAX TIME... Pasando al siguiente split.");
+            
+            // Intentar pasar al siguiente split
+            nextSplit = splitsConfig[setSplitIndex + 1];
+            
+            // Si no hay un siguiente split, detener el proceso
+            if (!nextSplit) {
+                console.log("Ez dago splitik gordetzeko...");
+                return true;
+            }
+    
+            // Actualizar el índice para reflejar el siguiente split
+            setSplitIndex++;
+        }
+    }
 
+    // Validar si el tiempo actual está por debajo del mínimo permitido para este split
     if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
         console.log("Split hau oraindik ezin da irakurri MIN TIME...");
         return false;
@@ -193,7 +206,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
     currentTag.id = generateRandomString(10);
-    currentTag.dorsal = current.bib;
+    currentTag.bib = current.bib;
     currentTag.name = current.name;
     currentTag.city = current.city;
     currentTag.sex = current.sex;

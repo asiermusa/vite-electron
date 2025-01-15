@@ -85,12 +85,12 @@
             to="/home"
           ></v-list-item>
 
-          <v-list-item
+          <!-- <v-list-item
             v-if="race"
             prepend-icon="mdi-percent-circle"
             title="Irakurketa tasa"
             to="/percents"
-          ></v-list-item>
+          ></v-list-item> -->
 
           <v-list-item
             v-if="!race"
@@ -133,10 +133,6 @@
             <v-list-item
               title="TAG Grabatzailea"
               to="/usb-reader"
-            ></v-list-item>
-            <v-list-item
-              title="Reader Irakurketa"
-              to="/read-delay"
             ></v-list-item>
           </v-list-group>
 
