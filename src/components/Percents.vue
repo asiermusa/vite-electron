@@ -95,7 +95,6 @@ export default {
             let percents = data[1];
             let current = that.eventsSplitsHosts;
 
-            console.log(percents);
             if (percents.length) {
               current.map((res) => {
                 res.splits.map((s) => {

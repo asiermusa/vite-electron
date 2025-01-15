@@ -233,6 +233,8 @@ export default {
           },
         });
 
+        console.log(response.data.data);
+
         if (response.data.success) {
           this.success = "Sailkapena ondo sortu da.";
           this.pdf = response.data.data.pdf;

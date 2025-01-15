@@ -343,11 +343,11 @@ async function requests(data) {
                 }
 
 
-                const leer = await axios.get('https://denborak.biklik.eus/wp-json/v1/get-inscritos', {
-                    params: {
-                        post_id: 20
-                    }
-                });
+                // const leer = await axios.get('https://denborak.biklik.eus/wp-json/v1/get-inscritos', {
+                //     params: {
+                //         post_id: 20
+                //     }
+                // });
 
             } catch (error) {
                 console.error("Error uploading file:", error.message);
