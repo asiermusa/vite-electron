@@ -126,6 +126,29 @@
           >Deskargatu</v-btn
         >
       </v-alert>
+
+      <v-card variant="outlined" v-if="info" class="main-card">
+        <v-card-item title="Splitak">
+          <template v-slot:subtitle>
+            Zehaztutako gailuetan irakurritako portzentaiak.
+          </template>
+          <div v-for="(split, index) in info.splits" :key="index" class="mt-3">
+            <div v-for="(value, key) in split" :key="key" class="mb-3">
+              <div class="percent-name">
+                {{ key }}
+                <span class="percent-number">{{ value }}%</span>
+              </div>
+
+              <v-progress-linear
+                color="primary"
+                height="12"
+                :model-value="Number(value)"
+                striped
+              ></v-progress-linear>
+            </div>
+          </div>
+        </v-card-item>
+      </v-card>
     </div>
   </div>
 </template>
@@ -149,6 +172,7 @@ export default {
       selectedSplits: null,
       selectedRows: [],
       pdf: false,
+      info: false,
     };
   },
   mounted() {},
@@ -222,6 +246,8 @@ export default {
       this.error = false;
       this.success = false;
       this.loader = true;
+      this.info = false;
+
       const newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
       try {
         const response = await axios.get("/v1/process-results", {
@@ -233,17 +259,17 @@ export default {
           },
         });
 
-        console.log(response.data.data);
-
-        if (response.data.success) {
+        if (response.data.data.success) {
           this.success = "Sailkapena ondo sortu da.";
           this.pdf = response.data.data.pdf;
+          this.info = response.data.data.data;
           // window.ipc.send("toMain", [
           //   "excel",
           //   JSON.stringify(response.data.data),
           // ]);
         } else {
-          this.error = response.data.data.message;
+          this.error =
+            "Errorea: Ez da sailkapenak sortzeko behar besteko daturik aurkitu. (parte-hartzaile zerrenda, sailkapenak, splitak...)";
         }
         this.loader = false;
       } catch (err) {
