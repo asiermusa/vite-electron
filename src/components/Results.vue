@@ -30,15 +30,52 @@
 
     <Loader v-if="loader" class="my-2" />
 
-    <v-btn
+    <!-- <v-btn
       @click="getClasificacionDevices()"
       color="primary"
       variant="flat"
       class="my-3"
       >Sailkapenak sortu</v-btn
-    >
+    > -->
 
-    <div v-if="devices" class="my-12">
+    <v-dialog v-model="dialog" max-width="500px">
+      <v-card>
+        <v-card-text
+          >Ezabatu gailu batek zerbitzarian gordetako sailkapena.</v-card-text
+        >
+        <v-card-item>
+          <v-select
+            v-if="devices"
+            placeholder="Gailuak"
+            variant="outlined"
+            v-model="removeUserFile"
+            :items="userItems"
+            item-title="user"
+            item-value="user"
+            density="compact"
+          ></v-select>
+        </v-card-item>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <!-- Button to Close Dialog -->
+          <v-btn color="red" text @click="removeClasificacion()">Ezabatu</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <div v-if="devices" class="my-3">
+      <div class="d-flex justify-end">
+        <v-btn
+          @click="dialog = true"
+          color="red"
+          variant="tonal"
+          size="small"
+          class="mt-2 mb-6"
+          >Sailkapena ezabatu</v-btn
+        >
+      </div>
+
       <v-card class="main-card" variant="outlined">
         <v-card-item title="Zehaztu sailkapenak">
           <template v-slot:subtitle>
@@ -107,48 +144,55 @@
         </v-card-item>
       </v-card>
 
-      <v-alert
-        v-if="pdf"
-        class="my-5"
-        prepend-icon="mdi-select-download"
-        title="PDF deskargatu"
-        text="Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak ikusteko."
-        color="info"
-        variant="tonal"
-        type="info"
-        border="start"
-        ><br />
-        <v-btn
-          @click="downloadPDF(pdf)"
-          variant="outlined"
-          color="primary"
-          class="mt-3"
-          >Deskargatu</v-btn
-        >
-      </v-alert>
+      <v-row class="my-6">
+        <v-col>
+          <v-card variant="flat" v-if="pdf" class="main-card">
+            <v-card-item title="PDF deskargatu">
+              <template v-slot:subtitle>
+                Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak
+                ikusteko.
+              </template>
 
-      <v-card variant="outlined" v-if="info" class="main-card">
-        <v-card-item title="Splitak">
-          <template v-slot:subtitle>
-            Zehaztutako gailuetan irakurritako portzentaiak.
-          </template>
-          <div v-for="(split, index) in info.splits" :key="index" class="mt-3">
-            <div v-for="(value, key) in split" :key="key" class="mb-3">
-              <div class="percent-name">
-                {{ key }}
-                <span class="percent-number">{{ value }}%</span>
+              <v-btn
+                @click="downloadPDF(pdf)"
+                variant="outlined"
+                color="red"
+                class="mt-3"
+                >Deskargatu</v-btn
+              >
+            </v-card-item>
+          </v-card>
+        </v-col>
+
+        <v-col>
+          <v-card variant="flat" v-if="info" class="main-card">
+            <v-card-item title="Splitak">
+              <template v-slot:subtitle>
+                Zehaztutako gailuetan irakurritako portzentaiak.
+              </template>
+              <div
+                v-for="(split, index) in info.splits"
+                :key="index"
+                class="mt-3"
+              >
+                <div v-for="(value, key) in split" :key="key" class="mb-3">
+                  <div class="percent-name">
+                    {{ key }}
+                    <span class="percent-number">{{ value }}%</span>
+                  </div>
+
+                  <v-progress-linear
+                    color="primary"
+                    height="12"
+                    :model-value="Number(value)"
+                    striped
+                  ></v-progress-linear>
+                </div>
               </div>
-
-              <v-progress-linear
-                color="primary"
-                height="12"
-                :model-value="Number(value)"
-                striped
-              ></v-progress-linear>
-            </div>
-          </div>
-        </v-card-item>
-      </v-card>
+            </v-card-item>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
   </div>
 </template>
@@ -173,15 +217,26 @@ export default {
       selectedRows: [],
       pdf: false,
       info: false,
+      removeUserFile: null,
+      dialog: false,
     };
   },
-  mounted() {},
+  mounted() {
+    this.getClasificacionDevices();
+  },
   computed: {
+    userItems() {
+      // Convert object to array
+      return Object.values(this.devices);
+    },
     race() {
       return this.$store.state.race;
     },
     eventsSplitsHosts() {
       return this.$store.state.eventsSplitsHosts;
+    },
+    hostname() {
+      return this.$store.state.hostname;
     },
     _computedRows() {
       if (!this.selectedSplits) return;
@@ -211,6 +266,34 @@ export default {
     },
   },
   methods: {
+    async removeClasificacion() {
+      if (!confirm("Zure sailkapenak ezabatu nahi al dituzu?")) return;
+
+      this.loader = true;
+      try {
+        const response = await axios.post("/v1/remove-clasificacion-devices", {
+          post_id: this.race.ID,
+          user: this.removeUserFile,
+        });
+
+        console.log(response.data.data);
+
+        if (response.data.success) {
+          this.devices = response.data.data;
+          this.success = "Sailkapena ondo ezabatu da.";
+        } else {
+          this.error =
+            "Errorea: Arazo bat geratu da ezabatzerakoan. Saiatu berriro.";
+        }
+        this.loader = false;
+        this.dialog = false;
+      } catch (err) {
+        this.error =
+          "Errorea: Arazo bat gertatu da zerbitzarian datuak jasotzerakoan.";
+        this.loader = false;
+        this.dialog = false;
+      }
+    },
     async getClasificacionDevices() {
       this.loader = true;
       try {

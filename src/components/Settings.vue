@@ -125,7 +125,7 @@
           <v-card-actions class="px-3">
             <v-btn
               variant="text"
-              color="error"
+              color="red"
               size="small"
               @click="removeInput(key)"
               prepend-icon="mdi-delete"

@@ -94,7 +94,7 @@ function percentsSum(currentTag) {
     }
 }
 
-function onTagDetected(tagId) {
+function onTagDetected() {
     // Reproduce un pitido o un sonido específico
     let ruta = path.join(__dirname, '../assets/beep.mp3');
     player.play(ruta, (err) => {

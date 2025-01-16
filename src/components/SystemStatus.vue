@@ -9,6 +9,10 @@
     </v-row>
 
     <v-row class="mb-5">
+      <v-col cols="12">
+        <pre>{{ lastFileUploaded }}</pre>
+        <v-data-table :items="files" hide-default-footer></v-data-table>
+      </v-col>
       <v-col lg="4" md="12" sm="12">
         <v-card variant="outlined">
           <v-list nav>
@@ -72,9 +76,51 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "SystemStatusComponent",
+  data() {
+    return {
+      files: [],
+      startList: null,
+      devices: null,
+    };
+  },
+  async mounted() {
+    const leer = await axios.get("/v1/get-inscritos", {
+      params: {
+        post_id: this.race.ID,
+      },
+    });
+
+    this.startList = leer.data.data;
+
+    const clas = await axios.get("/v1/clasificacion-devices", {
+      params: {
+        post_id: this.race.ID,
+      },
+    });
+
+    this.devices = clas.data.data;
+  },
   computed: {
+    lastFileUploaded() {
+      const data = [];
+      if (this.startList)
+        data.push({
+          name: "Izen-emateak",
+          date: this.startList.info.slice(-1)[0].time,
+          user: this.startList.info.slice(-1)[0].user,
+        });
+
+      if (this.devices)
+        data.push({
+          name: "Sailkapenak",
+          date: this.devices,
+        });
+
+      return data;
+    },
     filteredStatus() {
       const status = this.$store.state.status || {}; // Ensure status is an object
       // Create a new object excluding the `drive` key based on the condition

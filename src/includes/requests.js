@@ -20,7 +20,8 @@ const {
     getAccurateTime,
     percentsSum,
     organizeExcelData,
-    toSlug
+    toSlug,
+    onTagDetected
 } = require("../helpers/helpers.js");
 const {
     Socket
@@ -105,6 +106,8 @@ async function requests(data) {
                         global.readers[i].write('ping');
                     }
                 }, 5000);
+
+                onTagDetected(true);
             })
 
             // Konexioak itxi
@@ -270,6 +273,8 @@ async function requests(data) {
                         ...form.getHeaders() // ensure correct headers
                     }
                 });
+
+                console.log(upload.data.data)
 
                 if (upload.data.data.length) {
                     global.mainWindow.webContents.send('fromMain', ['upload-response', true]);

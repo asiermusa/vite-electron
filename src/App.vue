@@ -38,7 +38,7 @@
         <v-chip
           v-if="conn.active == false"
           class="ma-2"
-          color="error"
+          color="red"
           prepend-icon="mdi-alert-circle"
         >
           {{ conn.name }}
@@ -157,6 +157,12 @@
           </v-list-item>
 
           <v-list-item
+            title="Sistemaren egoera"
+            to="/system"
+            prepend-icon="mdi-cogs"
+          ></v-list-item>
+
+          <v-list-item
             @click="_getCloudData()"
             prepend-icon="mdi-web-check"
             title="Datuak Sync"
@@ -180,11 +186,6 @@
                 </div>
               </div>
             </v-list-item>
-            <v-list-item
-              title="Sistemaren egoera"
-              to="/system"
-              prepend-icon="mdi-cogs"
-            ></v-list-item>
           </v-list>
         </template>
       </v-navigation-drawer>

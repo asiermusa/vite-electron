@@ -59,7 +59,7 @@
         @click="_stop()"
         v-if="_inventoryStatus"
         variant="flat"
-        color="error"
+        color="red"
         prepend-icon="mdi-stop"
       >
         Irakurketa geratu</v-btn
@@ -68,7 +68,7 @@
       <v-btn
         @click="_delete()"
         variant="outlined"
-        color="error"
+        color="red"
         prepend-icon="mdi-delete"
         class="mx-2"
       >
@@ -77,7 +77,7 @@
 
       <v-btn
         @click="_saveData()"
-        variant="outlined"
+        variant="flat"
         color="primary"
         prepend-icon="mdi-upload"
         class="mx-2"
@@ -219,7 +219,7 @@ export default {
             that.message = null;
 
             const response = data[1];
-
+            console.log(response);
             if (response) {
               that.message = "Fitxategia ondo igo da zerbitzarira";
               that.color = "success";

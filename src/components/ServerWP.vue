@@ -8,7 +8,7 @@
           icon="mdi-logout"
           variant="tonal"
           class="mx-3"
-          color="error"
+          color="red"
         ></v-btn>
       </v-col>
     </v-row>
@@ -111,11 +111,10 @@
         </v-col>
         <v-col cols="2">
           <v-btn
-            color="error"
+            color="red"
             @click="_removeEvent(index)"
             variant="tonal"
             density="comfortable"
-            size="x-large"
             icon="mdi-delete"
           >
           </v-btn>

@@ -44,7 +44,7 @@ async function createWindow() {
     global.mainWindow.loadURL('http://localhost:5173'); // Development URL
   }
 
-  // global.mainWindow.webContents.openDevTools();
+  global.mainWindow.webContents.openDevTools();
 
   global.mainWindow.setMenu(null);
 
