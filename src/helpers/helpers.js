@@ -178,7 +178,9 @@ function filterName(tag, startList) {
 
     let find = null;
     find = startList.filter((res, i) => {
-        if (res.tag.padStart(24, '0') == tag) return res;
+        if(res.tag) {
+            if (res.tag.padStart(24, '0') == tag) return res;
+        }
     });
 
     if (!find.length) return ["UNKNOWN"];

@@ -146,13 +146,22 @@
 
       <v-row class="my-6">
         <v-col>
-          <v-card variant="flat" v-if="pdf" class="main-card">
-            <v-card-item title="PDF deskargatu">
-              <template v-slot:subtitle>
-                Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak
-                ikusteko.
-              </template>
+          <v-sheet v-if="pdf" class="pa-4 text-left" rounded="lg" width="100%">
+            <v-icon
+              class="mb-5"
+              color="red"
+              icon="mdi-file-download-outline"
+              size="70"
+            ></v-icon>
 
+            <h2 class="text-h5 mb-6">Sailkapena deskargatu</h2>
+
+            <p class="mb-4 text-medium-emphasis text-body-2">
+              Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak
+              ikusteko.
+            </p>
+
+            <div class="text-left">
               <v-btn
                 @click="downloadPDF(pdf)"
                 variant="outlined"
@@ -160,8 +169,8 @@
                 class="mt-3"
                 >Deskargatu</v-btn
               >
-            </v-card-item>
-          </v-card>
+            </div>
+          </v-sheet>
         </v-col>
 
         <v-col>
@@ -182,7 +191,7 @@
                   </div>
 
                   <v-progress-linear
-                    color="primary"
+                    :color="_getColor(Number(value))"
                     height="12"
                     :model-value="Number(value)"
                     striped
@@ -242,6 +251,7 @@ export default {
       if (!this.selectedSplits) return;
 
       let rows = [
+        { pos: "Postua" },
         { bib: "Dorsala" },
         { name: "Izen-abizenak" },
         { sex: "Sexua" },
@@ -266,6 +276,11 @@ export default {
     },
   },
   methods: {
+    _getColor(val) {
+      let color = "primary";
+      if (val < 100) color = "red";
+      return color;
+    },
     async removeClasificacion() {
       if (!confirm("Zure sailkapenak ezabatu nahi al dituzu?")) return;
 

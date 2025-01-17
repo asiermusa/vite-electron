@@ -44,8 +44,8 @@
 
         <v-btn
           @click="_saveData()"
-          variant="outlined"
-          color="primary"
+          variant="tonal"
+          color="orange"
           prepend-icon="mdi-upload"
           class="mx-2 mt-4"
         >
@@ -63,7 +63,7 @@
         >
 
         <v-row class="my-1">
-          <v-col cols="3">
+          <v-col cols="2">
             <v-btn
               @click="_get_data()"
               variant="flat"
@@ -122,6 +122,15 @@
               class="my-3"
               density="compact"
             ></v-text-field>
+          </v-col>
+
+          <v-col cols="1">
+            <v-checkbox
+              :value="tags"
+              label="NO Tags"
+              @click="tags = !tags"
+              class="mt-1"
+            ></v-checkbox>
           </v-col>
         </v-row>
 
@@ -198,6 +207,7 @@ export default {
       loader: false,
       googleSuccess: false,
       googleError: false,
+      tags: false,
     };
   },
   mounted() {
@@ -236,6 +246,12 @@ export default {
       // if (!this.searchHerria) return items;
 
       let response = items;
+
+      if (this.tags) {
+        response = response.filter((item) => {
+          if (!item.tag) return item;
+        });
+      }
 
       // Apply search filter if "search" is defined
       if (this.search) {

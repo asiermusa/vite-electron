@@ -112,24 +112,26 @@ async function requests(data) {
 
             // Konexioak itxi
             global.readers[i].on('close', (hadError) => {
-                console.log('Conexión cerrada');
-
                 if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
                 global.startInventory = false;
                 clearInterval(heartbeatInterval); // Detener el heartbeat
                 if (hadError) {
-                    console.error('Conexión cerrada debido a un error');
+                    console.log('Reader error.')
+                    global.mainWindow.webContents.send('fromMain', ['global-error', 'Errorea: Konexioa galdu egin da Readerrarekin.']);
                 }
             });
 
             // Erroreak kudeatu
             global.readers[i].on('error', (err) => {
                 console.error('Error de conexión:', err.message);
+                global.mainWindow.webContents.send('fromMain', ['global-error', 'Errorea: ' + err.message]);
+                
                 //global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
                 // global.readers.splice(i, 1);
                 clearInterval(heartbeatInterval); // heartbeat geratu
                 if (err.code === 'ECONNRESET' || err.code === 'EPIPE') {
-                    console.log('El lector fue desconectado físicamente.');
+                    console.log('Error: ', err);
+                    global.mainWindow.webContents.send('fromMain', ['global-error', 'Errorea: Readerra deskonektatu egin da.']);
                     global.readers[i].destroy();
                 }
             });
@@ -180,6 +182,7 @@ async function requests(data) {
         global.readers.forEach(reader => {
             reader.end(() => {
                 console.log('Server has ended the connection.');
+                //global.mainWindow.webContents.send('fromMain', ['global-error', 'Errorea: Readerra deskonektatu egin da.']);
             })
         });
         global.readers = [];

@@ -68,7 +68,7 @@
 
       <v-btn
         @click="_delete()"
-        variant="outlined"
+        variant="text"
         color="red"
         prepend-icon="mdi-delete"
         class="mx-2"
@@ -78,8 +78,8 @@
 
       <v-btn
         @click="_saveData()"
-        variant="flat"
-        color="primary"
+        variant="tonal"
+        color="orange"
         prepend-icon="mdi-upload"
         class="mx-2"
       >

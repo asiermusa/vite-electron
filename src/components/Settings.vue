@@ -13,6 +13,15 @@
           closable
           border="start"
         ></v-alert>
+
+        <v-alert
+          v-if="_globalError"
+          :text="_globalError"
+          color="red"
+          icon="mdi-alert-circle-outline"
+          variant="tonal"
+          class="my-2"
+        ></v-alert>
       </v-col>
     </v-row>
     <v-row>
@@ -186,6 +195,9 @@ export default {
     connected() {
       return this.$store.state.connected;
     },
+    _globalError() {
+      return this.$store.state._globalError;
+    },
   },
   methods: {
     _getOutputPower(item) {
@@ -227,7 +239,8 @@ export default {
         ]);
         this.$store.commit("_CONNECTED", this.tabs);
         window.ipc.send("toMain", ["connect", JSON.stringify(this.tabs)]);
-      }, 1000);
+        this.$store.commit("_GLOBAL_ERROR", false);
+      }, 500);
     },
     addInput() {
       if (this.tabs.length > 1) {
