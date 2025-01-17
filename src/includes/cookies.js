@@ -11,7 +11,7 @@ async function cookies(data) {
 
     let twoWeeksInSeconds = 14 * 24 * 3600; // Two weeks in seconds
     let currentObj = data[2];
-    console.log(currentObj)
+
     try {
       const cookie = {
         url: 'http://denborak.online', // Your domain here
@@ -25,7 +25,7 @@ async function cookies(data) {
       let coo = await session.defaultSession.cookies.get({
         name: cookieName
       });
-      console.log('Cookie set successfully');
+
     } catch (error) {
       console.error(error);
       throw error;
@@ -38,6 +38,7 @@ async function cookies(data) {
       let cookie = await session.defaultSession.cookies.get({
         name: cookieName
       });
+
       global.mainWindow.webContents.send('fromMain', ['send-cookies', cookieName, cookie]);
 
     } catch (error) {
@@ -54,7 +55,7 @@ async function cookies(data) {
 
     try {
       await session.defaultSession.cookies.remove(cookie.url, cookie.name);
-      console.log('Cookie removed successfully');
+
       //global.mainWindow.webContents.send('fromMain', ['hostname', COMPUTER_NAME]);
     } catch (error) {
       console.error(error);

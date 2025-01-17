@@ -11,7 +11,8 @@
     <v-alert
       v-if="error"
       text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
-      type="error"
+      color="red"
+      icon="mdi-alert-circle-outline"
       variant="tonal"
       class="my-2"
     ></v-alert>
@@ -78,7 +79,7 @@ export default {
 
       this.loader = false;
       if (!result) this.error = true;
-      else this.$router.push("/splits");
+      else this.$router.push("/home");
     },
   },
 };

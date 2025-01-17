@@ -1,6 +1,12 @@
 <template>
   <div class="hello">
-    <v-alert v-if="error" :text="error" type="error" variant="tonal"></v-alert>
+    <v-alert
+      v-if="error"
+      :text="error"
+      color="red"
+      variant="tonal"
+      icon="mdi-alert-circle-outline"
+    ></v-alert>
 
     <v-tabs v-model="tab">
       <v-tab v-for="(event, i) in eventsSplitsHosts" :key="i">{{

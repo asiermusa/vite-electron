@@ -67,7 +67,8 @@
         <v-alert
           v-if="googleError"
           class="my-5"
-          color="error"
+          color="red"
+          icon="mdi-alert-circle-outline"
           variant="tonal"
           closable
           border="start"
@@ -200,7 +201,8 @@
         <v-alert
           v-else
           class="my-5"
-          color="error"
+          color="red"
+          icon="mdi-alert-circle-outline"
           variant="tonal"
           closable
           border="start"
@@ -266,7 +268,8 @@
 
         <v-alert
           class="my-5"
-          color="error"
+          color="red"
+          icon="mdi-alert-circle-outline"
           variant="tonal"
           border="start"
           v-model="error"
@@ -281,7 +284,8 @@
         <v-alert
           v-else
           class="my-5"
-          color="error"
+          color="red"
+          icon="mdi-alert-circle-outline"
           variant="tonal"
           border="start"
         >

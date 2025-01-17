@@ -26,10 +26,11 @@
         <v-alert
           v-if="googleError"
           class="my-5"
-          color="error"
+          color="red"
           variant="tonal"
           closable
           border="start"
+          icon="mdi-alert-circle-outline"
         >
           {{ googleError }}
         </v-alert>

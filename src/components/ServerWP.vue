@@ -131,8 +131,9 @@
                 <v-alert
                   v-if="errors[index][s]"
                   :text="errors[index][s]"
-                  type="error"
+                  color="red"
                   class="my-4"
+                  icon="mdi-alert-circle-outline"
                   variant="tonal"
                 ></v-alert>
               </v-col>
@@ -201,7 +202,8 @@
             <v-alert
               v-if="error"
               :text="error"
-              type="error"
+              color="red"
+              icon="mdi-alert-circle-outline"
               variant="tonal"
             ></v-alert>
 

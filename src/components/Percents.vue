@@ -18,9 +18,10 @@
           <template v-if="!_checkSplitsActive(event.splits)">
             <v-alert
               text="Ez duzu split bat bera ere ez ekintza honi lotuta. Joan Lasterketaren konfiguraziora hau aldatzeko."
-              type="error"
+              color="red"
               variant="tonal"
-              class="my-3 mx-3"
+              class="my-1 mx-3"
+              icon="mdi-alert-circle-outline"
             ></v-alert>
           </template>
           <div v-for="(s, index) in event.splits" :key="index">

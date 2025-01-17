@@ -1,4 +1,6 @@
-import { defineConfig } from 'vite';
+import {
+  defineConfig
+} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
@@ -22,5 +24,8 @@ export default defineConfig({
         api: 'modern-compiler' // or "modern"
       }
     }
-  }
+  },
+  optimizeDeps: {
+    include: ["moment", "moment/locale/eu"], // Ensure the Basque locale is included
+  },
 });

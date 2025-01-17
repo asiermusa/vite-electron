@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="hello" v-if="race">
     <v-navigation-drawer location="right" permanent width="300">
       <StartRace />
       <ReadDelayReader />
@@ -40,8 +40,9 @@
     <v-alert
       v-if="!_canInventory"
       text="Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe. Joan Ezarpenak atalera."
-      type="error"
+      color="red"
       variant="tonal"
+      icon="mdi-alert-circle-outline"
     ></v-alert>
 
     <div v-else>
@@ -219,7 +220,7 @@ export default {
             that.message = null;
 
             const response = data[1];
-            console.log(response);
+
             if (response) {
               that.message = "Fitxategia ondo igo da zerbitzarira";
               that.color = "success";

@@ -34,7 +34,13 @@
       <v-col>
         <Loader v-if="loader" class="my-2" color="white" />
       </v-col>
-      <v-alert v-if="error" :text="error" type="error" class="my-4"></v-alert>
+      <v-alert
+        v-if="error"
+        :text="error"
+        color="red"
+        icon="mdi-alert-circle-outline"
+        class="my-2"
+      ></v-alert>
     </div>
   </div>
 </template>

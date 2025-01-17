@@ -216,6 +216,8 @@ export default {
     };
   },
   async mounted() {
+    this.$router.push("/login");
+
     window.ipc.send("toMain", ["load_list"]);
     window.ipc.send("toMain", ["get_hostname"]);
 
@@ -247,8 +249,6 @@ export default {
               data1: data[1], //zerrenda
               data2: data[2], //goiburuak
             });
-
-            console.log("zerrenda", data[1]);
           }
 
           if (data[0] == "no-ants") {
@@ -297,11 +297,15 @@ export default {
           if (data[0] == "send-cookies") {
             let cookie = data[1];
 
+            if (!cookie) return;
+
             if (cookie == "auth") {
               let auth = data[2];
-              that.$store.commit("_AUTH", JSON.parse(auth[0].value));
+
+              if (auth.length) {
+                that.$store.commit("_AUTH", JSON.parse(auth[0].value));
+              }
             }
-            that.$router.push("/home");
 
             if (cookie == "readers") {
               let readers = data[2].length
@@ -312,8 +316,8 @@ export default {
             }
 
             if (cookie == "serial") {
-              that.$store.commit("_SET_SERIAL_PORT", data[2][0].value);
-              //let readers = JSON.parse(VueCookieNext.getCookie("readers"));
+              if (data[2][0])
+                that.$store.commit("_SET_SERIAL_PORT", data[2][0].value);
             }
 
             if (cookie == "race") {

@@ -15,7 +15,8 @@
     <v-alert
       v-if="error"
       :text="error"
-      type="error"
+      color="red"
+      icon="mdi-alert-circle-outline"
       variant="tonal"
       class="my-2"
     ></v-alert>
@@ -40,10 +41,11 @@
 
     <v-dialog v-model="dialog" max-width="500px">
       <v-card>
+        <v-card-item title="Ezabatu"></v-card-item>
         <v-card-text
           >Ezabatu gailu batek zerbitzarian gordetako sailkapena.</v-card-text
         >
-        <v-card-item>
+        <v-card-item class="my-0">
           <v-select
             v-if="devices"
             placeholder="Gailuak"
@@ -65,18 +67,16 @@
     </v-dialog>
 
     <div v-if="devices" class="my-3">
-      <div class="d-flex justify-end">
+      <v-card class="main-card" variant="outlined">
         <v-btn
           @click="dialog = true"
           color="red"
           variant="tonal"
           size="small"
-          class="mt-2 mb-6"
+          class="mt-2 mb-2 mx-3"
           >Sailkapena ezabatu</v-btn
         >
-      </div>
 
-      <v-card class="main-card" variant="outlined">
         <v-card-item title="Zehaztu sailkapenak">
           <template v-slot:subtitle>
             Zehaztu zein gailuren datuak erabiliko dituzun sailkapenak sortzeko.

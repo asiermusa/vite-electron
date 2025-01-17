@@ -18,7 +18,7 @@
     >
     <v-btn
       @click="_start(false)"
-      color="error"
+      color="red"
       variant="flat"
       prepend-icon="mdi-timer-off"
       size="small"

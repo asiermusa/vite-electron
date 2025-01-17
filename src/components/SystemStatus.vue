@@ -10,8 +10,40 @@
 
     <v-row class="mb-5">
       <v-col cols="12">
-        <pre>{{ lastFileUploaded }}</pre>
-        <v-data-table :items="files" hide-default-footer></v-data-table>
+        <v-list nav v-if="lastFileUploaded[0]">
+          <v-list-item prepend-icon="mdi-list-box">
+            <template #title>
+              <div v-html="lastFileUploaded[0].name"></div>
+            </template>
+
+            <template #subtitle>
+              <div>{{ _timeAgo(lastFileUploaded[0].time) }}</div>
+            </template>
+          </v-list-item>
+
+          <v-list-group
+            v-if="lastFileUploaded[1]"
+            :value="lastFileUploaded[1].name"
+          >
+            <template v-slot:activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                prepend-icon="mdi-format-list-numbered"
+                :title="lastFileUploaded[1].name"
+              ></v-list-item>
+            </template>
+
+            <template v-for="(item, i) in lastFileUploaded[1].info" :key="i">
+              <v-list-item :title="item.user">
+                <template #subtitle>
+                  <div>{{ _timeAgo(item.time) }}</div>
+                </template>
+              </v-list-item>
+            </template>
+          </v-list-group>
+
+          <v-divider class="mb-10"></v-divider>
+        </v-list>
       </v-col>
       <v-col lg="4" md="12" sm="12">
         <v-card variant="outlined">
@@ -77,6 +109,9 @@
 
 <script>
 import axios from "axios";
+import moment from "moment-timezone";
+import "moment/locale/eu"; // Import the desired locale
+
 export default {
   name: "SystemStatusComponent",
   data() {
@@ -109,14 +144,14 @@ export default {
       if (this.startList)
         data.push({
           name: "Izen-emateak",
-          date: this.startList.info.slice(-1)[0].time,
+          time: this.startList.info.slice(-1)[0].time,
           user: this.startList.info.slice(-1)[0].user,
         });
 
       if (this.devices)
         data.push({
           name: "Sailkapenak",
-          date: this.devices,
+          info: this.devices,
         });
 
       return data;
@@ -140,6 +175,12 @@ export default {
   },
 
   methods: {
+    _timeAgo(timestamp) {
+      // Set the locale to Spanish
+      moment.locale("eu");
+      // Return the relative time
+      return moment(timestamp).fromNow();
+    },
     _statusNames(name) {
       switch (name) {
         case "wp":
