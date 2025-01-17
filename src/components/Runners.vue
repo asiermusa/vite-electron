@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="hello">
     <v-row>
       <v-col>
         <v-row align="center" no-gutters>
