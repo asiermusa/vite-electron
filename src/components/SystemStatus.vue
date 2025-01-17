@@ -10,6 +10,14 @@
 
     <v-row class="mb-5">
       <v-col cols="12">
+        <div style="max-width: 75%" class="mb-4">
+          Datu hauek zerbitzarira igo diren fitxategiak dira. Sistema kargatze
+          denean, Driveko excela kargatzen da ordenagailuan, hala ere
+          beharrezkoa da datuak zerbitzarira bidaltzea. Eskuz neurtzen diren
+          splitak egiteko adibidez, zerbitzariko izen-emate zerrenda erabiliko
+          dugu, beraz beharrezkoa da lasterketa hasi aurretik fitxategia
+          bidaltzea.
+        </div>
         <v-list nav v-if="lastFileUploaded[0]">
           <v-list-item prepend-icon="mdi-list-box">
             <template #title>
