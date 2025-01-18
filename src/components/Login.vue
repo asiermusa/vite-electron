@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <div>
-      <img src="../assets/azkar-white.svg" class="logo-login" />
+      <img src="../assets/azkar-new-white.svg" class="logo-login" />
 
       <v-text-field
         label="Erabiltzailea"

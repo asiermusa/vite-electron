@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar :elevation="1">
       <v-app-bar-title
-        ><img class="logo" src="./assets/azkar.svg"
+        ><img class="logo" src="./assets/azkar-new.svg"
       /></v-app-bar-title>
 
       <v-btn v-if="race" stacked size="large" @click="_removeRace()">
@@ -161,16 +161,6 @@
             to="/system"
             prepend-icon="mdi-cogs"
           ></v-list-item>
-
-          <v-list-item
-            @click="_getCloudData()"
-            prepend-icon="mdi-web-check"
-            title="Datuak Sync"
-          >
-            <v-tooltip activator="parent" location="bottom"
-              >Zerbitzariko datu guztiak sinkronizatu</v-tooltip
-            >
-          </v-list-item>
         </v-list>
 
         <template v-slot:append>
@@ -548,13 +538,13 @@ export default {
 
 .hello {
   overflow-y: auto;
-  height: 96%;
-  padding-bottom: 0px;
+  height: 100% !important;
+  padding-bottom: 80px;
   overflow-x: hidden;
 }
 .main-layout {
-  height: calc(100vh - 125px);
-  margin: 30px !important;
+  height: calc(100vh - 90px);
+  margin: 20px 20px 0 20px !important;
 }
 .logo {
   height: 55px !important;
@@ -569,9 +559,9 @@ export default {
 }
 
 .custom-table table tr:first-child {
-  background-image: linear-gradient(45deg, black, #444);
-  color: white;
-  font-weight: 800;
+  // background-image: linear-gradient(45deg, black, #444);
+  color: #222;
+  font-weight: bold !important;
 }
 
 .custom-table table tr:nth-child(2n) {

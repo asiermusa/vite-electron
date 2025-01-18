@@ -144,24 +144,24 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-btn
+      variant="text"
+      color="black"
+      @click="addInput"
+      class="mx-3"
+      prepend-icon="mdi-plus"
+      >Reader berria gehitu</v-btn
+    >
+
+    <v-btn
+      @click="_connect()"
+      variant="flat"
+      color="primary"
+      prepend-icon="mdi-chip"
+      >Konektatu</v-btn
+    >
   </div>
-
-  <v-btn
-    variant="text"
-    color="black"
-    @click="addInput"
-    class="mx-3"
-    prepend-icon="mdi-plus"
-    >Reader berria gehitu</v-btn
-  >
-
-  <v-btn
-    @click="_connect()"
-    variant="flat"
-    color="primary"
-    prepend-icon="mdi-chip"
-    >Konektatu</v-btn
-  >
 </template>
 
 <script>

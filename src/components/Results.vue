@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <v-row align="center" no-gutters>
+    <!-- <v-row align="center" no-gutters>
       <v-col cols="6"><h2 class="main-title">Sailkapenak sortu</h2> </v-col>
 
       <v-col class="text-right" cols="6">
@@ -10,7 +10,7 @@
           size="55"
         ></v-icon>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-alert
       v-if="error"
@@ -147,14 +147,14 @@
       <v-row class="my-6">
         <v-col>
           <v-sheet v-if="pdf" class="pa-4 text-left" rounded="lg" width="100%">
-            <v-icon
+            <!-- <v-icon
               class="mb-5"
               color="red"
               icon="mdi-file-download-outline"
               size="70"
-            ></v-icon>
+            ></v-icon> -->
 
-            <h2 class="text-h5 mb-6">Sailkapena deskargatu</h2>
+            <h2 class="text-h5 mb-1">Sailkapena deskargatu</h2>
 
             <p class="mb-4 text-medium-emphasis text-body-2">
               Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak
@@ -167,6 +167,7 @@
                 variant="outlined"
                 color="red"
                 class="mt-3"
+                prepend-icon="mdi-download"
                 >Deskargatu</v-btn
               >
             </div>
@@ -175,7 +176,7 @@
 
         <v-col>
           <v-card variant="flat" v-if="info" class="main-card">
-            <v-card-item title="Splitak">
+            <v-card-item title="Irakurketa %">
               <template v-slot:subtitle>
                 Zehaztutako gailuetan irakurritako portzentaiak.
               </template>

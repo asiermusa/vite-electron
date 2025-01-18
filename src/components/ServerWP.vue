@@ -241,6 +241,7 @@
       :headers="headers"
       :items="items"
       color="white"
+      class="wp-table"
     >
       <template v-slot:item.actions="{ item }" slot="end">
         <div class="d-flex justify-end">
@@ -523,5 +524,11 @@ export default {
 .stream {
   background: rgba(#1867c0, 0.2);
   margin: 30px 0 !important;
+}
+
+.wp-table {
+  thead th:first-child {
+    width: 50px;
+  }
 }
 </style>

@@ -10,10 +10,10 @@
 
     <template v-if="eventsSplitsHosts">
       <div v-for="(event, i) in eventsSplitsHosts" :key="i">
-        <v-card variant="text" class="main-card my-5">
+        <v-card variant="text">
           <!-- <v-card-item :title="event.name"> </v-card-item> -->
 
-          <h3 prepend-icon="mdi-run" class="my-2 mx-3">{{ event.name }}</h3>
+          <v-card-item :title="event.name"> </v-card-item>
 
           <template v-if="!_checkSplitsActive(event.splits)">
             <v-alert

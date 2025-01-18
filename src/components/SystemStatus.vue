@@ -8,27 +8,49 @@
       </v-col>
     </v-row>
 
-    <v-row class="mb-5">
-      <v-col cols="12">
-        <div style="max-width: 75%" class="mb-4">
+    <v-row>
+      <v-col cols="10">
+        <v-btn
+          @click="_getCloud()"
+          variant="flat"
+          color="primary"
+          prepend-icon="mdi-server"
+          class="mb-4"
+        >
+          Sistema sinkronizatu</v-btn
+        >
+
+        <p class="mb-4">
           Datu hauek zerbitzarira igo diren fitxategiak dira. Sistema kargatze
           denean, Driveko excela kargatzen da ordenagailuan, hala ere
           beharrezkoa da datuak zerbitzarira bidaltzea. Eskuz neurtzen diren
           splitak egiteko adibidez, zerbitzariko izen-emate zerrenda erabiliko
           dugu, beraz beharrezkoa da lasterketa hasi aurretik fitxategia
           bidaltzea.
-        </div>
-        <v-list nav v-if="lastFileUploaded[0]">
+        </p>
+      </v-col>
+      <v-col cols="4">
+        <v-list v-if="lastFileUploaded[0]">
           <v-list-item prepend-icon="mdi-list-box">
             <template #title>
               <div v-html="lastFileUploaded[0].name"></div>
             </template>
 
             <template #subtitle>
-              <div>{{ _timeAgo(lastFileUploaded[0].time) }}</div>
+              <v-chip
+                color="red"
+                class="my-2"
+                size="small"
+                v-if="!lastFileUploaded[0].active"
+              >
+                Ez da daturik bidali zerbitzarira
+              </v-chip>
+
+              <div v-else>{{ _timeAgo(lastFileUploaded[0].time) }}</div>
             </template>
           </v-list-item>
 
+          <v-divider></v-divider>
           <v-list-group
             v-if="lastFileUploaded[1]"
             :value="lastFileUploaded[1].name"
@@ -37,8 +59,27 @@
               <v-list-item
                 v-bind="props"
                 prepend-icon="mdi-format-list-numbered"
-                :title="lastFileUploaded[1].name"
-              ></v-list-item>
+              >
+                <template #title>
+                  <div class="d-flex align-center">
+                    {{ lastFileUploaded[1].name }}
+                    <v-chip
+                      class="ms-2"
+                      color="success"
+                      size="small"
+                      v-if="lastFileUploaded[1].active"
+                    >
+                      {{ lastFileUploaded[1].info.length }} Guztira
+                    </v-chip>
+                  </div>
+                </template>
+
+                <template #subtitle v-if="!lastFileUploaded[1].active">
+                  <v-chip color="red" class="my-2" size="small">
+                    Ez da daturik bidali zerbitzarira
+                  </v-chip>
+                </template>
+              </v-list-item>
             </template>
 
             <template v-for="(item, i) in lastFileUploaded[1].info" :key="i">
@@ -53,6 +94,9 @@
           <v-divider class="mb-10"></v-divider>
         </v-list>
       </v-col>
+    </v-row>
+
+    <v-row>
       <v-col lg="4" md="12" sm="12">
         <v-card variant="outlined">
           <v-list nav>
@@ -130,37 +174,39 @@ export default {
     };
   },
   async mounted() {
-    const leer = await axios.get("/v1/get-inscritos", {
-      params: {
-        post_id: this.race.ID,
-      },
-    });
-
-    this.startList = leer.data.data;
-
-    const clas = await axios.get("/v1/clasificacion-devices", {
-      params: {
-        post_id: this.race.ID,
-      },
-    });
-
-    this.devices = clas.data.data;
+    this._load();
   },
   computed: {
     lastFileUploaded() {
       const data = [];
-      if (this.startList)
+      if (this.startList) {
+        let active = false;
+        if (this.startList.info) {
+          active = true;
+        }
+
         data.push({
           name: "Izen-emateak",
-          time: this.startList.info.slice(-1)[0].time,
-          user: this.startList.info.slice(-1)[0].user,
+          time: this.startList.info.time,
+          user: this.startList.info.user,
+          active: active,
         });
+      }
 
-      if (this.devices)
+      if (this.devices) {
+        let active = false;
+        if (this.devices.length) {
+          active = true;
+        }
+
         data.push({
           name: "Sailkapenak",
           info: this.devices,
+          active: active,
         });
+      }
+
+      console.log(data);
 
       return data;
     },
@@ -183,6 +229,27 @@ export default {
   },
 
   methods: {
+    _getCloud() {
+      this.$store.dispatch("_getCloudData");
+      this._load();
+    },
+    async _load() {
+      const leer = await axios.get("/v1/get-inscritos", {
+        params: {
+          post_id: this.race.ID,
+        },
+      });
+
+      this.startList = leer.data.data;
+
+      const clas = await axios.get("/v1/clasificacion-devices", {
+        params: {
+          post_id: this.race.ID,
+        },
+      });
+
+      this.devices = clas.data.data;
+    },
     _timeAgo(timestamp) {
       // Set the locale to Spanish
       moment.locale("eu");

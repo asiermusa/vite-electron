@@ -1,14 +1,14 @@
 <template>
   <div class="hello">
-    <v-row>
+    <v-row no-gutters>
       <v-col>
-        <v-row align="center" no-gutters>
+        <!-- <v-row align="center" no-gutters>
           <v-col cols="6"><h2 class="main-title">Parte-hartzaileak</h2> </v-col>
 
           <v-col class="text-right" cols="6">
             <v-icon color="primary" icon="mdi-account-group" size="55"></v-icon>
           </v-col>
-        </v-row>
+        </v-row> -->
 
         <Loader v-if="loader" class="mb-2" />
 
@@ -36,11 +36,22 @@
         </v-alert>
 
         <v-alert
+          v-if="inscritos"
+          class="my-2"
+          color="red"
+          variant="tonal"
+          closable
+          icon="mdi-alert-circle-outline"
+        >
+          {{ inscritos }}
+        </v-alert>
+
+        <!-- <v-alert
           text="Datu hauek Google Driveko excel fitxategi batetik ekarri dira eta ezin dira hemen zuzenean editatu."
           type="info"
           icon="mdi-microsoft-excel"
           variant="tonal"
-        ></v-alert>
+        ></v-alert> -->
 
         <v-btn
           @click="_saveData()"
@@ -49,7 +60,7 @@
           prepend-icon="mdi-upload"
           class="mx-2 mt-4"
         >
-          CSV gorde</v-btn
+          Zerbitzarian gorde</v-btn
         >
 
         <v-btn
@@ -127,7 +138,7 @@
           <v-col cols="1">
             <v-checkbox
               :value="tags"
-              label="NO Tags"
+              label="Tags"
               @click="tags = !tags"
               class="mt-1"
             ></v-checkbox>
@@ -189,7 +200,7 @@
 
 <script>
 import Loader from "./Loader.vue";
-
+import axios from "axios";
 export default {
   name: "RunnersComponent",
   components: {
@@ -208,6 +219,7 @@ export default {
       googleSuccess: false,
       googleError: false,
       tags: false,
+      inscritos: false,
     };
   },
   mounted() {
@@ -215,7 +227,7 @@ export default {
     this.header = items[0];
 
     let that = this;
-
+    this._getInscritos();
     window.ipc.handle(
       "fromMain",
       () =>
@@ -303,6 +315,9 @@ export default {
     startList() {
       return this.$store.state.startList;
     },
+    race() {
+      return this.$store.state.race;
+    },
     _globalError() {
       return this.$store.state._globalError;
     },
@@ -318,6 +333,26 @@ export default {
     },
   },
   methods: {
+    async _getInscritos() {
+      this.loader = true;
+      try {
+        const response = await axios.get("/v1/get-inscritos", {
+          params: {
+            post_id: this.race.ID,
+          },
+        });
+
+        if (!response.data.data.data) {
+          this.inscritos =
+            "Gogoratu! Oraindik ez duzu parte-hartzaile zerrenda zerbitzarira bidali.";
+        }
+        this.loader = false;
+      } catch (err) {
+        this.inscritos =
+          "Errorea: Arazo bat gertatu da zerbitzarian datuak jasotzerakoan.";
+        this.loader = false;
+      }
+    },
     _toSlug(s) {
       return s
         .toLowerCase()
@@ -342,6 +377,7 @@ export default {
       this.selected = this.$store.state.startList[val];
     },
     _saveData() {
+      this.inscritos = false;
       this.loader = true;
       this.message = false;
       window.ipc.send("toMain", ["upload-inscritos"]);
@@ -354,6 +390,7 @@ export default {
       this.loader = true;
       this.googleError = false;
       this.googleSuccess = false;
+
       // hasierako atleta guztien excela montatu
       let response = await this.$store.dispatch("_get_participants");
 

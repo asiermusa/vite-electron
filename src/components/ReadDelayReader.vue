@@ -2,7 +2,7 @@
   <div>
     <!-- serial port -->
 
-    <div class="main-card my-3">
+    <div class="my-4">
       <v-card-item title="Irakurketaren interbaloa">
         <template v-slot:subtitle
           >Zehaztu irakurketa bakoitzaren denbora azerapen minimoa
