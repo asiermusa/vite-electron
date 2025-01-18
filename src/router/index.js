@@ -19,6 +19,7 @@ import Otp from '@/components/Otp.vue'
 import ServerWP from '@/components/ServerWP.vue'
 import SystemStatus from '@/components/SystemStatus.vue'
 import Results from '@/components/Results.vue'
+import Help from '@/components/Help.vue'
 
 // ROUTER
 const routes = [{
@@ -31,6 +32,14 @@ const routes = [{
   {
     path: '/server',
     component: ServerWP,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+
+  {
+    path: '/help',
+    component: Help,
     meta: {
       requiresAuth: true,
     }

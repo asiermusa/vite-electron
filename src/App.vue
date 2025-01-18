@@ -181,6 +181,12 @@
       </v-navigation-drawer>
       <v-main class="main-layout">
         <router-view></router-view>
+        <v-btn
+          icon="mdi-help-circle-outline"
+          size="large"
+          class="floating-help"
+          @click="this.$router.push('/help')"
+        ></v-btn>
       </v-main>
     </v-layout>
   </v-app>
@@ -605,5 +611,11 @@ export default {
   left: 10px;
   overflow: hidden !important;
   background: transparent;
+}
+
+.floating-help {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 20px !important;
 }
 </style>
