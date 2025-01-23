@@ -125,7 +125,7 @@ async function requests(data) {
             global.readers[i].on('error', (err) => {
                 console.error('Error de conexión:', err.message);
                 global.mainWindow.webContents.send('fromMain', ['global-error', 'Errorea: ' + err.message]);
-                
+
                 //global.mainWindow.webContents.send('fromMain', ['connection-error', i]);
                 // global.readers.splice(i, 1);
                 clearInterval(heartbeatInterval); // heartbeat geratu
@@ -264,12 +264,13 @@ async function requests(data) {
 
             try {
                 // Wait for the file to be fully written before continuing
-                await fs.promises.writeFile('output.csv', csvData);
+                //await fs.promises.writeFile('output.csv', csvData);
 
                 const form = new FormData();
-                form.append("file", fs.createReadStream('output.csv'));
-                form.append("post_id", global.race.ID); // Replace "12345" with your actual ID value
-                form.append("user", global.hostname); // Replace "12345" with your actual ID value
+                //form.append("file", fs.createReadStream('output.csv'));
+                form.append("post_id", global.race.ID); // global.race.ID
+                form.append("user", global.hostname);
+                form.append("csv", csvData);
 
                 const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload', form, {
                     headers: {
@@ -329,14 +330,14 @@ async function requests(data) {
 
             try {
                 // Write CSV to file
-                await fs.promises.writeFile('output.csv', csvData, 'utf8');
-
+                // await fs.promises.writeFile('output.csv', csvData, 'utf8');                
 
                 const form = new FormData();
-                form.append("file", fs.createReadStream('output.csv'));
-                form.append("post_id", 20); // global.race.ID
+                // form.append("file", fs.createReadStream('output.csv'));
+                console.log('race', global.race)
+                form.append("post_id", global.race.ID); // global.race.ID
                 form.append("user", global.hostname);
-
+                form.append("csv", csvData);
 
                 const upload = await axios.post('https://denborak.biklik.eus/wp-json/v1/upload-inscritos', form, {
                     headers: {
