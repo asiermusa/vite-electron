@@ -380,7 +380,7 @@ export default {
       this.inscritos = false;
       this.loader = true;
       this.message = false;
-      window.ipc.send("toMain", ["upload-inscritos"]);
+      window.ipc.send("toMain", ["upload-inscritos", this.race.ID]);
     },
     _filterColumn(col, i) {
       if (col.name) return col.name;

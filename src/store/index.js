@@ -48,7 +48,8 @@ export default createStore({
       prefix: "0",
       counter: 0,
       currentTag: null,
-    }
+    },
+    start: null
   },
   mutations: {
     _AUTH(state, val) {
@@ -110,7 +111,10 @@ export default createStore({
     },
     _SET_TAG(state, val) {
       state.tags = val
-    }
+    },
+    _START_SOCKET(state, val) {
+      state.start = val
+    },
   },
   actions: {
     async _set_race(context, val) {
@@ -130,7 +134,7 @@ export default createStore({
             ID: race.ID,
             name: race.post_title
           }
-
+          alert()
           context.commit("_SET_RACE", race);
           window.ipc.send("toMain", [
             "set-cookies",

@@ -12,6 +12,11 @@ async function cookies(data) {
     let twoWeeksInSeconds = 14 * 24 * 3600; // Two weeks in seconds
     let currentObj = data[2];
 
+    if(data[1] == 'race') {
+      global.race = JSON.parse(currentObj);
+    }
+      
+
     try {
       const cookie = {
         url: 'http://denborak.online', // Your domain here

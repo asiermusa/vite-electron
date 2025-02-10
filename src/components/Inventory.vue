@@ -379,7 +379,11 @@ export default {
     _saveData() {
       this.loader = true;
       this.message = false;
-      window.ipc.send("toMain", ["upload-file", JSON.stringify(this.items)]);
+      window.ipc.send("toMain", [
+        "upload-file",
+        JSON.stringify(this.items),
+        this.race.ID,
+      ]);
     },
     _addData() {
       //"tag":"000000000000000000003333","total":1,"ant":4,"time":"1719314445710","name":"Asier Musatadi","city":"Gernika","pretty_time":"00h:00:00:071"

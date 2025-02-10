@@ -193,6 +193,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
 import moment from "moment";
@@ -225,7 +226,34 @@ export default {
     window.ipc.handle(
       "fromMain",
       () =>
-        function (event, data) {
+        async function (event, data) {
+          // on start socket.io
+          if (data[0] == "server-time") {
+            const time = data[1];
+
+            const start = that.start.start ? time.timestamp : null;
+            const pretty = time.pretty;
+
+            const params = {
+              events: that.start.options,
+              start: start,
+              start_pretty: pretty,
+            };
+
+            await axios.get("https://denborak.online/api/v2", {
+              params: {
+                post_id: that.race.ID,
+                events: that.start.options,
+                start_date: start,
+              },
+            });
+
+            let wp = await axios.post("/v1/start-race", {
+              post_id: that.race.ID,
+              starts: JSON.stringify(params),
+            });
+          }
+
           // global error
           if (data[0] == "global-error") {
             that.$store.commit("_GLOBAL_ERROR", data[1]);
@@ -420,6 +448,9 @@ export default {
     },
     sound() {
       return this.$store.state.sound;
+    },
+    start() {
+      return this.$store.state.start;
     },
   },
   watch: {

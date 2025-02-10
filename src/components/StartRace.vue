@@ -43,41 +43,6 @@ export default {
       type: Boolean,
     },
   },
-  mounted() {
-    let that = this;
-    window.ipc.handle(
-      "fromMain",
-      () =>
-        async function (event, data) {
-          // on start
-          if (data[0] == "server-time") {
-            const time = data[1];
-
-            const start = that.start ? time.timestamp : null;
-            const pretty = time.pretty;
-
-            const params = {
-              events: that.selectedOptions,
-              start: start,
-              start_pretty: pretty,
-            };
-
-            await axios.get("https://denborak.online/api/v2", {
-              params: {
-                post_id: that.race.ID,
-                events: that.selectedOptions,
-                start_date: start,
-              },
-            });
-
-            let wp = await axios.post("/v1/start-race", {
-              post_id: that.race.ID,
-              starts: JSON.stringify(params),
-            });
-          }
-        }
-    );
-  },
   computed: {
     events() {
       return this.$store.state.events;
@@ -90,7 +55,13 @@ export default {
     _start(start = true) {
       if (!this.selectedOptions.length) return;
       window.ipc.send("toMain", ["get-server-time"]);
-      this.start = start;
+
+      const params = {
+        start: start,
+        options: this.selectedOptions,
+      };
+
+      this.$store.commit("_START_SOCKET", params);
     },
   },
 };

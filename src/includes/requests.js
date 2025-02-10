@@ -229,7 +229,7 @@ async function requests(data) {
     if (cmd == 'upload-file') {
 
         const items = data[1];
-
+        const raceID = data[2];
         const jsonData = JSON.parse(items); // Convertir texto a JSON
         if (!Array.isArray(jsonData)) throw new Error("El JSON no es un array.");
         if (jsonData.length === 0) throw new Error("El array está vacío.");
@@ -268,7 +268,7 @@ async function requests(data) {
 
                 const form = new FormData();
                 //form.append("file", fs.createReadStream('output.csv'));
-                form.append("post_id", global.race.ID); // global.race.ID
+                form.append("post_id", raceID); // global.race.ID
                 form.append("user", global.hostname);
                 form.append("csv", csvData);
 
@@ -277,8 +277,6 @@ async function requests(data) {
                         ...form.getHeaders() // ensure correct headers
                     }
                 });
-
-                console.log(upload.data.data)
 
                 if (upload.data.data.length) {
                     global.mainWindow.webContents.send('fromMain', ['upload-response', true]);
@@ -301,7 +299,7 @@ async function requests(data) {
     if (cmd == 'upload-inscritos') {
 
         const items = global.startList;
-
+        const raceID = data[1];
         const jsonData = items; // Convertir texto a JSON
         if (!Array.isArray(jsonData)) throw new Error("El JSON no es un array.");
         if (jsonData.length === 0) throw new Error("El array está vacío.");
@@ -309,6 +307,7 @@ async function requests(data) {
         // Campos del CSV
         const fields = ['tag', 'bib', 'name', 'city', 'event', 'sex', 'cat'];
 
+        
         // Sanitize data
         const sanitizedData = jsonData.map(item => ({
             tag: item.tag || '',
@@ -334,8 +333,7 @@ async function requests(data) {
 
                 const form = new FormData();
                 // form.append("file", fs.createReadStream('output.csv'));
-                console.log('race', global.race)
-                form.append("post_id", global.race.ID); // global.race.ID
+                form.append("post_id", raceID); // global.race.ID
                 form.append("user", global.hostname);
                 form.append("csv", csvData);
 
@@ -465,7 +463,6 @@ async function requests(data) {
         global.selectedSplits = JSON.parse(data[2]);
         global.race = JSON.parse(data[3]);
         global.sound = data[4]
-        console.log('sound', global.sound)
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)
@@ -512,7 +509,6 @@ async function requests(data) {
             pretty: getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS")
         }
         global.mainWindow.webContents.send('fromMain', ['server-time', time]);
-
     }
 
 
