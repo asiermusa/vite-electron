@@ -4,6 +4,7 @@ const socket = require('../socket-common.js')
 const {
     CheckSum,
     filterName,
+    hexToDec,
     getPrettyTime,
     getAntenna,
     uniqueId,
@@ -39,8 +40,12 @@ function inventory_fn(data, reader, readerInfo) {
 
     // ANTENA TXEKEOA egin behar denean soilik.
     if (response.substring(6, 8) == '8a' && global.checkAntennas && response.substring(2, 4) == '0a') {
-        global.mainWindow.webContents.send('fromMain', ['checking', resp]);
-        console.log( global.mainWindow)
+
+        const checkingCount = [resp[4], resp[5], resp[6]];
+        const resultado = checkingCount.join('');  // Concatenamos sin separador
+
+        global.mainWindow.webContents.send('fromMain', ['checking', hexToDec(resultado)]);
+        console.log(resp)
         global.checkAntennas = false;
         return false;
     }
@@ -224,7 +229,8 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     global.count.push(currentTag)
 
     // realtime app SOCKET.IO (stream option)
-    socket.emit("currentTag", currentTag);
+    if(global.stream)
+        socket.emit("currentTag", currentTag);
 
     percentsSum(currentTag)
 

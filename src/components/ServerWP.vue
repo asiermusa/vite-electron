@@ -382,19 +382,28 @@ export default {
       };
       try {
         let res = await axios.post("/v1/set-race-by-id", params);
-
         this.loader = false;
+
+        let race = res.data;
 
         if (res.status === 200) {
           this.success = "Datuak ondo gorde dira zerbitzarian.";
           this.$store.dispatch("_getCloudData", false);
+
+          race = {
+            ID: race.data.ID,
+            name: race.data.post_title,
+            stream: race.data.stream,
+          };
+
+          this.$store.commit("_SET_RACE", race);
         } else {
           this.error = "Errore bat gertatu da datuak gordetzerakoan.";
         }
       } catch (error) {
         this.loader = false;
-
-        this.error = "Errore bat gertatu da datuak gordetzerakoan.";
+        console.log(error);
+        this.error = error;
       }
     },
     _addEvent() {

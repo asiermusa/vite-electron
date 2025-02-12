@@ -4,6 +4,8 @@
       <StartRace />
       <ReadDelayReader />
       <PercentsComponent :minimal="true"></PercentsComponent>
+
+      Zuzeneako jarraipena: {{ race.stream }}
     </v-navigation-drawer>
 
     <Loader v-if="loader" class="my-3"></Loader>
@@ -374,6 +376,7 @@ export default {
         JSON.stringify(this.selectedSplits),
         JSON.stringify(this.race),
         this.sound,
+        this.race.stream,
       ]);
     },
     _saveData() {

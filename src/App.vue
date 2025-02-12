@@ -248,10 +248,23 @@ export default {
               },
             });
 
-            let wp = await axios.post("/v1/start-race", {
+            await axios.post("/v1/start-race", {
               post_id: that.race.ID,
               starts: JSON.stringify(params),
             });
+          }
+
+          // modify output power
+          if (data[0] == "modify-output-power") {
+            const db = data[1];
+            const reader = data[2];
+            let r = that.connected;
+
+            r.map((res, i) => {
+              res.power = db[i];
+            });
+
+            that.$store.commit("_CONNECTED", r);
           }
 
           // global error
@@ -456,6 +469,11 @@ export default {
   watch: {
     connected(val) {
       window.ipc.send("toMain", ["alive", JSON.stringify(val)]);
+
+      // setear la potencia de los readers
+      val.forEach((r) => {
+        window.ipc.send("toMain", ["get-output-power", JSON.stringify(r)]);
+      });
     },
   },
   methods: {
@@ -536,7 +554,7 @@ export default {
             port: "4001",
             desc: "",
             ants: [0, 0, 0, 0, 0, 0, 0, 0],
-            power: [33, 33, 33, 33, 33, 33, 33, 33],
+            power: [null, null, null, null, null, null, null, null],
             active: false,
           },
         ];

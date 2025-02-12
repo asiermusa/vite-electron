@@ -123,18 +123,16 @@ export default createStore({
       };
 
       try {
-
         let response = await axios.get("/v1/get-race-id", {
           params
         });
         let race = response.data.data;
-
         if (race) {
           race = {
             ID: race.ID,
-            name: race.post_title
+            name: race.post_title,
+            stream: race.stream
           }
-          alert()
           context.commit("_SET_RACE", race);
           window.ipc.send("toMain", [
             "set-cookies",

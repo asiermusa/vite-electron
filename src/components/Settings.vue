@@ -6,7 +6,7 @@
           v-if="message"
           class="my-5"
           icon="mdi-select-search"
-          :title="`${currentReader.name} - ${currentReader.desc}`"
+          :title="`${currentReader.name} ${currentReader.desc}`"
           :text="message"
           color="primary"
           variant="tonal"
@@ -185,7 +185,7 @@ export default {
       () =>
         function (event, data) {
           if (data[0] == "checking") {
-            let read = data[1][6];
+            let read = data[1];
             that.message = "Irakurritako tag kopurua: " + read;
           }
         }
@@ -240,6 +240,10 @@ export default {
         this.$store.commit("_CONNECTED", this.tabs);
         window.ipc.send("toMain", ["connect", JSON.stringify(this.tabs)]);
         this.$store.commit("_GLOBAL_ERROR", false);
+
+        this.tabs.forEach((r) => {
+          window.ipc.send("toMain", ["get-output-power", JSON.stringify(r)]);
+        });
       }, 500);
     },
     addInput() {
@@ -254,7 +258,7 @@ export default {
         port: "4001",
         desc: "",
         ants: [0, 0, 0, 0, 0, 0, 0, 0],
-        power: [33, 33, 33, 33, 33, 33, 33, 33],
+        power: [null, null, null, null, null, null, null, null],
         active: false,
       });
     },

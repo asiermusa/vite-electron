@@ -16,6 +16,7 @@ const createExcel = require("../helpers/excel.js");
 const {
     generateComputerDescription,
     CheckSum,
+    hexToDec,
     dec2hex,
     getAccurateTime,
     percentsSum,
@@ -52,9 +53,11 @@ global.startList = null;
 global.selectedSplits = false;
 global.readDelaySec = 30;
 global.outputPower = false;
+global.setOutputPower = false;
 global.race = false;
 global.hostname = false;
 global.sound = false;
+global.stream = false;
 
 // Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
 global.validacionesCabeceras = {
@@ -146,7 +149,7 @@ async function requests(data) {
                 }
 
                 // Antenen potentzia kudeatu behar denean
-                if (global.outputPower) {
+                if (global.outputPower || global.setOutputPower) {
                     const buf = Buffer.from(data);
                     let resp = [];
                     buf.forEach((res) => {
@@ -154,7 +157,20 @@ async function requests(data) {
                         resp.push(current)
                     })
 
-                    console.log('power', resp)
+                    if(global.setOutputPower) {
+                        global.setOutputPower = false;
+                        return;
+                    }
+
+
+                    let db = []
+                    resp.forEach((res, i) => {
+                        if(i > 3 && i < 12) {
+                            db.push(hexToDec(res))
+                        }
+                    })
+
+                    global.mainWindow.webContents.send('fromMain', ['modify-output-power', [db, i]]);
                     global.outputPower = false;
                 }
             });
@@ -463,6 +479,7 @@ async function requests(data) {
         global.selectedSplits = JSON.parse(data[2]);
         global.race = JSON.parse(data[3]);
         global.sound = data[4]
+        global.stream = data[5]
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)
@@ -519,6 +536,8 @@ async function requests(data) {
         global.readersInfo.forEach((r, i) => {
             if (r.name == reader.name) selectedReader = global.readers[i]
         })
+        
+        if(!selectedReader) return;
 
         const query = Buffer.from([0xA0, 0x03, 0x01, 0x97]);
         const check = CheckSum(query); // Example check
@@ -544,7 +563,7 @@ async function requests(data) {
         const check = CheckSum(query); // Example check
         const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
         selectedReader.write(message, () => {
-            global.outputPower = true;
+            global.setOutputPower = true;
         });
     }
 

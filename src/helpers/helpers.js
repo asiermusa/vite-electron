@@ -142,6 +142,10 @@ function hex2bin(hex) {
     return (parseInt(hex, 16).toString(2)).padStart(8, '0');
 }
 
+function hexToDec(hex) {
+    return parseInt(hex, 16);
+  }
+
 function bin2dec(binary) {
     return parseInt(binary, 2);
 }
@@ -333,6 +337,7 @@ module.exports = {
     calculateCRC16bit,
     getAntenna,
     hex2bin,
+    hexToDec,
     bin2dec,
     dec2hex,
     CheckSum,
