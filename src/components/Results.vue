@@ -292,8 +292,6 @@ export default {
           user: this.removeUserFile,
         });
 
-        console.log(response.data.data);
-
         if (response.data.success) {
           this.devices = response.data.data;
           this.success = "Sailkapena ondo ezabatu da.";
@@ -347,7 +345,9 @@ export default {
       this.loader = true;
       this.info = false;
 
-      const newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
+      let newRows = this.selectedRows.map((item) => Object.keys(item)[0]);
+      newRows.push("tag");
+
       try {
         const response = await axios.get("/v1/process-results", {
           params: {
