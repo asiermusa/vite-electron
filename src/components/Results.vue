@@ -31,6 +31,17 @@
 
     <Loader v-if="loader" class="my-2" />
 
+    <v-select
+      placeholder="Lasterketa"
+      variant="outlined"
+      v-model="event"
+      class="my-6"
+      :items="eventsSplitsHosts"
+      item-title="name"
+      item-value="unique_id"
+      density="compact"
+    ></v-select>
+
     <!-- <v-btn
       @click="getClasificacionDevices()"
       color="primary"
@@ -77,7 +88,7 @@
           >Sailkapena ezabatu</v-btn
         >
 
-        <v-card-item title="Zehaztu sailkapenak">
+        <v-card-item title="Zehaztu sailkapenak" v-if="eventsSplitsHosts">
           <template v-slot:subtitle>
             Zehaztu zein gailuren datuak erabiliko dituzun sailkapenak sortzeko.
           </template>
@@ -88,23 +99,23 @@
               :key="device.id_post"
               :value="device.filename"
               class="ma-2"
-              color="success"
+              color="primary"
               outlined
             >
               {{ device.user }}
             </v-chip>
           </v-chip-group>
 
-          <v-select
-            placeholder="Lasterketa"
-            variant="outlined"
-            v-model="event"
-            class="my-3"
-            :items="eventsSplitsHosts"
-            item-title="name"
-            item-value="unique_id"
-            density="compact"
-          ></v-select>
+          <v-chip
+            v-for="(chip, index) in selectedChips"
+            :key="'selected-' + index"
+            color="success"
+            class="ma-2"
+            closable
+            @click:close="removeDevice(chip)"
+          >
+            {{ chip }}
+          </v-chip>
 
           <div v-if="event" class="mt-8">
             <v-card-title>Aukeratu erakusteko zutabeak eta ordena</v-card-title>
@@ -144,31 +155,62 @@
         </v-card-item>
       </v-card>
 
+      <v-card class="main-card my-5" variant="outlined">
+        <v-card-item title="CSV batetik sortu sailkapena">
+          <template v-slot:subtitle>
+            Aurrez editatuko fitxagi bat igo eta sortu sailkapena.
+          </template>
+        </v-card-item>
+        <v-card-item>
+          <v-file-input
+            v-model="csvFile"
+            label="Arrastra y suelta tu archivo CSV o haz clic para seleccionar"
+            accept=".csv"
+            prepend-icon="mdi-file-upload"
+            outlined
+            dense
+            dropzone
+            @change="uploadFile"
+          ></v-file-input>
+
+          <v-btn
+            @click="sendExcelClas()"
+            variant="outlined"
+            color="primary"
+            class="mt-6"
+            >Sailkapena sortu</v-btn
+          >
+        </v-card-item>
+      </v-card>
+
       <v-row class="my-6">
         <v-col>
           <v-sheet v-if="pdf" class="pa-4 text-left" rounded="lg" width="100%">
-            <!-- <v-icon
-              class="mb-5"
-              color="red"
-              icon="mdi-file-download-outline"
-              size="70"
-            ></v-icon> -->
+            <h2 class="text-h5 mb-1">Sailkapenak deskargatu</h2>
 
-            <h2 class="text-h5 mb-1">Sailkapena deskargatu</h2>
-
-            <p class="mb-4 text-medium-emphasis text-body-2">
-              Egizu klik hemen PDF jaitsi eta lasterketa honen emaitzak
-              ikusteko.
+            <p class="mb-0 text-medium-emphasis text-body-2">
+              PDF eta EXCEL formatuak
             </p>
 
             <div class="text-left">
               <v-btn
-                @click="downloadPDF(pdf)"
-                variant="outlined"
+                @click="download(pdf, 'pdf')"
+                variant="flat"
                 color="red"
                 class="mt-3"
-                prepend-icon="mdi-download"
-                >Deskargatu</v-btn
+                v-if="pdf"
+                prepend-icon="mdi-file-pdf-box"
+                >Deskargatu PDF</v-btn
+              >
+
+              <v-btn
+                @click="download(excel, 'xlsx')"
+                variant="flat"
+                color="green"
+                class="mt-3 ml-3"
+                v-if="excel"
+                prepend-icon="mdi-file-excel"
+                >Deskargatu EXCEL</v-btn
               >
             </div>
           </v-sheet>
@@ -210,6 +252,7 @@
 <script>
 import Loader from "./Loader.vue";
 import axios from "axios";
+import { vModelCheckbox } from "vue";
 export default {
   name: "ResultsComponent",
   components: {
@@ -217,15 +260,17 @@ export default {
   },
   data() {
     return {
-      selectedChips: [],
+      csvFile: false,
       devices: false,
       error: false,
       success: false,
       loader: false,
       event: null,
       selectedSplits: null,
+      selectedChips: [],
       selectedRows: [],
       pdf: false,
+      excel: false,
       info: false,
       removeUserFile: null,
       dialog: false,
@@ -252,12 +297,12 @@ export default {
       if (!this.selectedSplits) return;
 
       let rows = [
-        { pos: "Postua" },
         { bib: "Dorsala" },
         { name: "Izen-abizenak" },
         { sex: "Sexua" },
         { city: "Herria" },
         { cat: "Kategoria" },
+        { diff: "Diferentzia" },
       ];
       this.selectedSplits.splits.forEach((res, index) => {
         rows.push({
@@ -277,6 +322,28 @@ export default {
     },
   },
   methods: {
+    async uploadFile(file) {
+      // Verifica que se haya seleccionado un archivo
+      if (!file) return;
+
+      // Crea un objeto FormData y añade el archivo
+      const formData = new FormData();
+      formData.append("csv_file", this.csvFile);
+      formData.append("id", this.race.ID);
+      // Configura la URL de tu endpoint en WordPress
+
+      try {
+        const response = await axios.post("/v1/upload-excel", formData);
+
+        if (response.status == 200) {
+          this.success = "Fitxategia ondo prozesatu da.";
+        } else {
+          this.error = "Errorea: Fitxategia ez da ondo prozesatu.";
+        }
+      } catch (error) {
+        this.error = "Errorea: " + error;
+      }
+    },
     _getColor(val) {
       let color = "primary";
       if (val < 100) color = "red";
@@ -355,12 +422,16 @@ export default {
             devices: JSON.stringify(this.selectedChips),
             event: this.event,
             rows: JSON.stringify(newRows),
+            mode: "new",
           },
         });
+
+        console.log(response.data.data);
 
         if (response.data.data.success) {
           this.success = "Sailkapena ondo sortu da.";
           this.pdf = response.data.data.pdf;
+          this.excel = response.data.data.excel;
           this.info = response.data.data.data;
           // window.ipc.send("toMain", [
           //   "excel",
@@ -376,10 +447,54 @@ export default {
         this.loader = false;
       }
     },
+
+    async sendExcelClas() {
+      if (!this.event) {
+        this.error = "Errorea: Aukeratu lasterketa";
+        return;
+      }
+      this.pdf = false;
+      this.error = false;
+      this.success = false;
+      this.loader = true;
+      this.info = false;
+
+      try {
+        const response = await axios.get("/v1/process-results", {
+          params: {
+            post_id: this.race.ID,
+            event: this.event,
+            mode: "excel",
+          },
+        });
+
+        console.log(response.data.data);
+
+        if (response.data.data.success) {
+          this.success = "Sailkapena ondo sortu da.";
+          this.pdf = response.data.data.pdf;
+          this.excel = response.data.data.excel;
+          this.info = response.data.data.data;
+          // window.ipc.send("toMain", [
+          //   "excel",
+          //   JSON.stringify(response.data.data),
+          // ]);
+        } else {
+          this.error =
+            "Errorea: Ez da sailkapenak sortzeko behar besteko daturik aurkitu. (parte-hartzaile zerrenda, sailkapenak, splitak...)";
+        }
+        this.loader = false;
+      } catch (err) {
+        this.error = "Errorea: " + err;
+        this.loader = false;
+      }
+    },
     removeChip(chip) {
       this.selectedRows = this.selectedRows.filter((item) => item !== chip);
     },
-
+    removeDevice(chip) {
+      this.selectedChips = this.selectedChips.filter((item) => item !== chip);
+    },
     _toSlug(str) {
       if (typeof str !== "string") {
         return null;
@@ -392,7 +507,7 @@ export default {
         .replace(/[\s_-]+/g, "-") // Replace spaces and underscores with hyphens
         .replace(/^-+|-+$/g, ""); // Remove leading or trailing hyphens
     },
-    downloadPDF(ruta) {
+    download(ruta, type = "pdf") {
       const pdfUrl = ruta; // Reemplaza con tu URL
 
       let eventName = this.eventsSplitsHosts.filter((res) => {
@@ -401,9 +516,9 @@ export default {
 
       const fileName = `${this._toSlug(this.race.name)}-${this._toSlug(
         eventName[0].name
-      )}.pdf`; // Nombre del archivo que se descargará
+      )}.${type}`; // Nombre del archivo que se descargará
 
-      window.ipc.send("toMain", ["download-pdf", pdfUrl, fileName]);
+      window.ipc.send("toMain", ["download-pdf", pdfUrl, fileName, type]);
     },
   },
 };
