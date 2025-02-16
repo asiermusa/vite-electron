@@ -158,7 +158,9 @@
       <v-card class="main-card my-5" variant="outlined">
         <v-card-item title="CSV batetik sortu sailkapena">
           <template v-slot:subtitle>
-            Aurrez editatuko fitxagi bat igo eta sortu sailkapena.
+            Aurrez editatuko fitxagi bat igo eta sortu sailkapena. <br />Ez da
+            kontutan hartuko lasterketa. Zerbitzarian igota dagoen csv
+            fitxategiarekin sortuko da sailkapena.
           </template>
         </v-card-item>
         <v-card-item>
@@ -426,8 +428,6 @@ export default {
           },
         });
 
-        console.log(response.data.data);
-
         if (response.data.data.success) {
           this.success = "Sailkapena ondo sortu da.";
           this.pdf = response.data.data.pdf;
@@ -450,7 +450,7 @@ export default {
 
     async sendExcelClas() {
       if (!this.event) {
-        this.error = "Errorea: Aukeratu lasterketa";
+        this.error = "Errorea: Aukeratu lasterketa. Ez du eraginik sailkape";
         return;
       }
       this.pdf = false;
@@ -467,8 +467,6 @@ export default {
             mode: "excel",
           },
         });
-
-        console.log(response.data.data);
 
         if (response.data.data.success) {
           this.success = "Sailkapena ondo sortu da.";
