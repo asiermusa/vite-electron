@@ -93,29 +93,31 @@
             Zehaztu zein gailuren datuak erabiliko dituzun sailkapenak sortzeko.
           </template>
 
-          <v-chip-group v-model="selectedChips" multiple class="my-4">
-            <v-chip
-              v-for="device in devices"
-              :key="device.id_post"
-              :value="device.filename"
-              class="ma-2"
-              color="primary"
-              outlined
-            >
-              {{ device.user }}
-            </v-chip>
-          </v-chip-group>
+          <div>
+            <v-chip-group v-model="selectedChips" multiple class="my-4">
+              <v-chip
+                v-for="device in devices"
+                :key="device.id_post"
+                :value="device.filename"
+                class="ma-2"
+                color="primary"
+                outlined
+              >
+                {{ device.user }}
+              </v-chip>
+            </v-chip-group>
 
-          <v-chip
-            v-for="(chip, index) in selectedChips"
-            :key="'selected-' + index"
-            color="success"
-            class="ma-2"
-            closable
-            @click:close="removeDevice(chip)"
-          >
-            {{ chip }}
-          </v-chip>
+            <v-chip
+              v-for="(chip, index) in selectedChips"
+              :key="'selected-' + index"
+              color="success"
+              class="ma-2"
+              closable
+              @click:close="removeDevice(chip)"
+            >
+              {{ chip }}
+            </v-chip>
+          </div>
 
           <div v-if="event" class="mt-8">
             <v-card-title>Aukeratu erakusteko zutabeak eta ordena</v-card-title>
@@ -254,7 +256,6 @@
 <script>
 import Loader from "./Loader.vue";
 import axios from "axios";
-import { vModelCheckbox } from "vue";
 export default {
   name: "ResultsComponent",
   components: {

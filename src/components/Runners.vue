@@ -348,8 +348,7 @@ export default {
         }
         this.loader = false;
       } catch (err) {
-        this.inscritos =
-          "Errorea: Arazo bat gertatu da zerbitzarian datuak jasotzerakoan.";
+        this.inscritos = "Errorea: " + err;
         this.loader = false;
       }
     },
@@ -368,9 +367,17 @@ export default {
       if (!s) return false;
       const normalized = this._toSlug(s);
       // Valid words normalized
-      const validWords = ["e", "f", "emakumea", "femenina", "feminas"].map(
-        this._toSlug
-      );
+      const validWords = [
+        "e",
+        "f",
+        "emakumea",
+        "femenina",
+        "feminas",
+        "fem",
+        "woman",
+        "chicas",
+        "fem",
+      ].map(this._toSlug);
       return validWords.includes(normalized);
     },
     _select(val) {
@@ -393,15 +400,10 @@ export default {
 
       // hasierako atleta guztien excela montatu
       let response = await this.$store.dispatch("_get_participants");
-
-      this.loader = false;
-
-      if (response == "error") {
-        this.googleError =
-          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
-      } else if (response.data.success == false) {
-        this.googleError = response.data.data.message;
+      if (response.data.data.error) {
+        this.googleError = "Errorea: " + response.data.data.error.message;
       }
+      this.loader = false;
     },
   },
 };

@@ -302,7 +302,7 @@ export default createStore({
 
         return response;
       } catch (err) {
-        return 'error';
+        return err;
       }
 
     },
