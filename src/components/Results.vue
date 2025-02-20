@@ -201,7 +201,7 @@
                 @click="download(pdf, 'pdf')"
                 variant="flat"
                 color="red"
-                class="mt-3"
+                class="mt-3 mr-3"
                 v-if="pdf"
                 prepend-icon="mdi-file-pdf-box"
                 >Deskargatu PDF</v-btn
@@ -211,7 +211,7 @@
                 @click="download(excel, 'xlsx')"
                 variant="flat"
                 color="green"
-                class="mt-3 ml-3"
+                class="mt-3"
                 v-if="excel"
                 prepend-icon="mdi-file-excel"
                 >Deskargatu EXCEL</v-btn
@@ -311,6 +311,14 @@ export default {
         rows.push({
           ["split_" + res.unique_id]: res.name,
         });
+      });
+      return rows;
+    },
+    _computedRowsToSend() {
+      if (!this.selectedSplits) return;
+      let rows = ["bib", "tag", "name", "sex", "city", "cat", "diff"];
+      this.selectedSplits.splits.forEach((res, index) => {
+        rows.push("split_" + res.unique_id);
       });
       return rows;
     },
@@ -424,7 +432,8 @@ export default {
             post_id: this.race.ID,
             devices: JSON.stringify(this.selectedChips),
             event: this.event,
-            rows: JSON.stringify(newRows),
+            rows: JSON.stringify(this._computedRowsToSend),
+            selected_rows: JSON.stringify(newRows),
             mode: "new",
           },
         });
@@ -451,7 +460,7 @@ export default {
 
     async sendExcelClas() {
       if (!this.event) {
-        this.error = "Errorea: Aukeratu lasterketa. Ez du eraginik sailkape";
+        this.error = "Errorea: Aukeratu lasterketa.";
         return;
       }
       this.pdf = false;

@@ -4,8 +4,6 @@
       <StartRace />
       <ReadDelayReader />
       <PercentsComponent :minimal="true"></PercentsComponent>
-
-      Zuzeneako jarraipena: {{ race.stream }}
     </v-navigation-drawer>
 
     <Loader v-if="loader" class="my-3"></Loader>
@@ -38,6 +36,15 @@
         </template>
       </v-card>
     </v-dialog>
+
+    <v-alert
+      v-if="race.stream"
+      text="zuzeneko jarraipena aktibatuta dago. Online jarraipena egiteko datuak zerbitzarira bidaliko dira denbora-errealean."
+      color="info"
+      variant="tonal"
+      class="mb-3"
+      icon="mdi-video-outline"
+    ></v-alert>
 
     <v-alert
       v-if="!_canInventory"

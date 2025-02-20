@@ -195,6 +195,28 @@
       </v-row>
 
       <v-row>
+        <v-col cols="8" class="mb-6">
+          <v-file-input
+            v-model="selectedFile"
+            label="Irudia aukeratu"
+            accept="image/*"
+            prepend-icon="mdi-image"
+            @change="uploadImage"
+            required
+          ></v-file-input>
+        </v-col>
+
+        <v-col cols="3" class="mb-12">
+          <v-img
+            :width="300"
+            aspect-ratio="16/9"
+            cover
+            :src="attachmentUrl"
+          ></v-img>
+        </v-col>
+      </v-row>
+
+      <v-row>
         <v-col cols="12">
           <div class="mb-6">
             <Loader v-if="loader" />
@@ -281,6 +303,9 @@ export default {
       loader: false,
       menu: false,
       deleteUsersSplits: false,
+      attachmentId: null,
+      attachmentUrl: null,
+      selectedFile: false,
     };
   },
   mounted() {
@@ -293,6 +318,14 @@ export default {
   computed: {
     _auth() {
       return this.$store.state._auth;
+    },
+  },
+  watch: {
+    item(val) {
+      if (val) {
+        this.attachmentId = val.featured_image_id;
+        this.attachmentUrl = val.featured_image[0];
+      }
     },
   },
   methods: {
@@ -331,6 +364,27 @@ export default {
         }
       } catch (error) {
         this.loader = false;
+      }
+    },
+    async uploadImage() {
+      // Creamos un FormData y anexamos la imagen
+      const formData = new FormData();
+      formData.append("file", this.selectedFile);
+
+      try {
+        // Enviar la imagen al endpoint de medios (puedes usar el endpoint nativo de WP /wp-json/wp/v2/media)
+        const mediaResponse = await axios.post("wp/v2/media", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        // Obtenemos el ID del attachment
+        this.attachmentId = mediaResponse.data.id;
+        this.attachmentUrl = URL.createObjectURL(this.selectedFile);
+        this.success = "Irudia ondo igo da.";
+      } catch (err) {
+        this.error = "Errorea: " + err;
       }
     },
     onDragEnd(event) {
@@ -378,6 +432,7 @@ export default {
 
       const params = {
         data: this.item,
+        featured_image: this.attachmentId,
         deleteSplits: this.deleteUsersSplits,
       };
       try {
@@ -402,7 +457,6 @@ export default {
         }
       } catch (error) {
         this.loader = false;
-        console.log(error);
         this.error = error;
       }
     },

@@ -53,7 +53,7 @@
           variant="tonal"
         ></v-alert> -->
 
-        <v-btn
+        <!-- <v-btn
           @click="_saveData()"
           variant="tonal"
           color="orange"
@@ -61,7 +61,7 @@
           class="mx-2 mt-4"
         >
           Zerbitzarian gorde</v-btn
-        >
+        > -->
 
         <v-btn
           @click="this.$router.push('/usb-reader')"
@@ -239,7 +239,8 @@ export default {
             const response = data[1];
 
             if (response) {
-              that.googleSuccess = "Fitxategia ondo igo da zerbitzarira";
+              that.googleSuccess =
+                "Fitxategia ondo eskuratu da eta gainontzeko gailuetara bidali da zerrenda.";
               that.color = "success";
             } else {
               that.googleError =
@@ -400,6 +401,9 @@ export default {
 
       // hasierako atleta guztien excela montatu
       let response = await this.$store.dispatch("_get_participants");
+
+      this._saveData();
+
       if (response.data.data.error) {
         this.googleError = "Errorea: " + response.data.data.error.message;
       }

@@ -512,6 +512,15 @@ export default {
       this.googleError = false;
       this.googleSuccess = false;
 
+      let save = true;
+      this.items.forEach((res) => {
+        if (!res.tag) save = false;
+      });
+
+      if (!save) {
+        alert("Ezin da gorde TAG bat ezin delako hutsik egon");
+        return;
+      }
       this.loader = true;
       this.$store.commit("_SET_START_LIST", this.items);
 
