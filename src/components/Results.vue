@@ -29,6 +29,14 @@
       class="my-2"
     ></v-alert>
 
+    <v-alert
+      v-if="race.separate_sex"
+      text="Sailkapenak sexuz bereizita agertuko dira. Denak batera baina postua eta diferentziak sexuz bereizita."
+      type="info"
+      variant="tonal"
+      class="my-2"
+    ></v-alert>
+
     <Loader v-if="loader" class="my-2" />
 
     <v-select

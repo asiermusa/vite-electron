@@ -53,12 +53,31 @@
         prominent
         border="bottom"
       >
-        Zuzeneko emisoa aktibatuta, online jarraipena egingo da cloud bidez
-        mongo datu basearekin.
+        Zuzeneko emisoa eta sailkapenak:
         <v-checkbox
           v-model="item.stream"
-          label="Zuzeneko jarraipena"
+          label="Zuzeneko jarraipena egin (Mongo datu-basera bidalketak egin)"
           class="pa-0 ma-0"
+        />
+
+        <v-checkbox
+          v-model="item.stream_show"
+          label="Zuzeneko denborak erakutsi webgunean (probisionalak)"
+          class="pa-0 ma-0"
+        />
+
+        <v-checkbox
+          v-model="item.chip_time"
+          label="Chip-time erakutsi"
+          class="pa-0 ma-0"
+          hide-details
+        />
+
+        <v-checkbox
+          v-model="item.separate_sex"
+          label="Sailkapenak sexuz bereizita erakutsi"
+          class="pa-0 ma-0"
+          hide-details
         />
       </v-alert>
 
@@ -319,6 +338,9 @@ export default {
     _auth() {
       return this.$store.state._auth;
     },
+    _race() {
+      return this.$store.state.race;
+    },
   },
   watch: {
     item(val) {
@@ -435,6 +457,7 @@ export default {
         featured_image: this.attachmentId,
         deleteSplits: this.deleteUsersSplits,
       };
+
       try {
         let res = await axios.post("/v1/set-race-by-id", params);
         this.loader = false;
@@ -449,6 +472,9 @@ export default {
             ID: race.data.ID,
             name: race.data.post_title,
             stream: race.data.stream,
+            stream_show: race.data.stream_show,
+            separate_sex: race.data.separate_sex,
+            chip_time: race.data.chip_time,
           };
 
           this.$store.commit("_SET_RACE", race);
