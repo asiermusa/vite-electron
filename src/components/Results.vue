@@ -314,6 +314,8 @@ export default {
         { city: "Herria" },
         { cat: "Kategoria" },
         { diff: "Diferentzia" },
+        { avg: "km/h" },
+        { chip_time: "Chip-time" },
       ];
       this.selectedSplits.splits.forEach((res, index) => {
         rows.push({
@@ -324,7 +326,17 @@ export default {
     },
     _computedRowsToSend() {
       if (!this.selectedSplits) return;
-      let rows = ["bib", "tag", "name", "sex", "city", "cat", "diff"];
+      let rows = [
+        "bib",
+        "tag",
+        "name",
+        "sex",
+        "city",
+        "cat",
+        "diff",
+        "avg",
+        "chip_time",
+      ];
       this.selectedSplits.splits.forEach((res, index) => {
         rows.push("split_" + res.unique_id);
       });
