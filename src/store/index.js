@@ -38,6 +38,7 @@ export default createStore({
     events: [],
     selectedSplits: [],
     eventsSplitsHosts: null,
+    currentTags: [],
     status: {
       wp: false,
       socket: false,
@@ -111,6 +112,9 @@ export default createStore({
     },
     _SET_TAG(state, val) {
       state.tags = val
+    },
+    _SET_CURRENT_TAGS(state, val) {
+      state.currentTags = val
     },
     _START_SOCKET(state, val) {
       state.start = val

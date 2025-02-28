@@ -391,6 +391,7 @@ export default {
       window.ipc.send("toMain", ["upload-inscritos", this.race.ID]);
     },
     _filterColumn(col, i) {
+      if (!col) return;
       if (col.name) return col.name;
       else return false;
     },
@@ -402,10 +403,10 @@ export default {
       // hasierako atleta guztien excela montatu
       let response = await this.$store.dispatch("_get_participants");
 
-      this._saveData();
-
-      if (response.data.data.error) {
-        this.googleError = "Errorea: " + response.data.data.error.message;
+      if (response.data.success) {
+        this._saveData();
+      } else {
+        this.googleError = "Errorea: " + response.data.data.message;
       }
       this.loader = false;
     },

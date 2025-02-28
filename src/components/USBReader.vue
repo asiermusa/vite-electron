@@ -51,6 +51,7 @@
       </v-col>
 
       <v-col cols="12">
+        <p>{{ uploadMessage }}</p>
         <Loader v-if="loader" class="mb-2" />
 
         <v-alert
@@ -320,6 +321,16 @@
         </v-row>
       </v-card>
     </v-dialog>
+
+    <v-table>
+      <tbody>
+        <tr v-for="item in currentTags" :key="item.bib">
+          <td>{{ item.bib }}</td>
+          <td>{{ item.tag }}</td>
+          <td @click="_deleteTag(item)">Ezabatu</td>
+        </tr>
+      </tbody>
+    </v-table>
   </div>
 </template>
 
@@ -350,6 +361,7 @@ export default {
       loader: false,
       googleSuccess: false,
       googleError: false,
+      uploadMessage: null,
     };
   },
   mounted() {
@@ -419,6 +431,12 @@ export default {
     _headers() {
       return this.$store.state.startListHeaders;
     },
+    startList() {
+      return this.$store.state.startList;
+    },
+    currentTags() {
+      return this.$store.state.currentTags;
+    },
   },
   methods: {
     _get_serial() {
@@ -472,43 +490,103 @@ export default {
       this.message = false;
 
       // ea dortsala existitzen den ala ez
-      this.items.filter((res) => {
+      this.currentTags.filter((res) => {
         if (res.bib == this.bibNumber) exist = true;
       });
 
-      if (!exist) {
-        this.error = "Dortsal hau ez dago parte-hartzaile zerrendan.";
+      if (exist) {
+        this.error = "Dortsal hau duplikatuta duzu.";
         return true;
       }
 
       // reiniciar EXIST
       exist = false;
 
-      // ea tag hau jadanik dortsal baten duen ala ez
-      this.items.filter((res) => {
+      // ea txip hau jadanik dortsal batek duen ala ez
+      this.currentTags.filter((res) => {
         if (this._normalize(res.tag) == this._normalize(this.read))
           exist = true;
       });
 
       if (exist) {
-        this.error = "TAG hau dortsal bati asignatuta dago.";
+        this.error = "Txip hau dortsal bati asignatuta dago.";
         return true;
       }
 
-      this.items.map((res) => {
-        if (res.bib == this.bibNumber) {
-          res.tag = this.read;
-          success = "TAG hau ondo asignatu da.";
-        }
+      let currents = this.currentTags;
+      currents.push({ tag: this.read, bib: this.bibNumber });
+      this.$store.commit("_SET_CURRENT_TAGS", currents);
+
+      this.message = success;
+      this.bibNumber++;
+    },
+    async _deleteTag(item) {
+      let del = null;
+      // ea txip hau jadanik dortsal batek duen ala ez
+      this.currentTags.forEach((res, index) => {
+        if (res.bib == item.bib) del = index;
       });
 
-      if (success) {
-        this.$store.commit("_SET_START_LIST", this.items);
-        this.message = success;
-        this.bibNumber++;
+      let currents = this.currentTags;
+      if (del > -1) {
+        currents.splice(del, 1);
+        this.$store.commit("_SET_CURRENT_TAGS", currents);
+      } else {
+        this.error = "Arazo bat gertatu da.";
+        return true;
       }
     },
     async _save_to_google() {
+      this.googleError = false;
+      this.googleSuccess = false;
+      this.loader = true;
+      this.uploadMessage = "Zerrenda eskuratzen Google Drivetik...";
+      // hasierako atleta guztien excela montatu
+      let items = await this.$store.dispatch("_get_participants");
+
+      if (!items.data.success) {
+        this.error = "Errorea: " + items.data.data.message;
+        return;
+      }
+
+      items = this.startList;
+
+      this.uploadMessage = "Txipak sinkronizatzen...";
+
+      items.map((item, i) => {
+        this.currentTags.forEach((cur) => {
+          if (item.bib == cur.bib) {
+            item.tag = cur.tag;
+          }
+        });
+      });
+
+      this.$store.commit("_SET_START_LIST", items);
+
+      this.uploadMessage = "Google Driven gordetzen...";
+
+      try {
+        const response = await axios.post("/v1/save-drive", {
+          items: JSON.stringify(items),
+          post_id: this._race.ID,
+          excel_headers: this._headers,
+        });
+
+        this.loader = false;
+        if (response.data.success == true)
+          this.googleSuccess =
+            "Egindako aldaketak Google Driven ondo gorde dira";
+        else this.googleError = response.data.data.message;
+
+        this.uploadMessage = null;
+      } catch (err) {
+        this.loader = false;
+        this.googleError =
+          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
+        this.uploadMessage = null;
+      }
+    },
+    async _save_to_google_99() {
       this.googleError = false;
       this.googleSuccess = false;
 
@@ -518,16 +596,12 @@ export default {
       });
 
       if (!save) {
-        alert("Ezin da gorde TAG bat ezin delako hutsik egon");
+        alert("Ezin da gorde Txip bat ezin delako hutsik egon");
         return;
       }
+
       this.loader = true;
       this.$store.commit("_SET_START_LIST", this.items);
-
-      const response = await axios.post("/v1/save-drive", {
-        items: JSON.stringify(this.items),
-        post_id: this._race.ID,
-      });
 
       try {
         const response = await axios.post("/v1/save-drive", {

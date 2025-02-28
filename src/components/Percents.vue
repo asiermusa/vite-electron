@@ -61,7 +61,10 @@ export default {
 
     // grafikoak vuen erakusteko beharrezkoa da
     let eventsQty = [];
+
     this.startList.forEach((res) => {
+      if (!res.event) return;
+
       if (!eventsQty.length) {
         eventsQty.push({
           name: res.event.name,
@@ -71,7 +74,7 @@ export default {
       } else {
         let exist = "no";
         eventsQty.forEach((p, i) => {
-          if (p.name == res.event.name) exist = i;
+          if (p.id == res.event.unique_id) exist = i;
         });
 
         if (exist == "no") {
