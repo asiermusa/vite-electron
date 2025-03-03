@@ -60,6 +60,7 @@ export default createStore({
       state._globalError = val
     },
     _CONNECTED(state, val) {
+      console.log('val', val)
       state.connected = val
     },
     _SET_EVENTS(state, val) {

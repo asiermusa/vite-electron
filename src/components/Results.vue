@@ -474,6 +474,7 @@ export default {
         this.loader = false;
       } catch (err) {
         this.error = err;
+        consone.log(err);
         this.loader = false;
       }
     },

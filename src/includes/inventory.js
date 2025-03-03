@@ -31,6 +31,7 @@ function inventory_fn(data, reader, readerInfo) {
         resp.push(current)
     })
 
+
     // ChatGPT - Batzuetan readerrak tag batzuk kate batean apilatzen ditu... Hau ekiditzeko balidazio hau egiten da. 
     // Honen bidez 20 karaktere eta a00a hasten den string bat dagoen ikusiko dugu. Horrela bada inbentario berriz eskatzeko (get_data) 
     let tags = response.match(/a00a[0-9a-f]{20}/g);
@@ -42,7 +43,7 @@ function inventory_fn(data, reader, readerInfo) {
     if (response.substring(6, 8) == '8a' && global.checkAntennas && response.substring(2, 4) == '0a') {
 
         const checkingCount = [resp[4], resp[5], resp[6]];
-        const resultado = checkingCount.join('');  // Concatenamos sin separador
+        const resultado = checkingCount.join(''); // Concatenamos sin separador
 
         global.mainWindow.webContents.send('fromMain', ['checking', hexToDec(resultado)]);
         console.log(resp)
@@ -53,19 +54,56 @@ function inventory_fn(data, reader, readerInfo) {
     // INBENTARIOA BERRIZ ESKATZEN denean. Eskuz geratu arte honek bueltaka jarraitu behar du (get-data() funtzioa deituko du berriz buklean sartzeko).
     if (response.substring(2, 4) == '0a' && global.startInventory == true) {
 
-        let antennas = [];
+        // let antennas = [];
 
-        readerInfo.ants.filter((res, i) => {
-            if (res) antennas[i] = '0x01'
-            else antennas[i] = '0x00'
-        })
+        // readerInfo.ants.filter((res, i) => {
+        //     if (res) antennas[i] = '0x01'
+        //     else antennas[i] = '0x00'
+        // })
 
 
-        //let query = Buffer.from([0xA0, 0x0D, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x00, 0xFF]);
-        // 8 ports
-        let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x25, 0xFF]);
-        const check = CheckSum(query); // Example check
-        const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
+        // //let query = Buffer.from([0xA0, 0x0D, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x00, 0xFF]);
+        // // 8 ports
+        // let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x25, 0xFF]);
+        // const check = CheckSum(query); // Example check
+        // const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
+        // get_data(message, reader, readerInfo.name);
+
+
+        let antennas = new Array(8).fill(0xFF); // Inicializamos con 0xFF (antena inactiva)
+
+        // Asignamos solo las antenas activas dentro del rango 0x00 - 0x03
+        readerInfo.ants.forEach((res, idx) => {
+            if (res && idx <= 7) antennas[idx] = idx; // Guardamos índice real
+        });
+
+        if (!antennas.some(a => a !== 0xFF)) { // Si todas son 0xFF, no hay antenas activas
+            console.error("No antennas active.");
+            return;
+        }
+
+        // Construcción del comando respetando el manual
+        let query = [
+            0xA0, 0x15, 0x01, 0x8A // Cabecera con longitud fija (0x0D)
+        ];
+
+        // Agregamos TODAS las antenas (0x00 - 0x03) con su Stay Time
+        antennas.forEach(ant => {
+            query.push(ant); // Número de antena (si está inactiva, 0xFF)
+            query.push(0x05); // Stay Time
+        });
+
+        // Intervalo y repetición infinita
+        query.push(0x02); // Intervalo entre cambios de antena
+        query.push(0xFF); // Repetición infinita
+
+        // Convertimos a buffer
+        let queryBuffer = Buffer.from(query);
+
+        // Calcular checksum
+        const check = CheckSum(queryBuffer);
+        const message = Buffer.concat([queryBuffer, Buffer.from([check])]);
+
         get_data(message, reader, readerInfo.name);
     }
 
@@ -183,21 +221,21 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     }
 
     // Validar si el tiempo actual está por ENCIMA del maximo permitido para este split. Por ejemplo importante para las salidas.
-    if(current.event.splits[setSplitIndex].max_time) {
+    if (current.event.splits[setSplitIndex].max_time) {
         let splitMaxSeconds = moment.duration(current.event.splits[setSplitIndex].max_time).asSeconds() * 1000; // Convertir max_time a milisegundos
         // Validar si el tiempo actual está fuera del rango permitido para este split
         if (parseInt(currentTime) > parseInt(start) + parseInt(splitMaxSeconds)) {
             console.log("Split hau oraindik ezin da irakurri MAX TIME... Pasando al siguiente split.");
-            
+
             // Intentar pasar al siguiente split
             nextSplit = splitsConfig[setSplitIndex + 1];
-            
+
             // Si no hay un siguiente split, detener el proceso
             if (!nextSplit) {
                 console.log("Ez dago splitik gordetzeko...");
                 return true;
             }
-    
+
             // Actualizar el índice para reflejar el siguiente split
             setSplitIndex++;
         }
@@ -229,7 +267,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     global.count.push(currentTag)
 
     // realtime app SOCKET.IO (stream option)
-    if(global.stream)
+    if (global.stream)
         socket.emit("currentTag", currentTag);
 
     percentsSum(currentTag)

@@ -165,7 +165,6 @@
 </template>
 
 <script>
-import moment from "moment-timezone";
 export default {
   name: "SettingsComponent",
   data() {
@@ -191,6 +190,11 @@ export default {
         }
     );
   },
+  watch: {
+    tabs(val) {
+      if (val.length <= 0) this.addInput();
+    },
+  },
   computed: {
     connected() {
       return this.$store.state.connected;
@@ -208,7 +212,6 @@ export default {
         alert("dB baloreak 0 eta 33 artean egon behar dute.");
         return;
       }
-
       window.ipc.send("toMain", ["set-output-power", JSON.stringify(item)]);
     },
     _checkAnts(item) {
@@ -242,9 +245,10 @@ export default {
         this.$store.commit("_GLOBAL_ERROR", false);
 
         this.tabs.forEach((r) => {
+          console.log(r);
           window.ipc.send("toMain", ["get-output-power", JSON.stringify(r)]);
         });
-      }, 500);
+      }, 300);
     },
     addInput() {
       if (this.tabs.length > 1) {

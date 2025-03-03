@@ -157,7 +157,7 @@
                 ></v-alert>
               </v-col>
             </template>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 label="Splitaren izena"
                 v-model="split.name"
@@ -165,6 +165,19 @@
                 variant="outlined"
               ></v-text-field>
             </v-col>
+
+            <v-col cols="1">
+              <v-text-field
+                label="Kilometroak"
+                v-model="split.km"
+                density="compact"
+                variant="outlined"
+                placeholder="Adibidez 0,5 edo 21"
+                :error="!!errors[index]?.[s]"
+                :error-messages="errors[index]?.[s] || ''"
+              ></v-text-field>
+            </v-col>
+
             <v-col cols="3">
               <v-text-field
                 label="Denbora minimoa"

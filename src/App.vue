@@ -257,11 +257,12 @@ export default {
           // modify output power
           if (data[0] == "modify-output-power") {
             const db = data[1];
-            const reader = data[2];
+            const readerID = data[2];
+
             let r = that.connected;
 
             r.map((res, i) => {
-              res.power = db[i];
+              if (i == readerID) res.power = db;
             });
 
             that.$store.commit("_CONNECTED", r);
