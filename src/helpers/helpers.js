@@ -4,12 +4,17 @@ const POLYNOMIAL = 0x8408;
 const moment = require('moment');
 const player = require('play-sound')();
 const path = require('path')
+const say = require('say');
+
 
 const {
     execSync
 } = require('child_process');
 const os = require('os');
 const si = require('systeminformation');
+
+let isSpeaking = false;
+const tagQueue = [];
 
 
 function getUsername() {
@@ -94,13 +99,40 @@ function percentsSum(currentTag) {
     }
 }
 
-function onTagDetected() {
-    // Reproduce un pitido o un sonido específico
-    let ruta = path.join(__dirname, '../assets/beep.mp3');
-    player.play(ruta, (err) => {
-        if (err) console.log("Error al reproducir sonido:", err);
+
+
+// Función que envuelve say.speak en una promesa
+function speak(text, voice, speed) {
+    return new Promise((resolve, reject) => {
+        say.speak(text, voice, speed, (err) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve();
+        });
     });
 }
+
+async function processQueue() {
+    if (isSpeaking || tagQueue.length === 0) return;
+
+    isSpeaking = true;
+    const tag = tagQueue.shift(); // Obtiene el primer tag de la cola
+    try {
+        await speak(tag, 'Monica', 1.0);
+    } catch (err) {
+        console.error("Error al reproducir voz:", err);
+    } finally {
+        isSpeaking = false;
+        processQueue(); // Procesa el siguiente tag, si existe
+    }
+}
+
+async function onTagDetected(tag) {
+    tagQueue.push(tag);
+    processQueue();
+}
+
 
 const calculateCRC16bit = (pucY) => {
     let uiCrcValue = PRESET_VALUE;
@@ -144,7 +176,7 @@ function hex2bin(hex) {
 
 function hexToDec(hex) {
     return parseInt(hex, 16);
-  }
+}
 
 function bin2dec(binary) {
     return parseInt(binary, 2);
@@ -182,7 +214,7 @@ function filterName(tag, startList) {
 
     let find = null;
     find = startList.filter((res, i) => {
-        if(res.tag) {
+        if (res.tag) {
             if (res.tag.padStart(24, '0') == tag) return res;
         }
     });

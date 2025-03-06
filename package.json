@@ -60,6 +60,7 @@
     "moment-timezone": "^0.5.46",
     "net": "^1.0.2",
     "play-sound": "^1.1.6",
+    "say": "^0.16.0",
     "serialport": "^12.0.0",
     "socket.io-client": "^4.7.5",
     "systeminformation": "^5.23.13",

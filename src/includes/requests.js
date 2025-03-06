@@ -80,6 +80,7 @@ async function requests(data) {
     let cmd = data[0];
 
     if (cmd == 'connect') {
+
         let heartbeatInterval = [];
         let readers = JSON.parse(data[1]);
         let result;
@@ -113,7 +114,7 @@ async function requests(data) {
                     }
                 }, 5000);
 
-                onTagDetected(true);
+                onTagDetected('Conectado');
             })
 
             // Konexioak itxi
@@ -489,74 +490,34 @@ async function requests(data) {
         global.startInventory = true;
 
         // Renderretik jasotako reader guztien inbentarioa hasi (gehienez 2)
-        // global.readers.forEach((reader, i) => {
-
-        //     if (!global.readersInfo[i].ip) return;
-
-        //     let antennas = [];
-        //     global.readersInfo[i].ants.filter((res, i) => {
-        //         if (res) antennas[i] = '0x01'
-        //         else antennas[i] = '0x00'
-        //     })
-
-        //     if (!antennas.includes('0x01')) {
-        //         // Render pantaila bistaratuta badago bidali bestela ez. Programa hemen ETEN.
-        //         if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['no-ants']);
-        //         else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
-        //         return false;
-        //     }
-
-        //     global.mainWindow.webContents.send('fromMain', ['inventory-status', global.startInventory]);
-
-        //     //let query = Buffer.from([0xA0, 0x0D, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x00, 0xFF]);
-        //     // 8 ports
-        //     let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x25, 0xFF]);
-        //     let check = CheckSum(query); // Example check
-        //     let message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
-        //     // write to the current reader
-        //     get_data(message, reader, global.readersInfo[i].name)
-        // })
         global.readers.forEach((reader, i) => {
+
             if (!global.readersInfo[i].ip) return;
 
-            let antennas = new Array(8).fill(0xFF); // Inicializamos con 0xFF (antena inactiva)
+            let antennas = [];
+            global.readersInfo[i].ants.filter((res, i) => {
+                if (res) antennas[i] = '0x01'
+                else antennas[i] = '0x00'
+            })
 
-            // Asignamos solo las antenas activas dentro del rango 0x00 - 0x03
-            global.readersInfo[i].ants.forEach((res, idx) => {
-                if (res && idx <= 7) antennas[idx] = idx; // Guardamos índice real
-            });
-
-            if (!antennas.some(a => a !== 0xFF)) { // Si todas son 0xFF, no hay antenas activas
-                console.error("No antennas active.");
-                return;
+            if (!antennas.includes('0x01')) {
+                // Render pantaila bistaratuta badago bidali bestela ez. Programa hemen ETEN.
+                if (global.mainWindow && !global.mainWindow.isDestroyed()) global.mainWindow.webContents.send('fromMain', ['no-ants']);
+                else console.error("Cannot send message, mainWindow is either destroyed or does not exist.");
+                return false;
             }
 
             global.mainWindow.webContents.send('fromMain', ['inventory-status', global.startInventory]);
 
-            // Construcción del comando respetando el manual
-            let query = [
-                0xA0, 0x15, 0x01, 0x8A // Cabecera con longitud fija (0x0D)
-            ];
+            //let query = Buffer.from([0xA0, 0x0D, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x00, 0xFF]);
+            // 8 ports
+            let query = Buffer.from([0xA0, 0x15, 0x01, 0x8A, 0x00, antennas[0], 0x01, antennas[1], 0x02, antennas[2], 0x03, antennas[3], 0x04, antennas[4], 0x05, antennas[5], 0x06, antennas[6], 0x07, antennas[7], 0x05, 0xFF]);
+            let check = CheckSum(query); // Example check
+            let message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
+            // write to the current reader
+            get_data(message, reader, global.readersInfo[i].name)
+        })
 
-            // Agregamos TODAS las antenas (0x00 - 0x03) con su Stay Time
-            antennas.forEach(ant => {
-                query.push(ant); // Número de antena (si está inactiva, 0xFF)
-                query.push(0x05); // Stay Time
-            });
-
-            // Intervalo y repetición infinita
-            query.push(0x02); // Intervalo entre cambios de antena
-            query.push(0xFF); // Repetición infinita
-
-            // Convertimos a buffer
-            let queryBuffer = Buffer.from(query);
-
-            // Calcular checksum
-            const check = CheckSum(queryBuffer);
-            const message = Buffer.concat([queryBuffer, Buffer.from([check])]);
-
-            get_data(message, reader, global.readersInfo[i].name);
-        });
 
 
     }
