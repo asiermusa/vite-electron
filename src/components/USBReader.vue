@@ -322,12 +322,33 @@
       </v-card>
     </v-dialog>
 
-    <v-table>
+    <v-table class="chips" v-if="currentTags.length || ignoredTags.length">
+      <thead>
+        <tr class="ignored" v-if="ignoredTags.length">
+          <th>IGNORADOS</th>
+        </tr>
+        <tr>
+          <th>Dortsala</th>
+          <th>Tag</th>
+          <th>Ezabatu</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr v-for="item in currentTags" :key="item.bib">
-          <td>{{ item.bib }}</td>
+        <tr v-for="item in _currentTags" :key="item.bib">
+          <td>
+            <strong>{{ item.bib }}</strong>
+          </td>
           <td>{{ item.tag }}</td>
-          <td @click="_deleteTag(item)">Ezabatu</td>
+          <td>
+            <v-btn
+              color="default"
+              @click="_deleteTag(item)"
+              variant="flat"
+              density="comfortable"
+              icon="mdi-close"
+            >
+            </v-btn>
+          </td>
         </tr>
       </tbody>
     </v-table>
@@ -362,6 +383,7 @@ export default {
       googleSuccess: false,
       googleError: false,
       uploadMessage: null,
+      ignoredTags: [],
     };
   },
   mounted() {
@@ -416,6 +438,13 @@ export default {
     );
   },
   computed: {
+    _currentTags() {
+      if (this.ignoredTags.length) {
+        return this.ignoredTags;
+      } else {
+        return this.currentTags;
+      }
+    },
     _serial() {
       return this.$store.state.serial;
     },
@@ -477,6 +506,7 @@ export default {
       return str.replace(/^0+(?=\d)/, "");
     },
     _assign_tag(disabled = false) {
+      this.ignoredTags = [];
       this.dialog2 = true;
       this.error = false;
       this.message = false;
@@ -537,6 +567,11 @@ export default {
       }
     },
     async _save_to_google() {
+      if (!this.currentTags.length) {
+        alert("Ez dago daturik aldatzeko");
+        return;
+      }
+
       this.googleError = false;
       this.googleSuccess = false;
       this.loader = true;
@@ -549,77 +584,88 @@ export default {
         return;
       }
 
-      items = this.startList;
+      setTimeout(async () => {
+        items = this.startList;
 
-      this.uploadMessage = "Txipak sinkronizatzen...";
+        items.map((item) => {
+          this.currentTags.forEach((cur) => {
+            if (
+              item.bib == cur.bib &&
+              !items.some(
+                (otherItem) => otherItem.tag == cur.tag.replace(/^0+/, "")
+              )
+            ) {
+              // Si no existe ningún otro item con este tag, lo asigna
+              item.tag = cur.tag;
+            }
+          });
+        });
 
-      items.map((item, i) => {
+        // check ignored new tags
+        this.ignoredTags = [];
         this.currentTags.forEach((cur) => {
-          if (item.bib == cur.bib) {
-            item.tag = cur.tag;
+          // Buscamos los items que tienen el mismo 'bib'
+          const matchingItems = items.filter((item) => item.bib == cur.bib);
+          // Si no existe ningún item con ese 'bib', se ignora este tag
+          if (!matchingItems.length) {
+            this.ignoredTags.push(cur);
+            return;
+          }
+          // Normalizamos el tag a comparar (quitando ceros a la izquierda)
+          const normalizedCurTag = cur.tag.replace(/^0+/, "");
+          // Verificamos si en alguno de los items encontrados se asignó ese tag (normalizado)
+          const tagAsignado = matchingItems.some(
+            (item) =>
+              item.tag && item.tag.replace(/^0+/, "") === normalizedCurTag
+          );
+          // Si el tag no se asignó (o aparece duplicado) se ignora
+          if (!tagAsignado) {
+            this.ignoredTags.push(cur);
           }
         });
-      });
 
-      this.$store.commit("_SET_START_LIST", items);
+        this.$store.commit("_SET_START_LIST", items);
 
-      this.uploadMessage = "Google Driven gordetzen...";
+        this.uploadMessage = "Google Driven gordetzen...";
 
-      try {
-        const response = await axios.post("/v1/save-drive", {
-          items: JSON.stringify(items),
-          post_id: this._race.ID,
-          excel_headers: this._headers,
-        });
+        try {
+          let response = await axios.post("/v1/save-drive", {
+            items: JSON.stringify(items),
+            post_id: this._race.ID,
+            excel_headers: this._headers,
+          });
 
-        this.loader = false;
-        if (response.data.success == true)
-          this.googleSuccess =
-            "Egindako aldaketak Google Driven ondo gorde dira";
-        else this.googleError = response.data.data.message;
+          if (response.data.success == true) {
+            this.uploadMessage =
+              "Zerrenda lokala datu berriekin eguneratzen...";
+            // hasierako atleta guztien excela montatu
+            response = await this.$store.dispatch("_get_participants");
 
-        this.uploadMessage = null;
-      } catch (err) {
-        this.loader = false;
-        this.googleError =
-          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
-        this.uploadMessage = null;
-      }
-    },
-    async _save_to_google_99() {
-      this.googleError = false;
-      this.googleSuccess = false;
+            if (response.data.success) {
+              window.ipc.send("toMain", ["upload-inscritos", this._race.ID]);
+              this.googleSuccess =
+                "Egindako aldaketak Google Driven ondo gorde dira";
+            } else {
+              this.googleError = "Errorea: " + response.data.data.message;
+            }
+          } else this.googleError = response.data.data.message;
 
-      let save = true;
-      this.items.forEach((res) => {
-        if (!res.tag) save = false;
-      });
+          this.uploadMessage = null;
 
-      if (!save) {
-        alert("Ezin da gorde Txip bat ezin delako hutsik egon");
-        return;
-      }
+          this.loader = false;
 
-      this.loader = true;
-      this.$store.commit("_SET_START_LIST", this.items);
-
-      try {
-        const response = await axios.post("/v1/save-drive", {
-          items: JSON.stringify(this.items),
-          post_id: this._race.ID,
-          excel_headers: this._headers,
-        });
-
-        this.loader = false;
-        if (response.data.success == true)
-          this.googleSuccess =
-            "Egindako aldaketak Google Driven ondo gorde dira";
-        else this.googleError = response.data.data.message;
-      } catch (err) {
-        this.loader = false;
-        this.googleError =
-          "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
-      }
+          if (this.ignoredTags.length)
+            alert(
+              `${this.ignoredTags.length} dortsal ez dira gorde. Errepasatu itzazu.`
+            );
+        } catch (err) {
+          this.loader = false;
+          console.log(err);
+          this.googleError =
+            "Errorea: Zerbitzarian errore bat gertatu da. Konprobatu ezazu dena ondo dagoela.";
+          this.uploadMessage = null;
+        }
+      }, 500);
     },
   },
 };
@@ -653,5 +699,23 @@ export default {
   border: 2px solid rgba(black, 0.1);
   border-radius: 3px;
   outline: 0;
+}
+
+.chips {
+  margin-top: 50px;
+  text-align: left;
+
+  thead {
+    background: black;
+    color: white;
+
+    th:first-child {
+      width: 50px;
+    }
+
+    .ignored {
+      background: red;
+    }
+  }
 }
 </style>

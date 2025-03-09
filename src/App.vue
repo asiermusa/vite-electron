@@ -240,18 +240,32 @@ export default {
               start_pretty: pretty,
             };
 
-            await axios.get("https://denborak.online/api/v2", {
-              params: {
-                post_id: that.race.ID,
-                events: that.start.options,
-                start_date: start,
-              },
-            });
+            that._startRaceClocks(params);
 
-            await axios.post("/v1/start-race", {
-              post_id: that.race.ID,
-              starts: JSON.stringify(params),
-            });
+            try {
+              await axios.get("https://denborak.online/api/v2", {
+                params: {
+                  post_id: that.race.ID,
+                  events: that.start.options,
+                  start_date: start,
+                },
+              });
+            } catch (err) {
+              console.log(
+                "SOCKET: Lasterketa hasi da baina ez da internetara bidali..."
+              );
+            }
+
+            try {
+              await axios.post("/v1/start-race", {
+                post_id: that.race.ID,
+                starts: JSON.stringify(params),
+              });
+            } catch (err) {
+              console.log(
+                "WP: Lasterketa hasi da baina ez da internetara bidali..."
+              );
+            }
           }
 
           // modify output power
@@ -395,24 +409,7 @@ export default {
     socket.on("message", (msg) => {
       if (msg) {
         msg = JSON.parse(msg);
-        let events = that.$store.state.events;
-
-        events.map((res) => {
-          if (!msg.events) return;
-
-          msg.events.forEach((id) => {
-            if (id == res.unique_id) {
-              res.start = msg.start;
-              res["pretty_start"] = moment(parseInt(msg.start)).format(
-                "YYYY-MM-DD HH:mm:ss.SSS"
-              );
-            }
-          });
-        });
-
-        that.$store.commit("_SET_EVENTS", events);
-
-        window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
+        this._startRaceClocks(msg);
       }
     });
   },
@@ -470,7 +467,7 @@ export default {
   watch: {
     connected(val) {
       window.ipc.send("toMain", ["alive", JSON.stringify(val)]);
-
+      if (!val) return;
       // setear la potencia de los readers
       val.forEach((r) => {
         window.ipc.send("toMain", ["get-output-power", JSON.stringify(r)]);
@@ -478,6 +475,26 @@ export default {
     },
   },
   methods: {
+    _startRaceClocks(msg) {
+      let events = this.$store.state.events;
+
+      events.map((res) => {
+        if (!msg.events) return;
+
+        msg.events.forEach((id) => {
+          if (id == res.unique_id) {
+            res.start = msg.start;
+            res["pretty_start"] = moment(parseInt(msg.start)).format(
+              "YYYY-MM-DD HH:mm:ss.SSS"
+            );
+          }
+        });
+      });
+
+      this.$store.commit("_SET_EVENTS", events);
+
+      window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
+    },
     async _sendSocket() {
       window.ipc.send("toMain", ["socket-io"]);
     },

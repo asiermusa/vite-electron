@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="hello" v-if="race">
     <!-- <v-row align="center" no-gutters>
       <v-col cols="6"><h2 class="main-title">Sailkapenak sortu</h2> </v-col>
 
@@ -40,6 +40,7 @@
     <Loader v-if="loader" class="my-2" />
 
     <v-select
+      v-if="eventsSplitsHosts"
       placeholder="Lasterketa"
       variant="outlined"
       v-model="event"
@@ -64,7 +65,7 @@
         <v-card-text
           >Ezabatu gailu batek zerbitzarian gordetako sailkapena.</v-card-text
         >
-        <v-card-item class="my-0">
+        <v-card-item class="my-0" v-if="userItems">
           <v-select
             v-if="devices"
             placeholder="Gailuak"
