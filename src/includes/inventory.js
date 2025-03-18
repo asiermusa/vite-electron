@@ -220,6 +220,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     currentTag.city = current.city;
     currentTag.sex = current.sex;
     currentTag.cat = current.cat;
+    currentTag.club = current.club;
     currentTag.pretty_time = getPrettyTime(currentTime, uniqueId(current.event.name, global.startTime), global.startTime);
     currentTag.real_time = getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS");
     currentTag.event = current.event.name;
@@ -239,14 +240,10 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
     percentsSum(currentTag)
 
     // Soinua egin
-    if (global.sound) {
-
+    if (global.sound)
         onTagDetected(currentTag.bib);
-    }
-
 
     if (currentTag) {
-
         // Render pantaila bistaratuta badago bidali bestela GORDE Baina ez bidali.
         if (global.mainWindow && !global.mainWindow.isDestroyed()) {
             global.mainWindow.webContents.send('fromMain', ['inventory', currentTag]);

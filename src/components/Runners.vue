@@ -148,13 +148,14 @@
         <v-table class="custom-table rankig" density="compact">
           <tbody>
             <tr>
-              <th class="text-left" style="width: 50px">TAG</th>
+              <th class="text-left" style="width: 50px">Tag</th>
               <th class="text-left" style="width: 50px">Dorsala</th>
               <th class="text-left">Izena</th>
-              <th class="text-left">Herria</th>
               <th class="text-left">Lasterketa</th>
               <th class="text-left">Sexua</th>
+              <th class="text-left">Herria</th>
               <th class="text-left">Kategoria</th>
+              <th class="text-left">Kluba</th>
             </tr>
             <tr
               v-for="(item, i) in sortItems"
@@ -186,10 +187,11 @@
               </td>
               <td @click="_select(i)">{{ item.bib }}</td>
               <td>{{ item.name }}</td>
-              <td>{{ item.city }}</td>
               <td>{{ _filterColumn(item.event, i) }}</td>
               <td>{{ item.sex }}</td>
+              <td>{{ item.city }}</td>
               <td>{{ item.cat }}</td>
+              <td>{{ item.club }}</td>
             </tr>
           </tbody>
         </v-table>

@@ -138,6 +138,8 @@ export default createStore({
             name: race.post_title,
             stream: race.stream
           }
+
+          alert()
           context.commit("_SET_RACE", race);
           window.ipc.send("toMain", [
             "set-cookies",

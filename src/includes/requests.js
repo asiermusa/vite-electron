@@ -62,10 +62,11 @@ global.stream = false;
 // Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
 global.validacionesCabeceras = {
     tag: ["tag", "txip"], // Variantes aceptables
-    bib: ['dorsal', 'bib', 'zenbakia', "dortsala"],
+    bib: ['dorsal', 'bib', 'zenbakia', "dortsala", "dorsala"],
     name: ["nombre", "izena", "izen-abizenak", "nombre y apellidos"],
-    city: ["ciudad", "herria", "provincia", "probintzia", "pais", ],
-    event: ['lasterketa', 'evento'],
+    city: ["ciudad", "herria", "provincia", "probintzia", "pais", "estado"],
+    club: ["club", "equipo", "kluba", "klub", "taldea"],
+    event: ['lasterketa', 'evento', "carrera", "ekitaldia"],
     sex: ['sexua', 'sexo', 'genero'],
     cat: ['kategoria', 'categoria', 'cat']
 };
