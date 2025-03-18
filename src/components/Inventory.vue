@@ -46,6 +46,17 @@
       icon="mdi-video-outline"
     ></v-alert>
 
+    <v-btn
+      v-if="sortItems"
+      @click="_saveData()"
+      variant="tonal"
+      color="orange"
+      prepend-icon="mdi-upload"
+      class="mx-2"
+    >
+      Datuak zerbitzarian gorde</v-btn
+    >
+
     <v-alert
       v-if="!_canInventory"
       text="Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe. Joan Ezarpenak atalera."
@@ -83,16 +94,6 @@
         class="mx-2"
       >
         Datuak ezabatu</v-btn
-      >
-
-      <v-btn
-        @click="_saveData()"
-        variant="tonal"
-        color="orange"
-        prepend-icon="mdi-upload"
-        class="mx-2"
-      >
-        Datuak zerbitzarian gorde</v-btn
       >
 
       <v-row class="my-1">
