@@ -22,6 +22,7 @@ function toSlug(str) {
 export default createStore({
   state: {
     _auth: null,
+    demoTag: null,
     _globalError: false,
     connected: null,
     startChrono: false,
@@ -56,11 +57,13 @@ export default createStore({
     _AUTH(state, val) {
       state._auth = val
     },
+    _DEMO_TAG(state, val) {
+      state.demoTag = val
+    },
     _GLOBAL_ERROR(state, val) {
       state._globalError = val
     },
     _CONNECTED(state, val) {
-      console.log('val', val)
       state.connected = val
     },
     _SET_EVENTS(state, val) {
@@ -76,7 +79,7 @@ export default createStore({
       state.startChrono = val
     },
     _SAVE_ITEMS(state, val) {
-      state.items.push(val)
+      state.items.unshift(val)
     },
     _RESET_ITEMS(state, val) {
       state.items = val
@@ -139,7 +142,6 @@ export default createStore({
             stream: race.stream
           }
 
-          alert()
           context.commit("_SET_RACE", race);
           window.ipc.send("toMain", [
             "set-cookies",
@@ -150,16 +152,16 @@ export default createStore({
           socket.emit("check-status");
 
           // obtener todos los eventos de la carrera (generales)
-          await context.dispatch("_get_events");
+          const events = await context.dispatch("_get_events");
 
           // hasierako atleta guztien excela montatu
-          await context.dispatch("_get_participants");
-
+          const participants = await context.dispatch("_get_participants");
+          
           // Obtener los cronos iniciales de la/s carrera/s
-          await context.dispatch("_get_cronos");
+          const cronos = await context.dispatch("_get_cronos");
 
           // Ordenagailu honentzako splitak ekarri
-          await context.dispatch("_get_current_pc_splits");
+          const current_pc_splits = await context.dispatch("_get_current_pc_splits");
 
           return true;
         }
@@ -194,6 +196,7 @@ export default createStore({
     },
     async _get_cronos(context) {
       let race = context.state.race;
+
       if (!race) return;
       let params = {
         id: race.ID
@@ -205,6 +208,8 @@ export default createStore({
       );
 
       starts = starts.data.data;
+
+      if(!starts) return true;
       let events = context.state.events;
       events.map((res) => {
         starts.forEach((start) => {
@@ -216,6 +221,8 @@ export default createStore({
 
       context.commit("_SET_EVENTS", events);
       window.ipc.send("toMain", ["start-time", JSON.stringify(events)]);
+
+      return true;
     },
     async _get_current_pc_splits(context) {
       let race = context.state.race;
@@ -361,7 +368,7 @@ export default createStore({
 
       // Obtener los cronos iniciales de la/s carrera/s
       await context.dispatch("_get_cronos");
-
+      
       // Ordenagailu honentzako splitak ekarri
       await context.dispatch("_get_current_pc_splits");
     }

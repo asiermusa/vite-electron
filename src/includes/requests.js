@@ -22,7 +22,8 @@ const {
     percentsSum,
     organizeExcelData,
     toSlug,
-    onTagDetected
+    onTagDetected,
+    addTagToBuffer
 } = require("../helpers/helpers.js");
 const {
     Socket
@@ -42,6 +43,20 @@ const socket = require('../socket-common.js')
 //     os.userInfo().username;
 
 /** vars */
+
+// Array global donde irás acumulando los datos
+global.targetEPC = "0090b0000000000000000000"
+global.monitoredTagData = {
+    epc: global.targetEPC,
+    totalReads: 0,
+    bestRssi: -Infinity,
+    bestTimestamp: null,
+    antennas: new Set(),
+    frequencies: new Set()
+};
+global.epcWindowBuffer = {}; // Ventana de confirmación por EPC
+global.DemoTag = false;
+
 global.count = [];
 global.percents = [];
 global.readersInfo = [];
@@ -58,7 +73,7 @@ global.race = false;
 global.hostname = false;
 global.sound = false;
 global.stream = false;
-
+global.
 // Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
 global.validacionesCabeceras = {
     tag: ["tag", "txip"], // Variantes aceptables
@@ -329,8 +344,7 @@ async function requests(data) {
         if (jsonData.length === 0) throw new Error("El array está vacío.");
 
         // Campos del CSV
-        const fields = ['tag', 'bib', 'name', 'city', 'event', 'sex', 'cat'];
-
+        const fields = ['tag', 'bib', 'name', 'city', 'event', 'sex', 'cat', 'club'];
 
         // Sanitize data
         const sanitizedData = jsonData.map(item => ({
@@ -340,7 +354,8 @@ async function requests(data) {
             city: item.city || '',
             event: item.event || '',
             sex: item.sex || '',
-            cat: item.cat || ''
+            cat: item.cat || '',
+            club: item.club || ''
         }));
 
         try {
@@ -479,6 +494,11 @@ async function requests(data) {
         array.forEach(event => {
             global.startTime.push(event)
         })
+    }
+
+    // Inbentarioak hasi (hau da garrantzitsuena)
+    if (cmd == 'check-demo-tag') {
+        global.DemoTag = data[1];
     }
 
     // Inbentarioak hasi (hau da garrantzitsuena)

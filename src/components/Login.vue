@@ -58,8 +58,8 @@ export default {
   data() {
     return {
       error: false,
-      username: "2klik",
-      password: "2k_Komunikazioa12",
+      username: "",
+      password: "",
       loader: false,
     };
   },

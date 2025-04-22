@@ -28,8 +28,8 @@ const vuetify = createVuetify({
     themes: {
       light: {
         colors: {
-          primary: '#009FE3', // Your desired primary color
-          secondary: '#b0bec5',
+          primary: '#002B45', // Your desired primary color
+          secondary: '#FF0049',
           accent: '#8c9eff',
           error: '#b71c1c',
         },

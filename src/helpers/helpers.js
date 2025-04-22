@@ -91,7 +91,7 @@ function percentsSum(currentTag) {
             global.percents.push({
                 name: currentTag.split,
                 group: currentTag.split_id,
-                count: 1
+                count: 1,
             })
         } else {
             global.percents[exist].count = parseInt(global.percents[exist].count) + 1;
@@ -121,7 +121,7 @@ async function processQueue() {
     try {
         await speak(tag, 'Monica', 1.0);
     } catch (err) {
-        console.error("Error al reproducir voz:", err);
+        console.error("Error al reproducir voz.");
     } finally {
         isSpeaking = false;
         processQueue(); // Procesa el siguiente tag, si existe
@@ -278,7 +278,6 @@ function uniqueId(str, startTime) {
 }
 
 
-
 function organizeExcelData(datos, validacionesCabeceras) {
     if (!Array.isArray(datos) || datos.length < 2) {
         return {
@@ -363,6 +362,72 @@ function toSlug(str) {
         .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
 }
 
+
+
+// Función para manejar cada lectura DEMO
+function parseInventoryBuffer(buffer) {
+    if (buffer[3] !== 0x8A) return null;
+
+    const freqAnt = buffer[4];
+    const antenna = freqAnt & 0x03;
+    const frequencyChannel = freqAnt >> 2;
+
+    const pc = buffer.slice(5, 7);
+    const pcByte = pc[0];
+    const epcLengthWords = (pcByte >> 3) & 0x1F;
+    const epcByteLength = epcLengthWords * 2;
+
+    const epcStart = 7;
+    const epcEnd = epcStart + epcByteLength;
+    const epc = buffer.slice(epcStart, epcEnd);
+    const epcHex = epc.toString('hex');
+    const epcFormatted = epcHex.length ? epcHex.match(/.{1,2}/g).join(' ') : '';
+
+
+    const rssiByte = buffer[epcEnd];
+    const rssi = -(0x100 - (rssiByte & 0x7F)); // eliminar bit alto y convertir a dBm
+    const timestamp = Date.now();
+
+    const antennaGroup = (rssiByte & 0x80) ? '5-8' : '1-4';
+
+    // 📌 Solo monitorizamos si es el EPC objetivo
+    if (epcHex === global.targetEPC) {
+        global.monitoredTagData.totalReads++;
+
+        // Actualizar mejor RSSI
+        if (rssi > global.monitoredTagData.bestRssi) {
+            global.monitoredTagData.bestRssi = rssi;
+            global.monitoredTagData.bestTimestamp = timestamp;
+        }
+
+        global.monitoredTagData.antennas.add(antenna);
+        global.monitoredTagData.frequencies.add(frequencyChannel);
+
+        return {
+            epc: epcFormatted,
+            epcRaw: epcHex,
+            pc: pc.toString('hex'),
+            epcBitLength: epcByteLength * 8,
+            antenna,
+            antennaGroup,
+            frequencyChannel,
+            rssi,
+            timestamp,
+            reader: null,
+            reads: epcHex === global.targetEPC ? global.monitoredTagData.totalReads : 1
+        };
+        
+    } else {
+        return false;
+    }
+
+    
+}
+
+
+
+
+
 // Export all functions at once
 module.exports = {
     generateComputerDescription,
@@ -382,5 +447,6 @@ module.exports = {
     percentsSum,
     generateRandomString,
     organizeExcelData,
-    toSlug
+    toSlug,
+    parseInventoryBuffer,
 };

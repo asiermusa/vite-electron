@@ -12,8 +12,11 @@ const {
     onTagDetected,
     percentsSum,
     generateRandomString,
+    parseInventoryBuffer
 } = require('../helpers/helpers.js');
 const os = require('os');
+
+const VENTANA_DELAY = 300;
 
 function get_data(message, reader, reader_id = null) {
     reader.write(message, () => {});
@@ -31,6 +34,7 @@ function inventory_fn(data, reader, readerInfo) {
         resp.push(current)
     })
 
+    
 
     // ChatGPT - Batzuetan readerrak tag batzuk kate batean apilatzen ditu... Hau ekiditzeko balidazio hau egiten da. 
     // Honen bidez 20 karaktere eta a00a hasten den string bat dagoen ikusiko dugu. Horrela bada inbentario berriz eskatzeko (get_data) 
@@ -46,7 +50,7 @@ function inventory_fn(data, reader, readerInfo) {
         const resultado = checkingCount.join(''); // Concatenamos sin separador
 
         global.mainWindow.webContents.send('fromMain', ['checking', hexToDec(resultado)]);
-        console.log(resp)
+
         global.checkAntennas = false;
         return false;
     }
@@ -68,9 +72,6 @@ function inventory_fn(data, reader, readerInfo) {
         const check = CheckSum(query); // Example check
         const message = Buffer.concat([query, Buffer.from([check])]); // Concatenate buffers
         get_data(message, reader, readerInfo.name);
-
-
-
     }
 
     // TAGa balidatua izan denean hau kudeatu behar da.
@@ -81,9 +82,26 @@ function inventory_fn(data, reader, readerInfo) {
 
         // Zein antenak jaso duen zehaztu
         let ant = getAntenna('0x' + resp[4], '0x' + resp[resp.length - 2]);
+
+        /// DEMO TAG
+        if (global.DemoTag) {
+
+            
+            const buffer = Buffer.from(response, 'hex');
+            const tagInfo = parseInventoryBuffer(buffer);
+
+            if(tagInfo)
+                global.mainWindow.webContents.send('fromMain', ['demo-tag', tagInfo]);
+        }
+
+
         // Ikusi ea count array nagusiko 1. TAG den ala ez eta hau gorde.
+        // if (!global.count.length) {
+        //     _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
+        // }
         if (!global.count.length) {
-            _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
+            const epc = response.slice(14, global.TAG_LEN);
+            _addTagToBuffer(epc, currentTime, ant, readerInfo.name);
         }
 
         // Loop baten bidez zehaztu ea TAG hau count array nagusian existitzen den ala ez, TRUE / FALSE.
@@ -97,14 +115,38 @@ function inventory_fn(data, reader, readerInfo) {
         })
 
         // Exisititze ez bada hau kudeatu eta gorde _mountTag()
+        // if (!tagExist) {
+        //     _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
+        // }
         if (!tagExist) {
-            _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
+            const epc = response.slice(14, global.TAG_LEN);
+            _addTagToBuffer(epc, currentTime, ant, readerInfo.name);
         }
     }
 }
 
-function _mountTag(tagLength, currentTime, ant, readerName) {
 
+function _addTagToBuffer(epc, currentTime, ant, readerName) {
+    if (!global.epcWindowBuffer[epc]) {
+        global.epcWindowBuffer[epc] = {
+            reads: 1,
+            lastTime: currentTime, // ✅ empezamos con la primera como "última"
+            ant,
+            readerName,
+            timeout: setTimeout(() => {
+                // ✅ Guardamos la ÚLTIMA lectura dentro de la ventana
+                _mountTag(epc, global.epcWindowBuffer[epc].lastTime, ant, readerName);
+                delete global.epcWindowBuffer[epc];
+            }, VENTANA_DELAY)
+        };
+    } else {
+        global.epcWindowBuffer[epc].reads++;
+        global.epcWindowBuffer[epc].lastTime = currentTime; // ✅ actualizamos la última
+    }
+}
+
+
+function _mountTag(tagLength, currentTime, ant, readerName) {
     // Momentuko datuak gorde: TAG, ANTENA, MOMENTUKO DENBORA.
     let currentTag = {
         tag: tagLength,
@@ -125,7 +167,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Lasterketa hasi ez bada hemen ETEN (WordPresseko datuetik; ez da benetan erreala)
     if (parseInt(currentTime) < parseInt(currentEventTime)) {
-        console.log("Ez da irakurketa hasi...");
+        // console.log("Ez da irakurketa hasi...");
         return false;
     }
 
@@ -163,14 +205,14 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Goiko LOOParen SPLITEN arabera jakin ea daturik gorde behar den ala ez.
     if (!nextSplit) {
-        console.log("Ez dago splitik gordetzeko...");
+        // console.log("Ez dago splitik gordetzeko...");
         return true;
     }
 
     // ONA: Split hau gorde daitekeen ala ez ikusi, splitaren orduaren arabera (WordPress ACFbackendean dagoen informazioa da hau).
     let splitDiffSeconds = moment.duration(current.event.splits[setSplitIndex].min_time).asSeconds();
     if (parseInt(currentTime) < parseInt(currentEventTime + splitDiffSeconds)) {
-        console.log("Split hau oraindik ezin da irakurri...");
+        // console.log("Split hau oraindik ezin da irakurri...");
         return false;
     }
 
@@ -182,7 +224,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         }
     });
     if (!start) {
-        console.log("Korrikalari honen lasterketa oraindik ez da hasi...");
+        // console.log("Korrikalari honen lasterketa oraindik ez da hasi...");
         return false;
     }
 
@@ -191,14 +233,14 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         let splitMaxSeconds = moment.duration(current.event.splits[setSplitIndex].max_time).asSeconds() * 1000; // Convertir max_time a milisegundos
         // Validar si el tiempo actual está fuera del rango permitido para este split
         if (parseInt(currentTime) > parseInt(start) + parseInt(splitMaxSeconds)) {
-            console.log("Split hau oraindik ezin da irakurri MAX TIME... Pasando al siguiente split.");
+            // console.log("Split hau oraindik ezin da irakurri MAX TIME... Pasando al siguiente split.");
 
             // Intentar pasar al siguiente split
             nextSplit = splitsConfig[setSplitIndex + 1];
 
             // Si no hay un siguiente split, detener el proceso
             if (!nextSplit) {
-                console.log("Ez dago splitik gordetzeko...");
+                // console.log("Ez dago splitik gordetzeko...");
                 return true;
             }
 
@@ -209,7 +251,7 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
 
     // Validar si el tiempo actual está por debajo del mínimo permitido para este split
     if (parseInt(currentTime) < parseInt(start) + parseInt(splitDiffSeconds * 1000)) {
-        console.log("Split hau oraindik ezin da irakurri MIN TIME...");
+        // console.log("Split hau oraindik ezin da irakurri MIN TIME...");
         return false;
     }
 

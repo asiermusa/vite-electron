@@ -10,13 +10,13 @@
       </v-btn>
 
       <v-btn v-if="_inventoryStatus" stacked size="x-large" @click="_stop()">
-        <v-badge color="green" size="small" v-if="_inventoryStatus">
+        <v-badge color="red" size="small" v-if="_inventoryStatus">
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
       </v-btn>
 
       <v-btn v-else stacked size="x-large" @click="_inventory()">
-        <v-badge color="red" size="small">
+        <v-badge color="success" size="small">
           <v-icon>mdi-access-point</v-icon>
         </v-badge>
       </v-btn>
@@ -197,6 +197,7 @@ import axios from "axios";
 import Chrono from "@/components/Chrono.vue";
 import socket from "./socket";
 import moment from "moment";
+import { setTimeout } from "core-js";
 export default {
   name: "App",
   components: {
@@ -213,8 +214,6 @@ export default {
     };
   },
   async mounted() {
-    this.$router.push("/login");
-
     window.ipc.send("toMain", ["load_list"]);
     window.ipc.send("toMain", ["get_hostname"]);
 
@@ -305,6 +304,10 @@ export default {
 
           if (data[0] == "no-ants") {
             alert("Konektatu antenak eta hautatu hauek Ezarpenak atalean.");
+          }
+
+          if (data[0] == "demo-tag") {
+            that.$store.commit("_DEMO_TAG", data[1]);
           }
 
           if (data[0] == "inventory-status") {
@@ -412,6 +415,10 @@ export default {
         this._startRaceClocks(msg);
       }
     });
+
+    setTimeout(() => {
+      this.$router.push("/login");
+    }, 300);
   },
   computed: {
     split() {
@@ -606,7 +613,7 @@ export default {
 // }
 
 .login-page {
-  background-image: linear-gradient(45deg, #1867c0, #33cccc);
+  background-image: linear-gradient(45deg, #002b45, #ff0049);
 }
 
 .hello {

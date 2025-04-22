@@ -28,7 +28,13 @@
             <v-card-item v-if="s.active">
               <div class="percent-name">
                 {{ s.name }}
+
                 <span class="percent-number">{{ s.percent }}%</span>
+
+                <div class="readed">
+                  <span class="readed__totals">Guztira: {{ s.total }}</span>
+                  <span>Irakurrita: {{ s.readed }}</span>
+                </div>
               </div>
 
               <v-progress-linear
@@ -106,10 +112,11 @@ export default {
                     eventsQty.forEach((qt) => {
                       if (qt.name == res.name) {
                         if (d.group == s.unique_id) {
-                          s.percent = (
-                            (parseInt(d.count) * 100) /
-                            qt.count
-                          ).toFixed(1);
+                          let readed = parseInt(d.count);
+                          let total = qt.count;
+                          s.readed = readed;
+                          s.total = total;
+                          s.percent = ((readed * 100) / total).toFixed(1);
                         }
                       }
                     });
@@ -120,6 +127,8 @@ export default {
               current.map((res) => {
                 res.splits.map((s) => {
                   s.percent = 0;
+                  s.readed = 0;
+                  s.total = 0;
                 });
               });
             }
@@ -153,5 +162,13 @@ export default {
 <style lang="scss">
 .main-card {
   padding: 10px !important;
+}
+
+.readed {
+  font-size: 14px;
+  &__totals {
+    font-weight: bold;
+    margin-right: 10px;
+  }
 }
 </style>

@@ -106,7 +106,7 @@
             ></v-text-field>
           </v-col>
 
-          <v-col cols="3">
+          <v-col cols="2">
             <v-text-field
               placeholder="Izen-abizenak"
               variant="outlined"
@@ -134,6 +134,16 @@
               density="compact"
             ></v-text-field>
           </v-col>
+          <v-col cols="1">
+            <v-select
+              placeholder="Sexua"
+              variant="outlined"
+              v-model="searchSex"
+              class="my-3"
+              :items="['All', 'F', 'G']"
+              density="compact"
+            ></v-select>
+          </v-col>
 
           <v-col cols="1">
             <v-checkbox
@@ -142,6 +152,13 @@
               @click="tags = !tags"
               class="mt-1"
             ></v-checkbox>
+          </v-col>
+
+          <v-col cols="12" v-if="sortItems">
+            <v-chip
+              >Iragazitako kopurua:
+              <strong class="mx-1">{{ sortItems.length }}</strong></v-chip
+            >
           </v-col>
         </v-row>
 
@@ -215,6 +232,7 @@ export default {
       searchCity: null,
       searchName: null,
       searchRace: null,
+      searchSex: null,
       header: null,
       selected: null,
       loader: false,
@@ -222,6 +240,7 @@ export default {
       googleError: false,
       tags: false,
       inscritos: false,
+      counter: 0,
     };
   },
   mounted() {
@@ -235,6 +254,8 @@ export default {
       () =>
         function (event, data) {
           if (data[0] == "upload-response") {
+            if (that.googleError) return;
+
             that.loader = false;
             that.googleSuccess = null;
             that.googleError = null;
@@ -281,6 +302,12 @@ export default {
           if (!item.tag) return;
           return item.tag.toLowerCase().includes(this.searchTag.toLowerCase());
         });
+      }
+
+      if (this.searchSex && this.searchSex !== "All") {
+        response = response.filter(
+          (item) => this._isWoman(item.sex) === (this.searchSex === "F")
+        );
       }
 
       // Apply searchHerria filter if "searchHerria" is defined
@@ -411,6 +438,7 @@ export default {
         this.googleError = "Errorea: " + response.data.data.message;
       }
       this.loader = false;
+      return;
     },
   },
 };
@@ -422,7 +450,7 @@ export default {
   background: rgba(202, 79, 79, 0.15) !important;
 }
 .isWoman {
-  background: rgb(116, 32, 91, 0.2) !important;
+  background: rgba(233, 206, 247, 0.2) !important;
 }
 .v-row {
   margin: 0;

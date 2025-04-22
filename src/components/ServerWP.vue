@@ -1,7 +1,19 @@
 <template>
   <div class="hello">
     <v-row align="center" no-gutters>
-      <v-col cols="6"><h2 class="main-title">WordPress Zerbitzaria</h2> </v-col>
+      <v-col cols="6"
+        ><h2 class="main-title">WordPress Zerbitzaria</h2>
+
+        <v-btn
+          @click="_newRaceDialog()"
+          class="mb-2"
+          variant="flat"
+          color="primary"
+          rounded
+        >
+          Lasterketa berria</v-btn
+        >
+      </v-col>
       <v-col class="text-right" cols="6">
         <v-btn
           @click="_logout()"
@@ -14,6 +26,54 @@
     </v-row>
 
     <Loader v-if="loader" />
+
+    <v-dialog v-model="NewDialog" width="400">
+      <v-sheet
+        class="pa-4 text-center mx-auto"
+        elevation="12"
+        max-width="400"
+        rounded="lg"
+        width="100%"
+      >
+        <h2 class="text-h5 mb-6">Lasterketaren izena</h2>
+
+        <v-alert
+          v-if="errorDialog"
+          :text="errorDialog"
+          color="red"
+          icon="mdi-alert-circle-outline"
+          variant="tonal"
+        ></v-alert>
+
+        <v-text-field
+          placeholder="Izena"
+          variant="outlined"
+          v-model="newRace.title"
+          class="my-3"
+          density="compact"
+        ></v-text-field>
+
+        <v-text-field
+          placeholder="Deskribapena"
+          variant="outlined"
+          v-model="newRace.content"
+          class="my-3"
+          density="compact"
+        ></v-text-field>
+
+        <v-divider class="mb-4"></v-divider>
+
+        <v-btn
+          @click="_newRace()"
+          class="mb-2"
+          variant="flat"
+          rounded
+          color="success"
+        >
+          Berria sortu</v-btn
+        >
+      </v-sheet>
+    </v-dialog>
 
     <div v-if="item" class="events">
       <v-btn
@@ -109,9 +169,10 @@
         <v-col cols="4">
           <v-text-field
             v-model="event.name"
-            label="Deskribapena"
+            label="Izena"
             variant="outlined"
           ></v-text-field>
+          <small>Adibidez: Luzea</small>
         </v-col>
         <v-col cols="2">
           <v-text-field
@@ -119,6 +180,7 @@
             v-model="event.distance"
             variant="outlined"
           ></v-text-field>
+          <small>Metrotan: 21320</small>
         </v-col>
 
         <v-col cols="4">
@@ -127,8 +189,9 @@
             v-model="event.start_date"
             variant="outlined"
           ></v-text-field>
+          <small>Formatua: 2025-09-04 16:30</small>
         </v-col>
-        <v-col cols="2">
+        <v-col cols="1">
           <v-btn
             color="red"
             @click="_removeEvent(index)"
@@ -299,8 +362,17 @@
     >
       <template v-slot:item.actions="{ item }" slot="end">
         <div class="d-flex justify-end">
-          <v-icon class="me-2" size="default" @click="_editItem(item)">
+          <v-icon class="my-2" size="default" @click="_editItem(item)">
             mdi-pencil
+          </v-icon>
+
+          <v-icon
+            color="red"
+            @click="_removeRace(item.id)"
+            variant="tonal"
+            class="mx-2 my-2"
+          >
+            mdi-delete
           </v-icon>
         </div>
       </template>
@@ -338,6 +410,12 @@ export default {
       attachmentId: null,
       attachmentUrl: null,
       selectedFile: false,
+      NewDialog: false,
+      errorDialog: false,
+      newRace: {
+        title: null,
+        content: null,
+      },
     };
   },
   mounted() {
@@ -364,6 +442,46 @@ export default {
     },
   },
   methods: {
+    _newRaceDialog() {
+      this.NewDialog = true;
+    },
+    async _newRace() {
+      if (!this.newRace.title) {
+        this.errorDialog = "Errorea: Izena ezin da hutsik egon.";
+        return;
+      }
+
+      try {
+        // Enviar la imagen al endpoint de medios (puedes usar el endpoint nativo de WP /wp-json/wp/v2/media)
+        const newPost = await axios.post("wp/v2/races", {
+          title: this.newRace.title,
+          content: this.newRace.content,
+          status: "publish",
+        });
+
+        if (newPost.status == 201) {
+          this._get_races();
+          this.NewDialog = false;
+        } else {
+          this.errorDialog = "Errorea: Ezin izan da lasterketa sortu.";
+        }
+      } catch (err) {
+        this.errorDialog = "Errorea: " + err;
+      }
+    },
+    async _removeRace(id) {
+      if (confirm("Lasterketa hau ezabatu nahi duzu?")) {
+        try {
+          // Enviar la imagen al endpoint de medios (puedes usar el endpoint nativo de WP /wp-json/wp/v2/media)
+          const deletePost = await axios.delete("wp/v2/races/" + id);
+          if (deletePost.status == 200) {
+            this._get_races();
+          }
+        } catch (err) {
+          this.error = "Errorea: " + err;
+        }
+      }
+    },
     validateTimeInput() {
       this.errors = []; // Reset errors
       const timeRegex = /^([0-1]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
@@ -438,6 +556,7 @@ export default {
 
         if (res.status === 200) {
           this.item = res.data.data;
+          console.log(this.item);
         } else {
           this.error = "Sartutako datuak ez dira zuzenak.";
         }
@@ -464,6 +583,10 @@ export default {
 
       if (!this.validateTimeInput()) return;
       this.loader = true;
+
+      this.item.events.map((res) => {
+        if (!res.unique_id) res.unique_id = this._generateRandomString(14);
+      });
 
       const params = {
         data: this.item,

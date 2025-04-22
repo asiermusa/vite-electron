@@ -10,7 +10,7 @@
 
     <v-alert
       v-if="error"
-      text="Ezin izan da lasterketa aurkitu. Saiatu beste kode batekin."
+      text="Ezin izan da lasterketa aurkitu. Ez duzu lasterketa honetarako ebentorik sortu edo kodea ez da zuzena."
       color="red"
       icon="mdi-alert-circle-outline"
       variant="tonal"
