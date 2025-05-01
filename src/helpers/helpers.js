@@ -2,9 +2,20 @@ const EPC_LEN = 24; // EPC
 const PRESET_VALUE = 0xFFFF;
 const POLYNOMIAL = 0x8408;
 const moment = require('moment');
-const player = require('play-sound')();
 const path = require('path')
 const say = require('say');
+
+
+// google text to speech
+const { TextToSpeechClient } = require('@google-cloud/text-to-speech');
+const { Readable } = require('stream');
+const prism = require('prism-media');
+const Speaker = require('speaker');
+const ffmpegPath = require('ffmpeg-static');
+
+const client = new TextToSpeechClient({
+  keyFilename: path.join(__dirname, '..', '..', 'google-tts-key.json'),
+});
 
 
 const {
@@ -102,30 +113,62 @@ function percentsSum(currentTag) {
 
 
 // Función que envuelve say.speak en una promesa
-function speak(text, voice, speed) {
-    return new Promise((resolve, reject) => {
-        say.speak(text, voice, speed, (err) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve();
-        });
+// ✅ Función speak en promesa
+function speak(text, voice = 'es-ES', speed = 1.0) {
+return new Promise(async (resolve, reject) => {
+    try {
+    const [response] = await client.synthesizeSpeech({
+        input: { text },
+        voice: {
+        languageCode: voice,
+        ssmlGender: 'MALE',
+        },
+        audioConfig: {
+        audioEncoding: 'MP3',
+        speakingRate: speed,
+        },
     });
+
+    const bufferStream = new Readable();
+    bufferStream.push(response.audioContent);
+    bufferStream.push(null);
+
+    const decoder = new prism.FFmpeg({
+        args: ['-i', 'pipe:0', '-f', 's16le', '-ar', '48000', '-ac', '2'],
+        ffmpegPath,
+    });
+
+    const speaker = new Speaker({
+        channels: 2,
+        bitDepth: 16,
+        sampleRate: 48000,
+    });
+
+    speaker.on('close', () => {
+        resolve();
+    });
+
+    bufferStream.pipe(decoder).pipe(speaker);
+    } catch (err) {
+    reject(err);
+    }
+});
 }
 
+// 🔁 Cola de reproducción
 async function processQueue() {
-    if (isSpeaking || tagQueue.length === 0) return;
+if (isSpeaking || tagQueue.length === 0) return;
 
-    isSpeaking = true;
-    const tag = tagQueue.shift(); // Obtiene el primer tag de la cola
-    try {
-        await speak(tag, 'Monica', 1.0);
-    } catch (err) {
-        console.error("Error al reproducir voz.");
-    } finally {
-        isSpeaking = false;
-        processQueue(); // Procesa el siguiente tag, si existe
-    }
+isSpeaking = true;
+const tag = tagQueue.shift();
+try {
+    await speak(tag, 'es-ES', 1.0);
+} catch (err) {
+    console.error("❌ Error al reproducir voz:", err.message);
+} finally {
+    isSpeaking = false;
+    processQueue(); // Procesar siguiente si hay
+}
 }
 
 async function onTagDetected(tag) {
