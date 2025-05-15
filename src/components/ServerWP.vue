@@ -99,21 +99,22 @@
             variant="outlined"
           ></v-text-field>
         </v-col>
+        <v-col cols="12">
+          <v-checkbox
+            v-model="deleteUsersSplits"
+            label="Ezabatu split guztietako erabiltzaileak"
+          />
 
-        <v-checkbox
-          v-model="deleteUsersSplits"
-          label="Ezabatu split guztietako erabiltzaileak"
-        />
+          <v-checkbox
+            v-model="probisionalData"
+            label="Datu probisionalak ezabatu zuzeneko emisiotik (Mongo)"
+            class="pa-0 ma-0"
+          />
+        </v-col>
       </v-row>
 
-      <v-alert
-        type="info"
-        class="my-8"
-        variant="tonal"
-        prominent
-        border="bottom"
-      >
-        Zuzeneko emisoa eta sailkapenak:
+      <v-alert color="primary" class="my-8" prominent border="bottom">
+        <h3>Zuzeneko emisoa eta sailkapenak:</h3>
         <v-checkbox
           v-model="item.stream"
           label="Zuzeneko jarraipena egin (Mongo datu-basera bidalketak egin)"
@@ -290,7 +291,7 @@
       </v-row>
 
       <v-row>
-        <v-col cols="8" class="mb-6">
+        <v-col cols="4" class="mb-6">
           <v-file-input
             v-model="selectedFile"
             label="Irudia aukeratu"
@@ -301,9 +302,9 @@
           ></v-file-input>
         </v-col>
 
-        <v-col cols="3" class="mb-12">
+        <v-col cols="12" class="mb-12">
           <v-img
-            :width="300"
+            :width="200"
             aspect-ratio="16/9"
             cover
             :src="attachmentUrl"
@@ -326,8 +327,9 @@
 
             <v-alert
               v-if="success"
-              :text="success"
-              type="success"
+              v-html="success"
+              color="success"
+              icon="mdi-alert-circle-outline"
               variant="tonal"
             ></v-alert>
           </div>
@@ -411,6 +413,7 @@ export default {
       attachmentUrl: null,
       selectedFile: false,
       NewDialog: false,
+      probisionalData: false,
       errorDialog: false,
       newRace: {
         title: null,
@@ -556,7 +559,6 @@ export default {
 
         if (res.status === 200) {
           this.item = res.data.data;
-          console.log(this.item);
         } else {
           this.error = "Sartutako datuak ez dira zuzenak.";
         }
@@ -588,12 +590,12 @@ export default {
         if (!res.unique_id) res.unique_id = this._generateRandomString(14);
       });
 
-      const params = {
+      let params = {
         data: this.item,
         featured_image: this.attachmentId,
         deleteSplits: this.deleteUsersSplits,
       };
-
+      let probisionalAxios = null;
       try {
         let res = await axios.post("/v1/set-race-by-id", params);
         this.loader = false;
@@ -601,8 +603,30 @@ export default {
         let race = res.data;
 
         if (res.status === 200) {
-          this.success = "Datuak ondo gorde dira zerbitzarian.";
           this.$store.dispatch("_getCloudData", false);
+
+          if (this.probisionalData) {
+            params = {
+              id: race.data.ID,
+            };
+
+            probisionalAxios = await axios.post(
+              "https://denborak.online/api/v2/delete-data",
+              params
+            );
+          }
+
+          let defi = "";
+          if (this.deleteUsersSplits || probisionalAxios) {
+            defi = "";
+            if (this.deleteUsersSplits)
+              defi += `<br>Ordenagailu hau split guztietatik ezabatua izan da.`;
+
+            if (probisionalAxios)
+              defi += `<br>Mongo datubasea garbitu da ekintza honetarako.`;
+          }
+          this.success = "Datuak ondo gorde dira zerbitzarian.";
+          this.success = this.success + defi;
 
           race = {
             ID: race.data.ID,

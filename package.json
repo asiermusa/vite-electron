@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"npm:electron-dev\"",
     "electron-dev": "nodemon --quiet \"electron .\"",
-    "build": "vite build && electron-builder --mac"
+    "build": "vite build && electron-builder --mac --x64"
   },
   "nodemonConfig": {
     "watch": [
@@ -27,11 +27,27 @@
       "preload.js",
       "src/**/*"
     ],
+    "extraResources": [
+        {
+        "from": "node_modules/ffmpeg-static",
+        "to": "ffmpeg"
+      },
+      {
+        "from": "google-tts-key.json",
+        "to": "google-tts-key.json"
+      }
+    ],
     "directories": {
       "buildResources": "assets"
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"] 
+        }
+      ],
+      "minimumSystemVersion": "10.13",
       "icon": "src/assets/icon.png"
     },
     "win": {
@@ -78,6 +94,7 @@
     "electron": "^35.1.5",
     "electron-builder": "^25.1.8",
     "electron-rebuild": "^3.2.9",
+    "node-abi": "^4.8.0",
     "nodemon": "^3.1.7",
     "sass": "^1.83.0",
     "sass-loader": "^16.0.2",

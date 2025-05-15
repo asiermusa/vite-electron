@@ -613,7 +613,7 @@ export default {
 // }
 
 .login-page {
-  background-image: linear-gradient(45deg, #002b45, #ff0049);
+  background-image: linear-gradient(60deg, #002b45, #ff0049);
 }
 
 .hello {

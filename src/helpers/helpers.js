@@ -1,27 +1,35 @@
+const { app } = require('electron');
 const EPC_LEN = 24; // EPC
 const PRESET_VALUE = 0xFFFF;
 const POLYNOMIAL = 0x8408;
 const moment = require('moment');
 const path = require('path')
-const say = require('say');
-
+const fs = require('fs');
+const os = require('os');
 
 // google text to speech
 const { TextToSpeechClient } = require('@google-cloud/text-to-speech');
 const { Readable } = require('stream');
 const prism = require('prism-media');
 const Speaker = require('speaker');
-const ffmpegPath = require('ffmpeg-static');
 
-const client = new TextToSpeechClient({
-  keyFilename: path.join(__dirname, '..', '..', 'google-tts-key.json'),
-});
+const isDev = !app.isPackaged;
+
+const originalKeyPath = isDev
+  ? path.join(__dirname, '..', '..', 'google-tts-key.json')
+  : path.join(process.resourcesPath, 'google-tts-key.json');
+
+const tempKeyPath = isDev ? originalKeyPath : path.join(os.tmpdir(), 'google-tts-key.json');
+if (!isDev) fs.copyFileSync(originalKeyPath, tempKeyPath);
+
+const client = new TextToSpeechClient({ keyFilename: tempKeyPath });
+
+
 
 
 const {
-    execSync
+    exec
 } = require('child_process');
-const os = require('os');
 const si = require('systeminformation');
 
 let isSpeaking = false;
@@ -111,49 +119,50 @@ function percentsSum(currentTag) {
 }
 
 
-
 // Función que envuelve say.speak en una promesa
 // ✅ Función speak en promesa
 function speak(text, voice = 'es-ES', speed = 1.0) {
-return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
-    const [response] = await client.synthesizeSpeech({
+      const [response] = await client.synthesizeSpeech({
         input: { text },
         voice: {
-        languageCode: voice,
-        ssmlGender: 'MALE',
+          languageCode: voice,
+          ssmlGender: 'MALE',
         },
         audioConfig: {
-        audioEncoding: 'MP3',
-        speakingRate: speed,
+          audioEncoding: 'MP3',
+          speakingRate: speed,
         },
-    });
+      });
 
-    const bufferStream = new Readable();
-    bufferStream.push(response.audioContent);
-    bufferStream.push(null);
+      // Guardar el MP3 en /tmp
+      const outputPath = path.join(os.tmpdir(), 'tts-output.mp3');
+      fs.writeFileSync(outputPath, response.audioContent);
 
-    const decoder = new prism.FFmpeg({
-        args: ['-i', 'pipe:0', '-f', 's16le', '-ar', '48000', '-ac', '2'],
-        ffmpegPath,
-    });
+      // Reproducir usando comando del sistema
+      const command =
+        process.platform === 'darwin'
+          ? `afplay "${outputPath}"`
+          : process.platform === 'win32'
+          ? `start "" "${outputPath}"`
+          : `xdg-open "${outputPath}"`;
 
-    const speaker = new Speaker({
-        channels: 2,
-        bitDepth: 16,
-        sampleRate: 48000,
-    });
-
-    speaker.on('close', () => {
-        resolve();
-    });
-
-    bufferStream.pipe(decoder).pipe(speaker);
+      exec(command, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
     } catch (err) {
-    reject(err);
+      reject(err);
     }
-});
+  });
 }
+
+
+
 
 // 🔁 Cola de reproducción
 async function processQueue() {
@@ -165,6 +174,11 @@ try {
     await speak(tag, 'es-ES', 1.0);
 } catch (err) {
     console.error("❌ Error al reproducir voz:", err.message);
+    fs.appendFileSync(
+    path.join(app.getPath('documents'), 'tts-debug-azkar.txt'),
+    `❌ TTS ERROR: ${err.message}\n`
+  );
+  reject(err);
 } finally {
     isSpeaking = false;
     processQueue(); // Procesar siguiente si hay

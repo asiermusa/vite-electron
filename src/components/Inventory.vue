@@ -245,7 +245,7 @@ import StartRace from "./StartRace.vue";
 import Loader from "./Loader.vue";
 import PercentsComponent from "./Percents.vue";
 import ReadDelayReader from "./ReadDelayReader.vue";
-
+import axios from "axios";
 export default {
   name: "InventoryComponent",
   components: {
@@ -465,9 +465,18 @@ export default {
     _stop() {
       window.ipc.send("toMain", ["stop"]);
     },
-    _delete() {
-      if (confirm("Datuak ezabatu nahi al dituzu?"))
+    async _delete() {
+      if (confirm("Datuak ezabatu nahi al dituzu?")) {
+        let params = {
+          id: this.race.ID,
+        };
+        let probisionalAxios = await axios.post(
+          "https://denborak.online/api/v2/delete-data",
+          params
+        );
+
         window.ipc.send("toMain", ["delete"]);
+      }
     },
     _checkDemoTag() {
       window.ipc.send("toMain", [
