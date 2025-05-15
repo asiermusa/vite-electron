@@ -325,6 +325,7 @@ async function requests(data) {
 
             } catch (error) {
                 console.error("Error:", error.message);
+                global.mainWindow.webContents.send('fromMain', ['upload-response', false]);
             }
 
 
