@@ -9,9 +9,6 @@ const os = require('os');
 
 // google text to speech
 const { TextToSpeechClient } = require('@google-cloud/text-to-speech');
-const { Readable } = require('stream');
-const prism = require('prism-media');
-const Speaker = require('speaker');
 
 const isDev = !app.isPackaged;
 
