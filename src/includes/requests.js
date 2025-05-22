@@ -22,9 +22,12 @@ const {
     percentsSum,
     organizeExcelData,
     toSlug,
+    uniqueId,
     onTagDetected,
     addTagToBuffer
 } = require("../helpers/helpers.js");
+
+
 const {
     Socket
 } = require("net");
@@ -501,6 +504,81 @@ async function requests(data) {
     if (cmd == 'check-demo-tag') {
         global.DemoTag = data[1];
     }
+
+    // ezabatu item bat inbentariotik
+
+    // Inbentarioak hasi (hau da garrantzitsuena)
+    if (cmd == 'delete-item') {
+        let deleteID = data[1];
+        
+        const index = global.count.findIndex(item => item.id === deleteID);
+        const tag = global.count[index].tag;
+
+        if (index !== -1) {
+            global.count.splice(index, 1); // Elimina 1 elemento en esa posición
+        }   
+
+        // ✅ Recalcular percents
+        global.percents = [];
+        global.count.forEach(tag => percentsSum(tag));
+        
+        // 2. Limpiar también de epcWindowBuffer si existe
+        if (global.epcWindowBuffer[tag]) {
+        clearTimeout(global.epcWindowBuffer[tag].timeout);
+        delete global.epcWindowBuffer[tag];
+        }
+
+        const del = await axios.post('https://denborak.online/api/v2/delete-data-by-id', {
+            id: deleteID
+        });
+
+        global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', global.count.reverse(), 'delete']);
+        global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
+    }
+
+
+    if (data[0] == "edit-time") {
+        
+        // balidazioak egin!!
+        const { id, newTime } = data[1];
+
+        const target = global.count.find((t) => t.id === id);
+        if (!target) return;
+
+        target.pretty_time = newTime;
+
+        // Vuelve a calcular timestamp a partir del pretty_time
+        const parts = newTime.split(":");
+        const h = parseInt(parts[0]) || 0;
+        const m = parseInt(parts[1]) || 0;
+        const s = parseInt(parts[2]) || 0;
+        const ms = parseInt(parts[3]) || 0;
+
+        const totalMs = ((h * 3600) + (m * 60) + s) * 1000 + ms;
+        // Buscar el "start" del evento al que pertenece el participante
+        const startEvent = global.startTime.find(
+        (s) => s.unique_id === uniqueId(target.event, global.startTime)
+        );
+
+        if (startEvent) {
+            target.timestamp = parseInt(startEvent.start) + totalMs;
+        }
+
+        const del = await axios.post('https://denborak.online/api/v2/update-data-by-id', {
+            id: id,
+            newPrettyTime: target.pretty_time,
+            newTimestamp: target.timestamp
+        });
+
+        // Recalcular los percents
+        global.percents = []; // Limpiar
+        global.count.forEach((t) => {
+            percentsSum(t); // Recalcular
+        });
+
+        global.mainWindow.webContents.send("fromMain", ["inventory-after-delete", global.count.reverse(), 'edit']);
+    }
+
 
     // Inbentarioak hasi (hau da garrantzitsuena)
     if (cmd == 'inventory') {

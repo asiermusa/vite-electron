@@ -255,6 +255,20 @@ function _mountTag(tagLength, currentTime, ant, readerName) {
         return false;
     }
 
+
+    // ✅ Si ya existe una lectura para este TAG + SPLIT + EVENTO → No guardar
+    if (
+    global.count.some(
+        (entry) =>
+        entry.tag === tagLength &&
+        entry.split_id === nextSplit.unique_id &&
+        entry.event === current.event.name
+    )
+    ) {
+    return false; // Ya existe esta lectura, no guardar otra vez
+    }
+
+
     // Goiko filtro guztiak pasatu baditu parte-hartzaile honen datuak GORDEKO DIRA.
     currentTag.id = generateRandomString(10);
     currentTag.bib = current.bib;

@@ -81,6 +81,9 @@ export default createStore({
     _SAVE_ITEMS(state, val) {
       state.items.unshift(val)
     },
+    _SAVE_ALL_ITEMS(state, val) {
+      state.items = val
+    },
     _RESET_ITEMS(state, val) {
       state.items = val
     },

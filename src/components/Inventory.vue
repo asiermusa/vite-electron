@@ -12,28 +12,27 @@
       {{ message }}
     </v-alert>
 
-    <v-dialog v-model="changeSplit" width="400">
-      <v-card class="pa-3">
-        <template v-if="changeSplit">
-          <v-select
-            placeholder="Splita aldatu"
-            variant="outlined"
-            v-model="changeSplitSelected"
-            class="my-3"
-            :items="changeSplit"
-            item-title="name"
-            density="compact"
-          ></v-select>
+    <v-dialog v-model="editDialog" max-width="400px">
+      <v-card>
+        <v-card-title>Denbora aldatu</v-card-title>
 
-          <v-btn
-            @click="_saveRow()"
-            color="primary"
-            class="mb-2"
-            variant="flat"
-          >
-            Gorde</v-btn
-          >
-        </template>
+        <v-card-text>
+          <v-text-field
+            v-model="editedTime"
+            variant="outlined"
+            density="compact"
+            label="Denbora berria (HH:mm:ss:SSS)"
+          />
+
+          <v-alert v-if="errorMessage" class="my-3" color="red" variant="tonal">
+            {{ errorMessage }}
+          </v-alert>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-btn @click="editDialog = false">Itxi</v-btn>
+          <v-btn color="primary" @click="_confirmEdit()">Gorde</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -137,8 +136,8 @@
         Datuak zerbitzarian gorde</v-btn
       >
 
-      <v-row class="my-1">
-        <v-col cols="3">
+      <v-row class="my-1" dense>
+        <v-col cols="1">
           <v-text-field
             placeholder="Dortsala"
             variant="outlined"
@@ -158,37 +157,50 @@
           ></v-text-field>
         </v-col>
 
-        <v-col cols="3" v-if="eventsSplitsHosts">
-          <v-select
-            placeholder="Lasterketa"
-            variant="outlined"
-            v-model="searchEvent"
-            class="my-3"
-            :items="eventsSplitsHosts"
-            item-title="name"
-            density="compact"
-          ></v-select>
-        </v-col>
-
-        <v-col cols="2">
-          <v-text-field
-            placeholder="Splita"
-            variant="outlined"
-            v-model="searchSplit"
-            class="my-3"
-            density="compact"
-          ></v-text-field>
-        </v-col>
-
         <v-col cols="1">
           <v-select
             placeholder="Sexua"
             variant="outlined"
             v-model="searchSex"
+            label="Sexua"
             class="my-3"
-            :items="['All', 'F', 'G']"
+            :items="['Denak', 'Ema', 'Giz']"
             density="compact"
           ></v-select>
+        </v-col>
+
+        <v-col cols="2">
+          <v-select
+            v-model="selectedRace"
+            :items="availableRaces"
+            label="Lasterketa"
+            variant="outlined"
+            density="compact"
+            class="my-3"
+          ></v-select>
+        </v-col>
+
+        <v-col cols="2">
+          <v-select
+            v-model="selectedCat"
+            :items="availableCats"
+            label="Kategoria"
+            variant="outlined"
+            class="my-3"
+            density="compact"
+          ></v-select>
+        </v-col>
+
+        <v-col cols="2">
+          <v-select
+            v-model="selectedSplit"
+            :items="availableSplits"
+            class="my-3"
+            label="Splitak"
+            variant="outlined"
+            hide-details
+            density="compact"
+          />
         </v-col>
       </v-row>
       <v-table density="compact">
@@ -204,6 +216,7 @@
             <th class="text-left" style="width: 100px">Sexua</th>
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
+            <th class="text-left" style="width: 50px">Ezabatu</th>
             <!-- <th class="text-left" style="width: 50px">ID</th> -->
           </tr>
           <tr
@@ -219,13 +232,27 @@
             <td>{{ item.pretty_time }}</td>
             <!-- <td>{{ item.real_time }}</td> -->
             <td>{{ item.event }}</td>
-            <td @click="_changeRow(item)" class="td-hover">
+            <td>
               {{ item.split }}
             </td>
-            <td>{{ item.sex }}</td>
+            <td>{{ getSexLabel(item.sex) }}</td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
-            <!-- <td>{{ item.id }}</td> -->
+            <td>
+              <v-icon
+                icon="mdi-pencil"
+                variant="flat"
+                @click="_editTag(item)"
+              ></v-icon>
+
+              <v-icon
+                @click="_deleteItem(item)"
+                variant="tonal"
+                class="mx-2 my-2"
+              >
+                mdi-close
+              </v-icon>
+            </td>
           </tr>
         </tbody>
       </v-table>
@@ -246,6 +273,8 @@ import Loader from "./Loader.vue";
 import PercentsComponent from "./Percents.vue";
 import ReadDelayReader from "./ReadDelayReader.vue";
 import axios from "axios";
+import { getSexLabel, validateEditedTime } from "../vue-plugins/vue-helpers.js";
+
 export default {
   name: "InventoryComponent",
   components: {
@@ -265,7 +294,7 @@ export default {
       searchName: null,
       searchEvent: null,
       searchSplit: null,
-      searchSex: null,
+      searchSex: "Denak",
       tab: null,
       percents: null,
       changeItem: null,
@@ -275,10 +304,39 @@ export default {
       color: null,
       demoTagDialog: false,
       demoTagCheck: false,
+      selectedCat: "Denak",
+      availableCats: [],
+      selectedRace: "Denak",
+      availableRaces: [],
+      selectedSplit: "Denak",
+      availableSplits: [],
+      editDialog: false,
+      editedItem: null,
+      editedTime: "",
+      errorMessage: false,
     };
   },
   mounted() {
     let that = this;
+
+    // cats
+    const allCats = this.$store.state.startList
+      .map((i) => i.cat)
+      .filter(Boolean);
+    this.availableCats = ["Denak", ...new Set(allCats)];
+
+    // events
+    const allRaces = this.$store.state.startList
+      .map((i) => i.event?.name)
+      .filter(Boolean);
+    this.availableRaces = ["Denak", ...new Set(allRaces)];
+
+    // splits
+    const allSplits = this.$store.state.startList
+      .flatMap((i) => i.event.splits?.map((s) => s.name) || [])
+      .filter(Boolean);
+
+    this.availableSplits = ["Denak", ...new Set(allSplits)];
 
     window.ipc.handle(
       "fromMain",
@@ -336,45 +394,63 @@ export default {
     sortItems() {
       let items = this.$store.state.items;
 
-      if (!items.length) return;
-      // if (!this.search) return items;
-      // if (!this.searchHerria) return items;
+      let filtered = [...items];
 
-      let response = items;
+      if (this.tags) {
+        filtered = filtered.filter((item) => !item.tag);
+      }
 
-      // Apply search filter if "search" is defined
       if (this.search) {
-        response = response.filter((item) => {
-          return item.bib.toLowerCase().includes(this.search.toLowerCase());
-        });
-      }
-      if (this.searchName) {
-        response = response.filter((item) => {
-          return item.name
-            .toLowerCase()
-            .includes(this.searchName.toLowerCase());
-        });
-      }
-      if (this.searchSex && this.searchSex !== "All") {
-        response = response.filter(
-          (item) => this._isWoman(item.sex) === (this.searchSex === "F")
+        filtered = filtered.filter((item) =>
+          item.bib?.toLowerCase().includes(this.search.toLowerCase())
         );
       }
-      if (this.searchEvent) {
-        response = response.filter((item) => {
-          return item.event
-            .toLowerCase()
-            .includes(this.searchEvent.toLowerCase());
+      // filtros adicionales...
+      if (this.searchTag) {
+        filtered = filtered.filter((item) =>
+          item.bib?.toLowerCase().includes(this.searchTag.toLowerCase())
+        );
+      }
+
+      if (this.searchName) {
+        filtered = filtered.filter((item) =>
+          item.name?.toLowerCase().includes(this.searchName.toLowerCase())
+        );
+      }
+
+      if (this.selectedCat && this.selectedCat !== "Denak") {
+        filtered = filtered.filter((item) => item.cat === this.selectedCat);
+      }
+
+      if (this.searchCity) {
+        filtered = filtered.filter((item) =>
+          item.city?.toLowerCase().includes(this.searchCity.toLowerCase())
+        );
+      }
+
+      if (this.selectedRace && this.selectedRace !== "Denak") {
+        filtered = filtered.filter((item) => {
+          const match =
+            item.event?.toLowerCase() === this.selectedRace.toLowerCase();
+          return match;
         });
       }
-      if (this.searchSplit) {
-        response = response.filter((item) => {
-          return item.split
-            .toLowerCase()
-            .includes(this.searchSplit.toLowerCase());
+
+      if (this.selectedSplit && this.selectedSplit !== "Denak") {
+        filtered = filtered.filter((item) => {
+          const match =
+            item.split?.toLowerCase() === this.selectedSplit.toLowerCase();
+          return match;
         });
       }
-      return response;
+
+      if (this.searchSex && this.searchSex !== "Denak") {
+        filtered = filtered.filter(
+          (item) => this._isWoman(item.sex) === (this.searchSex === "Ema")
+        );
+      }
+
+      return filtered;
     },
     _canInventory() {
       return this.$store.getters.canInventory;
@@ -392,6 +468,42 @@ export default {
   //   },
   // },
   methods: {
+    getSexLabel,
+    validateEditedTime,
+    _editTag(item) {
+      this.editedItem = item;
+      this.editedTime = item.pretty_time;
+      this.editDialog = true;
+      this.errorMessage = false;
+    },
+    _confirmEdit() {
+      this.errorMessage = false;
+
+      const error = this.validateEditedTime(
+        this.editedTime,
+        this.editedItem,
+        this.startList,
+        this.items
+      );
+
+      if (error) {
+        this.errorMessage = error;
+        return;
+      }
+
+      window.ipc.send("toMain", [
+        "edit-time",
+        {
+          id: this.editedItem.id,
+          newTime: this.editedTime,
+        },
+      ]);
+      this.editDialog = false;
+    },
+    _deleteItem(item) {
+      if (confirm(`${item.bib} dortsalaren denbora hau ezabatu nahi duzu?`))
+        window.ipc.send("toMain", ["delete-item", item.id]);
+    },
     _toSlug(s) {
       return s
         .toLowerCase()
@@ -544,5 +656,15 @@ v-card-item .percent-name {
 }
 .isWoman {
   background: rgba(233, 206, 247, 0.2) !important;
+}
+
+table {
+  th {
+    width: 10%;
+  }
+
+  th:nth-child(2) {
+    width: 35%;
+  }
 }
 </style>

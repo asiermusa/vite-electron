@@ -122,22 +122,28 @@
             </v-col>
             <v-col lg="4" md="12" sm="12">
               <v-card-text>
-                <p class="text-h6 font-weight-black">Google Drivean Gorde</p>
+                <p class="text-h6 font-weight-black">
+                  Google Drivean Gordetzeko
+                </p>
 
                 <!-- <div class="text-medium-emphasis">
                   Parte-hartzaileen zerrendan egindako<br />aldaketak DRIVEan
                   gordetzeko<br />
                   sakatu azpiko botoia.
                 </div> -->
-
                 <v-btn
-                  @click="_save_to_google()"
                   color="success"
                   variant="flat"
                   prepend-icon="mdi-tag-arrow-up"
+                  @click="copyTagsToClipboard()"
+                  v-if="currentTags.length"
                   class="my-3"
-                  >Zerrenda eguneratu</v-btn
+                  >Zerrenda kopiatu</v-btn
                 >
+
+                <v-snackbar v-model="copied" timeout="3000" color="primary">
+                  Tag-ak kopiatu dira!
+                </v-snackbar>
               </v-card-text>
             </v-col>
           </v-row>
@@ -334,7 +340,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in _currentTags" :key="item.bib">
+        <tr
+          v-for="item in _currentTags"
+          :key="item.bib"
+          :class="{ 'bib-out-of-order': bibsOutOfOrder.has(Number(item.bib)) }"
+        >
           <td>
             <strong>{{ item.bib }}</strong>
           </td>
@@ -384,6 +394,7 @@ export default {
       googleError: false,
       uploadMessage: null,
       ignoredTags: [],
+      copied: false,
     };
   },
   mounted() {
@@ -466,8 +477,30 @@ export default {
     currentTags() {
       return this.$store.state.currentTags;
     },
+    bibsOutOfOrder() {
+      const bibs = this.currentTags
+        .map((item) => Number(item.bib))
+        .filter((n) => !isNaN(n))
+        .sort((a, b) => a - b);
+
+      const outOfOrder = new Set();
+
+      for (let i = 0; i < bibs.length - 1; i++) {
+        if (bibs[i + 1] !== bibs[i] + 1) {
+          outOfOrder.add(bibs[i + 1]); // el que rompe la secuencia
+        }
+      }
+
+      return outOfOrder;
+    },
   },
   methods: {
+    copyTagsToClipboard() {
+      const text = this.currentTags.map((item) => item.tag).join("\n"); // usa "\t" si quieres columnas
+      navigator.clipboard.writeText(text).then(() => {
+        this.copied = true;
+      });
+    },
     _get_serial() {
       window.ipc.send("toMain", ["get-serial"]);
     },
@@ -516,38 +549,35 @@ export default {
     },
     async _save_items_tag() {
       let exist = false;
-      let success = false;
       this.message = false;
 
-      // ea dortsala existitzen den ala ez
-      this.currentTags.filter((res) => {
-        if (res.bib == this.bibNumber) exist = true;
-      });
-
-      if (exist) {
+      // ¿Ya existe este dorsal?
+      if (this.currentTags.some((res) => res.bib == this.bibNumber)) {
         this.error = "Dortsal hau duplikatuta duzu.";
         return true;
       }
 
-      // reiniciar EXIST
-      exist = false;
-
-      // ea txip hau jadanik dortsal batek duen ala ez
-      this.currentTags.filter((res) => {
-        if (this._normalize(res.tag) == this._normalize(this.read))
-          exist = true;
-      });
-
-      if (exist) {
+      // ¿Ya existe este tag?
+      if (
+        this.currentTags.some(
+          (res) => this._normalize(res.tag) == this._normalize(this.read)
+        )
+      ) {
         this.error = "Txip hau dortsal bati asignatuta dago.";
         return true;
       }
 
-      let currents = this.currentTags;
+      // Añadir nuevo tag y ordenar por dorsal
+      let currents = [...this.currentTags];
       currents.push({ tag: this.read, bib: this.bibNumber });
+
+      // 🔀 Ordenar por bib numérico
+      currents.sort((a, b) => Number(a.bib) - Number(b.bib));
+
+      // Guardar en el store
       this.$store.commit("_SET_CURRENT_TAGS", currents);
 
-      this.message = success;
+      this.message = "Ondo gorde da";
       this.bibNumber++;
     },
     async _deleteTag(item) {
@@ -717,5 +747,11 @@ export default {
       background: red;
     }
   }
+}
+
+.bib-out-of-order {
+  background-color: rgba(255, 0, 0, 0.15);
+  color: #c62828;
+  font-weight: bold;
 }
 </style>

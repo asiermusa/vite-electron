@@ -474,8 +474,42 @@ function parseInventoryBuffer(buffer) {
     } else {
         return false;
     }
+ 
+}
 
-    
+
+
+ function getSexLabel(value) {
+
+      if (!value) return "";
+
+      const normalized = value.toString().toUpperCase().trim();
+
+      const femaleValues = [
+        "F",
+        "FEMALE",
+        "MUJER",
+        "EMAKUMEA",
+        "NESKA",
+        "E",
+        "EMA",
+        "EMK",
+      ];
+      const maleValues = [
+        "M",
+        "MALE",
+        "HOMBRE",
+        "GIZONA",
+        "G",
+        "GZ",
+        "GIZ",
+        "MUTIL",
+      ];
+
+      if (femaleValues.includes(normalized)) return "E"; // Emakumea
+      if (maleValues.includes(normalized)) return "G"; // Gizona
+
+      return "—"; // desconocido
 }
 
 
@@ -503,4 +537,5 @@ module.exports = {
     organizeExcelData,
     toSlug,
     parseInventoryBuffer,
+    getSexLabel
 };

@@ -181,6 +181,10 @@
       </v-navigation-drawer>
       <v-main class="main-layout">
         <router-view></router-view>
+        <v-snackbar v-model="snack" timeout="3000" color="primary">
+          {{ snack }}
+        </v-snackbar>
+
         <v-btn
           icon="mdi-help-circle-outline"
           size="large"
@@ -211,6 +215,7 @@ export default {
       selectedSplit: null,
       hostname: "defecto",
       readers: null,
+      snack: false,
     };
   },
   async mounted() {
@@ -338,6 +343,18 @@ export default {
           // inventory
           if (data[0] == "inventory") {
             that.$store.commit("_SAVE_ITEMS", data[1]);
+          }
+
+          // inventory AFETR DELETE ITEM
+          if (data[0] == "inventory-after-delete") {
+            that.$store.commit("_SAVE_ALL_ITEMS", data[1]);
+            if (data[1].length && data[2] == "delete") {
+              that.snack = "Erregistroa ezabatua izan da!";
+            }
+
+            if (data[1].length && data[2] == "edit") {
+              that.snack = "Erregistroa ondo editatua izan da!";
+            }
           }
 
           // rellenar la lista de lecturas ITEMS
