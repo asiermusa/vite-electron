@@ -563,6 +563,11 @@ function updateStartAndRecalculate(time, affectedEvents, global) {
 }
 
 
+function sendSortedCount(reason = 'edit') {
+  const sortedCount = [...global.count].sort((a, b) => a.timestamp - b.timestamp);
+  global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', sortedCount, reason]);
+}
+
 
 // Export all functions at once
 module.exports = {
@@ -588,5 +593,6 @@ module.exports = {
     toSlug,
     parseInventoryBuffer,
     getSexLabel,
-    updateStartAndRecalculate
+    updateStartAndRecalculate,
+    sendSortedCount
 };

@@ -17,12 +17,20 @@
         <v-card-title>Denbora aldatu</v-card-title>
 
         <v-card-text>
-          <v-text-field
+          <v-select
+            v-model="changeSplitSelected"
+            :items="availableSplits.slice(1)"
+            label="Aukeratu split berria"
+            variant="outlined"
+            dense
+          />
+
+          <!-- <v-text-field
             v-model="editedTime"
             variant="outlined"
             density="compact"
             label="Denbora berria (HH:mm:ss:SSS)"
-          />
+          /> -->
 
           <v-alert v-if="errorMessage" class="my-3" color="red" variant="tonal">
             {{ errorMessage }}
@@ -248,6 +256,12 @@
                 mdi-close
               </v-icon>
             </td>
+
+            <!-- <td>
+              <v-icon @click="_editTag(item)" variant="tonal" class="mx-2 my-2">
+                mdi-edit
+              </v-icon>
+            </td> -->
           </tr>
         </tbody>
       </v-table>
@@ -445,7 +459,8 @@ export default {
         );
       }
 
-      return filtered;
+      //return filtered.sort((a, b) => a.timestamp - b.timestamp); REVERSE
+      return filtered.sort((a, b) => b.timestamp - a.timestamp);
     },
     _canInventory() {
       return this.$store.getters.canInventory;
@@ -486,13 +501,13 @@ export default {
         return;
       }
 
-      window.ipc.send("toMain", [
-        "edit-time",
-        {
-          id: this.editedItem.id,
-          newTime: this.editedTime,
-        },
-      ]);
+      // window.ipc.send("toMain", [
+      //   "edit-time",
+      //   {
+      //     id: this.editedItem.id,
+      //     newTime: this.editedTime,
+      //   },
+      // ]);
       this.editDialog = false;
     },
     _deleteItem(item) {

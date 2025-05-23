@@ -24,6 +24,7 @@ const {
     toSlug,
     uniqueId,
     onTagDetected,
+    sendSortedCount,
     addTagToBuffer,
     getEventNameById,
     updateStartAndRecalculate
@@ -267,6 +268,8 @@ async function requests(data) {
                 percentsSum(item)
             }
         })
+
+        sendSortedCount('edit');
 
     }
 
@@ -534,7 +537,7 @@ async function requests(data) {
             id: deleteID
         });
 
-        global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', global.count, 'delete']);
+        sendSortedCount('delete');
         global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
     }
 
@@ -578,12 +581,7 @@ async function requests(data) {
             percentsSum(t); // Recalcular
         });
 
-        // Dentro del if (cmd == "edit-time")
-        global.mainWindow.webContents.send("fromMain", [
-        "inventory-after-delete",
-        global.count.slice(), // usar slice() para no mutar original
-        'edit'
-        ]);
+        sendSortedCount('edit');
     }
 
 
@@ -631,7 +629,8 @@ async function requests(data) {
 
     if (cmd == 'load_list') {
         setTimeout(() => {
-            global.mainWindow.webContents.send('fromMain', ['load', global.count]);
+        const sortedCount = [...global.count].sort((a, b) => a.timestamp - b.timestamp);
+        global.mainWindow.webContents.send('fromMain', ['load', sortedCount]);
         }, 300)
     }
 
@@ -690,12 +689,8 @@ async function requests(data) {
                 }
             }
 
+            sendSortedCount('edit');
 
-            global.mainWindow.webContents.send('fromMain', [
-                'inventory-after-delete',
-                global.count.slice(),
-                'edit'
-            ]);
         }
 
         // 🔁 Enviar info al frontend
