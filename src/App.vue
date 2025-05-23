@@ -233,42 +233,40 @@ export default {
         async function (event, data) {
           // on start socket.io
           if (data[0] === "server-time") {
-  const time = data[1];
-  const affectedEvents = data[2] || [];
+            const time = data[1];
+            const affectedEvents = data[2] || [];
+            const isStart = data[3]; // true o false
 
-  const start = time.timestamp;
-  const pretty = time.pretty;
+            const start = isStart ? time.timestamp : null;
+            const pretty = time.pretty;
 
+            const params = {
+              events: affectedEvents,
+              start,
+              start_pretty: pretty,
+            };
 
-  const params = {
-    events: affectedEvents,
-    start,
-    start_pretty: pretty,
-  };
+            // ✅ Actualizar reloj visual, aunque esté parado
+            that._startRaceClocks(params);
 
-  that._startRaceClocks(params);
+            // ✅ Notificar al servidor backend siempre
+            try {
+              await axios.get("https://denborak.online/api/v2", {
+                params: {
+                  post_id: that.race.ID,
+                  events: affectedEvents,
+                  start_date: start,
+                },
+              });
 
-  // solo si viene de botón "HASI", afectará a varios
-    try {
-      await axios.get("https://denborak.online/api/v2", {
-        params: {
-          post_id: that.race.ID,
-          events: affectedEvents,
-          start_date: start,
-        },
-      });
-
-
-      await axios.post("/v1/start-race", {
-        post_id: that.race.ID,
-        starts: JSON.stringify(params),
-      });
-    } catch (err) {
-      console.log("Ez da internetera bidali...");
-    }
-  
-}
-
+              await axios.post("/v1/start-race", {
+                post_id: that.race.ID,
+                starts: JSON.stringify(params),
+              });
+            } catch (err) {
+              console.log("Ez da internetera bidali...");
+            }
+          }
 
           // modify output power
           if (data[0] == "modify-output-power") {

@@ -83,6 +83,12 @@ async function generateComputerDescription() {
 }
 
 
+function getEventNameById(unique_id) {
+  const found = global.startTime.find(e => e.unique_id === unique_id);
+  return found ? found.name : null;
+}
+
+
 function getAccurateTime(current = false) {
     let d = moment().add(global.timeOffset, 'milliseconds'); // Adjust local time using the offset
     return d;
@@ -514,6 +520,48 @@ function parseInventoryBuffer(buffer) {
 
 
 
+function updateStartAndRecalculate(time, affectedEvents, global) {
+  if (!global || !Array.isArray(global.count)) {
+    console.warn("⚠️ global.count no está definido correctamente.");
+    return [];
+  }
+
+  const start = moment.utc(Number(time.timestamp));
+
+  const updated = global.count.map((entry) => {
+    // Obtener un eventId válido
+    let eventId;
+    try {
+      eventId = uniqueId(entry.event, global.startTime);
+    } catch (e) {
+      const found = global.startTime.find(
+        (ev) =>
+          ev.name === entry.event ||
+          ev.unique_id === entry.event ||
+          ev.event === entry.event
+      );
+      eventId = found?.unique_id;
+    }
+
+    // Si el eventId está entre los afectados, recalcular
+    if (affectedEvents.includes(eventId)) {
+      const diff = moment.utc(Number(entry.timestamp)).diff(start);
+      const pretty = moment.utc(diff).format("H:mm:ss:SSS");
+
+      console.log(`✅ Recalculado pretty_time: ${pretty} para tag: ${entry.tag}`);
+      return {
+        ...entry,
+        pretty_time: pretty,
+      };
+    }
+
+    return entry;
+  });
+
+  console.log("✅ Time actualizado globalmente:", time);
+  return updated;
+}
+
 
 
 // Export all functions at once
@@ -521,21 +569,24 @@ module.exports = {
     generateComputerDescription,
     calculateCRC16bit,
     getAntenna,
+    getEventNameById,
     hex2bin,
     hexToDec,
     bin2dec,
     dec2hex,
     CheckSum,
     filterName,
-    getPrettyTime,
+    uniqueId,
     stringToSlug,
     uniqueId,
     getAccurateTime,
     onTagDetected,
+    getPrettyTime,
     percentsSum,
     generateRandomString,
     organizeExcelData,
     toSlug,
     parseInventoryBuffer,
-    getSexLabel
+    getSexLabel,
+    updateStartAndRecalculate
 };

@@ -216,7 +216,7 @@
             <th class="text-left" style="width: 100px">Sexua</th>
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
-            <th class="text-left" style="width: 50px">Ezabatu</th>
+            <th class="text-left" style="width: 50px"></th>
             <!-- <th class="text-left" style="width: 50px">ID</th> -->
           </tr>
           <tr
@@ -238,13 +238,8 @@
             <td>{{ getSexLabel(item.sex) }}</td>
             <td>{{ item.reader }}</td>
             <td>{{ item.ant }}</td>
-            <td>
-              <v-icon
-                icon="mdi-pencil"
-                variant="flat"
-                @click="_editTag(item)"
-              ></v-icon>
 
+            <td>
               <v-icon
                 @click="_deleteItem(item)"
                 variant="tonal"

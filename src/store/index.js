@@ -82,7 +82,7 @@ export default createStore({
       state.items.unshift(val)
     },
     _SAVE_ALL_ITEMS(state, val) {
-      state.items = val
+     state.items = val.map(e => ({ ...e })) // copia profunda
     },
     _RESET_ITEMS(state, val) {
       state.items = val

@@ -24,7 +24,9 @@ const {
     toSlug,
     uniqueId,
     onTagDetected,
-    addTagToBuffer
+    addTagToBuffer,
+    getEventNameById,
+    updateStartAndRecalculate
 } = require("../helpers/helpers.js");
 
 
@@ -532,7 +534,7 @@ async function requests(data) {
             id: deleteID
         });
 
-        global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', global.count.reverse(), 'delete']);
+        global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', global.count, 'delete']);
         global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
     }
 
@@ -576,7 +578,12 @@ async function requests(data) {
             percentsSum(t); // Recalcular
         });
 
-        global.mainWindow.webContents.send("fromMain", ["inventory-after-delete", global.count.reverse(), 'edit']);
+        // Dentro del if (cmd == "edit-time")
+        global.mainWindow.webContents.send("fromMain", [
+        "inventory-after-delete",
+        global.count.slice(), // usar slice() para no mutar original
+        'edit'
+        ]);
     }
 
 
@@ -629,36 +636,77 @@ async function requests(data) {
     }
 
 
-    if (cmd == 'get-server-time') {
-  let time = data[1];
-  let shouldRecordStart = data[2];
-let affectedEvents = data[3] || []; // array de strings
+   if (cmd === 'get-server-time') {
+        let time = data[1];
+        let shouldRecordStart = data[2];
+        let affectedEvents = data[3] || []; // array de strings (event.unique_id)
+        let raceID = data[4];
 
-  if (!time) {
-    const now = getAccurateTime();
-    time = {
-      timestamp: now.format('x'),
-      pretty: now.format("YYYY-MM-DD HH:mm:ss.SSS")
-    };
-  }
+        if (!time) {
+            const now = getAccurateTime();
+            time = {
+                timestamp: now.format('x'),
+                pretty: now.format("YYYY-MM-DD HH:mm:ss.SSS")
+            };
+        }
 
-  if (shouldRecordStart) {
-    if (!global.prevStarts) global.prevStarts = [];
+        // ✅ Guardar como sugerencia
+        if (shouldRecordStart === true) {
+            if (!global.prevStarts) global.prevStarts = [];
 
-    global.prevStarts.unshift({
-      timestamp: time.timestamp,
-      pretty: time.pretty
-    });
+            global.prevStarts.unshift({
+                timestamp: time.timestamp,
+                pretty: time.pretty
+            });
 
-    global.prevStarts = global.prevStarts.slice(0, 5);
-  }
+            global.prevStarts = global.prevStarts.slice(0, 5);
 
-  global.mainWindow.webContents.send('fromMain', [
-    'server-time',
-    time,
-    affectedEvents // ← enviamos esto al frontend también
-  ]);
-}
+             // 🔄 REEMPLAZAMOS count de golpe
+            global.count = updateStartAndRecalculate(time, affectedEvents, global);
+
+            let eventName;
+            // 🔁 Recalcular tiempos en servidor para cada evento afectado
+                for (const id of affectedEvents) {
+                try {
+                    // Buscar el nombre del evento a partir del ID
+                    const eventName  = getEventNameById(id);
+
+                    if (!eventName) {
+                    console.warn(`⚠️ No se encontró el evento con ID: ${id}`);
+                    continue;
+                    }
+
+
+                    // Hacer la petición al servidor
+                    const response = await axios.post('https://denborak.online/api/v2/recalculate-times', {
+                        race: raceID,
+                        event: eventName,
+                        newStartTimestamp: time.timestamp
+                    });
+
+                    console.log(`✅ Recalculado en el servidor: ${eventName}`, response.data);
+                } catch (err) {
+                    console.error(`❌ Error al recalcular tiempos para evento con ID: ${id}`, err.message);
+                }
+            }
+
+
+            global.mainWindow.webContents.send('fromMain', [
+                'inventory-after-delete',
+                global.count.slice(),
+                'edit'
+            ]);
+        }
+
+        // 🔁 Enviar info al frontend
+        global.mainWindow.webContents.send('fromMain', [
+            'server-time',
+            time,
+            affectedEvents,
+            shouldRecordStart
+        ]);
+    }
+
 
 
     if (cmd == 'server-time-info') {

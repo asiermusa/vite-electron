@@ -99,6 +99,9 @@ function inventory_fn(data, reader, readerInfo) {
         // if (!global.count.length) {
         //     _mountTag(response.slice(14, global.TAG_LEN), currentTime, ant, readerInfo.name)
         // }
+        if (!Array.isArray(global.count)) global.count = [];
+
+        
         if (!global.count.length) {
             const epc = response.slice(14, global.TAG_LEN);
             _addTagToBuffer(epc, currentTime, ant, readerInfo.name);
