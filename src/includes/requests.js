@@ -76,7 +76,7 @@ global.race = false;
 global.hostname = false;
 global.sound = false;
 global.stream = false;
-global.
+global.prevStarts = [];
 // Definir las validaciones de cabeceras para INSCRITOS EN DRIVE
 global.validacionesCabeceras = {
     tag: ["tag", "txip"], // Variantes aceptables
@@ -630,11 +630,50 @@ async function requests(data) {
 
 
     if (cmd == 'get-server-time') {
-        const time = {
+  let time = data[1];
+  let shouldRecordStart = data[2];
+let affectedEvents = data[3] || []; // array de strings
+
+  if (!time) {
+    const now = getAccurateTime();
+    time = {
+      timestamp: now.format('x'),
+      pretty: now.format("YYYY-MM-DD HH:mm:ss.SSS")
+    };
+  }
+
+  if (shouldRecordStart) {
+    if (!global.prevStarts) global.prevStarts = [];
+
+    global.prevStarts.unshift({
+      timestamp: time.timestamp,
+      pretty: time.pretty
+    });
+
+    global.prevStarts = global.prevStarts.slice(0, 5);
+  }
+
+  global.mainWindow.webContents.send('fromMain', [
+    'server-time',
+    time,
+    affectedEvents // ← enviamos esto al frontend también
+  ]);
+}
+
+
+    if (cmd == 'server-time-info') {
+
+        time = {
             timestamp: getAccurateTime().format('x'),
             pretty: getAccurateTime().format("YYYY-MM-DD HH:mm:ss.SSS")
         }
-        global.mainWindow.webContents.send('fromMain', ['server-time', time]);
+     
+        global.mainWindow.webContents.send('fromMain', ['server-time-info', time]);
+    }
+
+
+    if (cmd == 'get-prev-starts') {
+        global.mainWindow.webContents.send('fromMain', ['get-prev-starts', global.prevStarts]);
     }
 
 

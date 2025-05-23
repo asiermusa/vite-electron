@@ -232,45 +232,43 @@ export default {
       () =>
         async function (event, data) {
           // on start socket.io
-          if (data[0] == "server-time") {
-            const time = data[1];
+          if (data[0] === "server-time") {
+  const time = data[1];
+  const affectedEvents = data[2] || [];
 
-            const start = that.start.start ? time.timestamp : null;
-            const pretty = time.pretty;
+  const start = time.timestamp;
+  const pretty = time.pretty;
 
-            const params = {
-              events: that.start.options,
-              start: start,
-              start_pretty: pretty,
-            };
 
-            that._startRaceClocks(params);
+  const params = {
+    events: affectedEvents,
+    start,
+    start_pretty: pretty,
+  };
 
-            try {
-              await axios.get("https://denborak.online/api/v2", {
-                params: {
-                  post_id: that.race.ID,
-                  events: that.start.options,
-                  start_date: start,
-                },
-              });
-            } catch (err) {
-              console.log(
-                "SOCKET: Lasterketa hasi da baina ez da internetara bidali..."
-              );
-            }
+  that._startRaceClocks(params);
 
-            try {
-              await axios.post("/v1/start-race", {
-                post_id: that.race.ID,
-                starts: JSON.stringify(params),
-              });
-            } catch (err) {
-              console.log(
-                "WP: Lasterketa hasi da baina ez da internetara bidali..."
-              );
-            }
-          }
+  // solo si viene de botón "HASI", afectará a varios
+    try {
+      await axios.get("https://denborak.online/api/v2", {
+        params: {
+          post_id: that.race.ID,
+          events: affectedEvents,
+          start_date: start,
+        },
+      });
+
+
+      await axios.post("/v1/start-race", {
+        post_id: that.race.ID,
+        starts: JSON.stringify(params),
+      });
+    } catch (err) {
+      console.log("Ez da internetera bidali...");
+    }
+  
+}
+
 
           // modify output power
           if (data[0] == "modify-output-power") {
