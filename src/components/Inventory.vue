@@ -20,17 +20,29 @@
           <v-select
             v-model="changeSplitSelected"
             :items="availableSplits.slice(1)"
-            label="Aukeratu split berria"
+            label="Aukeratu splita"
             variant="outlined"
             dense
           />
 
-          <!-- <v-text-field
+          <v-checkbox
+  v-model="forceEdit"
+  label="Indarrak baliogabetu (forzar aldaketa)"
+  color="warning"
+  density="compact"
+/>
+<v-tooltip text="Behar bezala egindako zuzenketa bada, aktibatu. Bestela, ez.">
+  <template #activator="{ props }">
+    <v-icon v-bind="props" color="warning" class="ml-2">mdi-alert</v-icon>
+  </template>
+</v-tooltip>
+
+          <v-text-field
             v-model="editedTime"
             variant="outlined"
             density="compact"
             label="Denbora berria (HH:mm:ss:SSS)"
-          /> -->
+          />
 
           <v-alert v-if="errorMessage" class="my-3" color="red" variant="tonal">
             {{ errorMessage }}
@@ -225,7 +237,7 @@
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
             <th class="text-left" style="width: 50px"></th>
-            <!-- <th class="text-left" style="width: 50px">ID</th> -->
+            <th class="text-left" style="width: 50px">ID</th>
           </tr>
           <tr
             v-for="(item, i) in sortItems"
@@ -257,11 +269,11 @@
               </v-icon>
             </td>
 
-            <!-- <td>
+            <td>
               <v-icon @click="_editTag(item)" variant="tonal" class="mx-2 my-2">
-                mdi-edit
+                mdi-pencil
               </v-icon>
-            </td> -->
+            </td>
           </tr>
         </tbody>
       </v-table>
@@ -323,6 +335,7 @@ export default {
       editedItem: null,
       editedTime: "",
       errorMessage: false,
+      forceEdit: false
     };
   },
   mounted() {
@@ -481,33 +494,37 @@ export default {
     getSexLabel,
     validateEditedTime,
     _editTag(item) {
-      this.editedItem = item;
-      this.editedTime = item.pretty_time;
-      this.editDialog = true;
-      this.errorMessage = false;
-    },
+  this.editedItem = item;
+  this.editedTime = item.pretty_time;
+  this.changeSplitSelected = item.split; // ✅ seleccionar split actual por defecto
+  this.editDialog = true;
+  this.errorMessage = false;
+},
     _confirmEdit() {
       this.errorMessage = false;
 
       const error = this.validateEditedTime(
-        this.editedTime,
-        this.editedItem,
-        this.startList,
-        this.items
-      );
+  this.editedTime,
+  this.editedItem,
+  this.startList,
+  this.items,
+  this.changeSplitSelected,
+  this.forceEdit
+);
 
       if (error) {
         this.errorMessage = error;
         return;
       }
 
-      // window.ipc.send("toMain", [
-      //   "edit-time",
-      //   {
-      //     id: this.editedItem.id,
-      //     newTime: this.editedTime,
-      //   },
-      // ]);
+      window.ipc.send("toMain", [
+        "edit-time",
+        {
+          id: this.editedItem.id,
+          newTime: this.editedTime,
+          newSplit: this.changeSplitSelected
+        },
+      ]);
       this.editDialog = false;
     },
     _deleteItem(item) {

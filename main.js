@@ -9,6 +9,9 @@ const {
   Menu
 } = require('electron')
 
+// Desactiva aceleración por hardware (evita errores EGL)
+app.disableHardwareAcceleration();
+
 const path = require('path')
 const requests = require('./src/includes/requests.js')
 const requests_serial = require('./src/includes/requests_serial.js')

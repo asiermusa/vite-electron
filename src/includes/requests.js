@@ -498,12 +498,22 @@ async function requests(data) {
     }
 
     if (cmd == 'start-time') {
-        let array = JSON.parse(data[1]);
+    let array = JSON.parse(data[1]);
 
-        array.forEach(event => {
-            global.startTime.push(event)
-        })
-    }
+    array.forEach(event => {
+        const index = global.startTime.findIndex(
+            (e) => e.unique_id === event.unique_id
+        );
+
+        if (index !== -1) {
+            // Reemplaza el existente
+            global.startTime[index] = event;
+        } else {
+            // Añade nuevo
+            global.startTime.push(event);
+        }
+    });
+}
 
     // Inbentarioak hasi (hau da garrantzitsuena)
     if (cmd == 'check-demo-tag') {
@@ -543,46 +553,83 @@ async function requests(data) {
 
 
     if (data[0] == "edit-time") {
-        
-        // balidazioak egin!!
-        const { id, newTime } = data[1];
 
-        const target = global.count.find((t) => t.id === id);
-        if (!target) return;
+    const { id, newTime, newSplit } = data[1];
 
-        target.pretty_time = newTime;
+    const target = global.count.find((t) => t.id === id);
+    if (!target) return;
 
-        // Vuelve a calcular timestamp a partir del pretty_time
-        const parts = newTime.split(":");
-        const h = parseInt(parts[0]) || 0;
-        const m = parseInt(parts[1]) || 0;
-        const s = parseInt(parts[2]) || 0;
-        const ms = parseInt(parts[3]) || 0;
+    // Validar formato
+    const parts = newTime.split(":");
+    if (parts.length !== 4) {
+        console.warn(`❌ Formato de tiempo inválido: ${newTime}`);
+        return;
+    }
 
-        const totalMs = ((h * 3600) + (m * 60) + s) * 1000 + ms;
-        // Buscar el "start" del evento al que pertenece el participante
-        const startEvent = global.startTime.find(
-        (s) => s.unique_id === uniqueId(target.event, global.startTime)
+    const h = parseInt(parts[0]) || 0;
+    const m = parseInt(parts[1]) || 0;
+    const s = parseInt(parts[2]) || 0;
+    const ms = parseInt(parts[3]) || 0;
+    const totalMs = ((h * 3600) + (m * 60) + s) * 1000 + ms;
+
+    // Obtener evento con start válido
+    const matchingEvents = global.startTime.filter(
+        (s) => s.unique_id === uniqueId(target.event, global.startTime) && s.start
+    );
+    const startEvent = matchingEvents.sort((a, b) => b.start - a.start)[0];
+
+    if (!startEvent || isNaN(parseInt(startEvent.start))) {
+        console.warn(`❌ No se encontró el start válido del evento ${target.event}`);
+        return;
+    }
+
+    // Validación: evitar duplicados de split/tag (diferente id)
+    const duplicate = global.count.find(r =>
+        r.tag === target.tag &&
+        r.split === newSplit &&
+        r.id !== target.id
+    );
+    if (duplicate) {
+        console.warn(`❌ Ya existe otra lectura para ${target.tag} en el split ${newSplit}`);
+        return;
+    }
+
+    // Aplicar cambios
+    target.pretty_time = newTime;
+    target.timestamp = parseInt(startEvent.start) + totalMs;
+
+    if (newSplit && target.split !== newSplit) {
+        // Buscar split_id
+        const fullStartInfo = global.startList.find(p =>
+            p.tag === target.tag || p.bib == target.bib
         );
 
-        if (startEvent) {
-            target.timestamp = parseInt(startEvent.start) + totalMs;
+        if (fullStartInfo?.event?.splits?.length) {
+            const found = fullStartInfo.event.splits.find(s => s.name === newSplit);
+            if (found) {
+                target.split = found.name;
+                target.split_id = found.unique_id;
+            }
         }
-
-        const del = await axios.post('https://denborak.online/api/v2/update-data-by-id', {
-            id: id,
-            newPrettyTime: target.pretty_time,
-            newTimestamp: target.timestamp
-        });
-
-        // Recalcular los percents
-        global.percents = []; // Limpiar
-        global.count.forEach((t) => {
-            percentsSum(t); // Recalcular
-        });
-
-        sendSortedCount('edit');
     }
+
+    // Enviar al servidor
+    await axios.post('https://denborak.online/api/v2/update-data-by-id', {
+        id: id,
+        newPrettyTime: target.pretty_time,
+        newTimestamp: target.timestamp,
+        split: target.split,
+        splitId: target.split_id
+    });
+
+    // Recalcular porcentajes
+    global.percents = [];
+    global.count.forEach((t) => percentsSum(t));
+
+    sendSortedCount('edit');
+}
+
+
 
 
     // Inbentarioak hasi (hau da garrantzitsuena)

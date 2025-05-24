@@ -31,7 +31,14 @@ const getSexLabel = (value) => {
       return "—"; // desconocido
 }
 
-const validateEditedTime = (newTime, target, startList, readings) => {
+const validateEditedTime = (
+  newTime,
+  target,
+  startList,
+  readings,
+  newSplit = null,
+  force = false
+) => {
   const timeRegex = /^(\d{1,2}):(\d{2}):(\d{2}):(\d{3})$/;
   const match = newTime.match(timeRegex);
 
@@ -50,13 +57,29 @@ const validateEditedTime = (newTime, target, startList, readings) => {
 
   const newMs = ((h * 3600 + m * 60 + s) * 1000 + ms);
 
-  // Buscar el participante por el mismo dorsal o tag
+  // Buscar el participante
   const participant = startList.find(p => p.bib == target.bib || p.tag == target.tag);
   if (!participant || !participant.event.splits) return "Ezin da parte-hartzailea aurkitu edo split gabe dago.";
 
   const allSplits = participant.event.splits;
-  const index = allSplits.findIndex(s => s.unique_id === target.split_id);
+
+  // Detectar cuál es el split seleccionado
+  const selectedSplit = newSplit || target.split;
+  const currentSplit = allSplits.find(s => s.name === selectedSplit || s.slug === selectedSplit);
+  if (!currentSplit) return "Ez da split-a aurkitu.";
+
+  const index = allSplits.findIndex(s => s.unique_id === currentSplit.unique_id);
   if (index === -1) return "Ez da split-a aurkitu.";
+
+  // Verificar que no exista ya otro registro para este tag + split
+  const existing = readings.find(r =>
+    r.tag === target.tag &&
+    r.split_id === currentSplit.unique_id &&
+    r.id !== target.id // ignorar el mismo si es edición
+  );
+  if (existing) {
+    return `Split ${currentSplit.name} jada badago parte-hartzaile honentzat.`;
+  }
 
   // Verificar con split anterior
   if (index > 0) {
@@ -64,7 +87,8 @@ const validateEditedTime = (newTime, target, startList, readings) => {
     const prevReading = readings.find(r => r.tag === target.tag && r.split_id === prevSplit.unique_id);
     if (prevReading) {
       const prevMs = timeToMs(prevReading.pretty_time);
-      if (newMs <= prevMs) {
+      // Si hay error por orden de splits...
+      if (!force && newMs <= prevMs) {
         return `Ezin da sartu aurreko (${prevSplit.name}) baino lehenago (${prevReading.pretty_time})`;
       }
     }
@@ -76,14 +100,15 @@ const validateEditedTime = (newTime, target, startList, readings) => {
     const nextReading = readings.find(r => r.tag === target.tag && r.split_id === nextSplit.unique_id);
     if (nextReading) {
       const nextMs = timeToMs(nextReading.pretty_time);
-      if (newMs >= nextMs) {
+      if (!force && newMs >= nextMs) {
         return `Ezin da sartu hurrengoa (${nextSplit.name}) baino beranduago (${nextReading.pretty_time})`;
       }
     }
   }
 
-  return null; // OK
+  return null; // ✅ Todo correcto
 };
+
 
 // Función auxiliar para convertir HH:mm:ss:SSS a milisegundos
 const timeToMs = (t) => {
