@@ -3,9 +3,9 @@
     <v-row align="center" no-gutters v-if="!minimal">
       <v-col cols="6"><h2 class="main-title">Sistemaren egoera</h2> </v-col>
 
-      <v-col class="text-right" cols="6">
+      <!-- <v-col class="text-right" cols="6">
         <v-icon color="primary" icon="mdi-cogs" size="55"></v-icon>
-      </v-col>
+      </v-col> -->
     </v-row>
 
     <v-row>
@@ -16,6 +16,7 @@
           color="primary"
           prepend-icon="mdi-server"
           class="mb-4"
+          rounded
         >
           Sistema sinkronizatu</v-btn
         >

@@ -22,6 +22,7 @@
               color="primary"
               class="my-3"
               prepend-icon="mdi-usb-c-port"
+              rounded
               >Arakatu</v-btn
             >
           </v-card-item>
@@ -39,6 +40,7 @@
             color="primary"
             class="my-3"
             variant="flat"
+            rounded
             >USBa zehaztu</v-btn
           >
         </div>
@@ -96,6 +98,7 @@
                   variant="tonal"
                   prepend-icon="mdi-tag-edit"
                   class="my-3"
+                  rounded
                   >Tag berriak grabatu</v-btn
                 >
               </v-card-text>
@@ -116,11 +119,12 @@
                   variant="tonal"
                   prepend-icon="mdi-account-tag"
                   class="my-3"
+                  rounded
                   >Asignatu</v-btn
                 >
               </v-card-text>
             </v-col>
-            <v-col lg="4" md="12" sm="12">
+            <v-col lg="4" md="12" sm="12" v-if="currentTags.length">
               <v-card-text>
                 <p class="text-h6 font-weight-black">
                   Google Drivean Gordetzeko
@@ -136,7 +140,7 @@
                   variant="flat"
                   prepend-icon="mdi-tag-arrow-up"
                   @click="copyTagsToClipboard()"
-                  v-if="currentTags.length"
+                  rounded
                   class="my-3"
                   >Zerrenda kopiatu</v-btn
                 >

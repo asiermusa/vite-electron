@@ -81,7 +81,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <!-- Button to Close Dialog -->
-          <v-btn color="red" text @click="removeClasificacion()">Ezabatu</v-btn>
+          <v-btn color="red" text @click="removeClasificacion()" rounded>Ezabatu</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -94,6 +94,7 @@
           variant="tonal"
           size="small"
           class="mt-2 mb-2 mx-3"
+          rounded
           >Sailkapena ezabatu</v-btn
         >
 
@@ -161,6 +162,7 @@
             variant="outlined"
             color="primary"
             class="mt-6"
+            rounded
             >Sailkapena sortu</v-btn
           >
         </v-card-item>
@@ -191,6 +193,7 @@
             variant="outlined"
             color="primary"
             class="mt-6"
+            rounded
             >Sailkapena sortu</v-btn
           >
         </v-card-item>
@@ -213,6 +216,7 @@
                 class="mt-3 mr-3"
                 v-if="pdf"
                 prepend-icon="mdi-file-pdf-box"
+                rounded
                 >Deskargatu PDF</v-btn
               >
 
@@ -222,6 +226,7 @@
                 color="green"
                 class="mt-3"
                 v-if="excel"
+                rounded
                 prepend-icon="mdi-file-excel"
                 >Deskargatu EXCEL</v-btn
               >

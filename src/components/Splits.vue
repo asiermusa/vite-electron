@@ -93,7 +93,7 @@
       </v-col>
     </v-row>
 
-    <v-btn @click="setSplit()" color="primary" variant="flat"
+    <v-btn @click="setSplit()" color="primary" variant="flat" rounded
       >Zehaztu Splitak</v-btn
     >
   </div>

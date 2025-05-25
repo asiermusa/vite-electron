@@ -1,19 +1,10 @@
 <template>
   <div class="hello">
-    <v-row align="center" no-gutters>
-      <v-col cols="6"
-        ><h2 class="main-title">WordPress Zerbitzaria</h2>
 
-        <v-btn
-          @click="_newRaceDialog()"
-          class="mb-2"
-          variant="flat"
-          color="primary"
-          rounded
-        >
-          Lasterketa berria</v-btn
-        >
-      </v-col>
+
+     <v-row align="center" no-gutters v-if="!minimal">
+      <v-col cols="6"><h2 class="main-title">WordPress zerbitzaria</h2> </v-col>
+
       <v-col class="text-right" cols="6">
         <v-btn
           @click="_logout()"
@@ -22,6 +13,26 @@
           class="mx-3"
           color="red"
         ></v-btn>
+      </v-col>
+    </v-row>
+
+
+    <v-row>
+      <v-col cols="12">
+
+        <v-btn
+          @click="_newRaceDialog()"
+          class="mb-2"
+          variant="flat"
+          color="primary"
+          prepend-icon="mdi-plus"
+          rounded
+        >
+          Lasterketa berria</v-btn
+        >
+      </v-col>
+      <v-col class="text-right" cols="6">
+        
       </v-col>
     </v-row>
 
@@ -67,8 +78,8 @@
           @click="_newRace()"
           class="mb-2"
           variant="flat"
-          rounded
           color="success"
+          rounded
         >
           Berria sortu</v-btn
         >
@@ -82,6 +93,7 @@
         variant="tonal"
         class="my-3"
         size="small"
+        rounded
         >Atzera joan</v-btn
       >
 
@@ -339,6 +351,7 @@
             variant="flat"
             @click="_submitForm()"
             prepend-icon="mdi-cloud-upload"
+            rounded
             >Datuak gorde</v-btn
           >
 
@@ -348,6 +361,7 @@
             prepend-icon="mdi-plus-circle"
             variant="tonal"
             class="mx-3"
+            rounded
           >
             Ebento berria
           </v-btn>

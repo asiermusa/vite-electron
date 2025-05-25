@@ -18,7 +18,7 @@
 
         <v-checkbox
           v-model="sound"
-          label="Soinu aktibatu irakurketa bat jasotzerakoan"
+          label="Soinua aktibatu irakurketa bat jasotzerakoan"
         />
 
         <v-btn
@@ -26,6 +26,7 @@
           variant="flat"
           color="primary"
           size="small"
+          rounded
           >Aldaketak gorde
         </v-btn>
       </v-card-item>

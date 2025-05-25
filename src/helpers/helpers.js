@@ -566,7 +566,51 @@ function updateStartAndRecalculate(time, affectedEvents, global) {
 function sendSortedCount(reason = 'edit') {
   const sortedCount = [...global.count].sort((a, b) => a.timestamp - b.timestamp);
   global.mainWindow.webContents.send('fromMain', ['inventory-after-delete', sortedCount, reason]);
+  global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
+
 }
+
+
+function rebuildPercents() {
+  global.percents = [];
+
+  const totalBySplit = {};
+  const readBySplit = {};
+
+  // Contar total por split
+  for (const runner of global.startList) {
+    const eventSplits = runner?.event?.splits || [];
+    for (const split of eventSplits) {
+      const id = split.unique_id;
+      totalBySplit[id] = (totalBySplit[id] || 0) + 1;
+    }
+  }
+
+  // Contar leídos por split
+  for (const tag of global.count) {
+    const id = tag.split_id;
+    readBySplit[id] = (readBySplit[id] || 0) + 1;
+  }
+
+  // Construir array global.percents con formato original
+  for (const splitId in totalBySplit) {
+    const total = totalBySplit[splitId];
+    const read = readBySplit[splitId] || 0;
+
+    const splitName = (
+      global.startList.find(p =>
+        p.event?.splits?.some(s => s.unique_id === splitId)
+      )?.event?.splits?.find(s => s.unique_id === splitId)?.name
+    ) || '???';
+
+    global.percents.push({
+      name: splitName,
+      group: splitId,
+      count: read,
+    });
+  }
+}
+
 
 
 // Export all functions at once
@@ -594,5 +638,6 @@ module.exports = {
     parseInventoryBuffer,
     getSexLabel,
     updateStartAndRecalculate,
-    sendSortedCount
+    sendSortedCount,
+    rebuildPercents
 };

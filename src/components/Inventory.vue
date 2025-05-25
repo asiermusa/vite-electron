@@ -8,41 +8,110 @@
 
     <Loader v-if="loader" class="my-3"></Loader>
 
-    <v-alert v-if="message" class="mb-6" :color="color" variant="tonal">
+    <v-alert v-if="message" class="mb-3" :color="color" variant="tonal" closable>
       {{ message }}
     </v-alert>
 
-    <v-dialog v-model="editDialog" max-width="400px">
+  <!-- Botón flotante abajo a la derecha -->
+      <v-btn
+        color="primary"
+        class="position-fixed"
+        style="z-index: 999; bottom: 15px; right: 320px;"
+        @click="_openAddDialog"
+        variant="flat"
+        rounded
+
+      >
+        <v-icon>mdi-plus</v-icon>
+        Irakurketa berria
+      </v-btn>
+
+
+
+      <v-btn
+        v-if="_inventoryStatus"
+        @click="demoTagDialog = !demoTagDialog"
+        color="primary"
+        class="position-fixed"
+        style="z-index: 999; bottom: 65px; right: 320px;"
+        variant="outlined"
+        rounded
+      >
+      <v-icon>mdi-lan-check</v-icon>
+        Demo Test</v-btn
+      >
+
+
+    <v-dialog v-model="editDialog" max-width="600px">
       <v-card>
-        <v-card-title>Denbora aldatu</v-card-title>
+        <v-card-title>
+          {{ editMode === 'add' ? 'Irakurketa berria gehitu' : 'Irakurketa editatu' }}
+        </v-card-title>
 
         <v-card-text>
+          
+        <v-chip
+            color="primary"
+            variant="flat"
+            v-if="editMode === 'edit'" class="mb-5">Dortsala: <strong>{{ editedItem.bib }}</strong></v-chip>
+
+        <v-alert
+          v-if="editMode === 'add'"
+          type="info"
+          variant="tonal"
+          class="mb-3"
+        >
+          Hautatu parte-hartzailea eta gehitu eskuzko irakurketa berria.
+        </v-alert>
+
+        <v-autocomplete
+          v-if="editMode === 'add'"
+          :items="$store.state.startList"
+          item-title="bib"
+          item-value="tag"
+          v-model="selectedRunner"
+          label="Parte-hartzailea"
+          return-object
+          variant="outlined"
+          density="compact"
+          class="mb-5"
+        />
+
+        
           <v-select
             v-model="changeSplitSelected"
             :items="availableSplits.slice(1)"
             label="Aukeratu splita"
             variant="outlined"
-            dense
+            density="compact"
+            class="mb-5"
           />
 
-          <v-checkbox
-  v-model="forceEdit"
-  label="Indarrak baliogabetu (forzar aldaketa)"
-  color="warning"
-  density="compact"
-/>
-<v-tooltip text="Behar bezala egindako zuzenketa bada, aktibatu. Bestela, ez.">
-  <template #activator="{ props }">
-    <v-icon v-bind="props" color="warning" class="ml-2">mdi-alert</v-icon>
-  </template>
-</v-tooltip>
 
           <v-text-field
             v-model="editedTime"
             variant="outlined"
             density="compact"
             label="Denbora berria (HH:mm:ss:SSS)"
+            class="mb-5"
           />
+
+         <div class="d-flex align-center">
+  <v-checkbox
+    v-model="forceEdit"
+    label="Aldaketa indartu"
+    color="primary"
+    density="compact"
+    hide-details
+  />
+  <v-tooltip text="Behar bezala egindako zuzenketa bada, aktibatu. Bestela, ez.">
+    <template #activator="{ props }">
+      <v-icon v-bind="props" color="primary" class="ml-2">mdi-alert</v-icon>
+    </template>
+  </v-tooltip>
+</div>
+
+
 
           <v-alert v-if="errorMessage" class="my-3" color="red" variant="tonal">
             {{ errorMessage }}
@@ -51,7 +120,13 @@
 
         <v-card-actions>
           <v-btn @click="editDialog = false">Itxi</v-btn>
-          <v-btn color="primary" @click="_confirmEdit()">Gorde</v-btn>
+<v-btn
+  :color="editMode === 'add' ? 'primary' : 'primary'"
+  @click="editMode === 'add' ? _addNewSplit() : _confirmEdit()"
+>
+  {{ editMode === 'add' ? 'Gehitu' : 'Gorde' }}
+</v-btn>
+
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -64,6 +139,8 @@
         rounded="lg"
         width="100%"
       >
+
+      <p class="mb-3">Irakurritako tag kopurua erakusten da hemen...</p>
         <template v-if="demoTag">
           <h2 class="text-h5 mb-6">{{ demoTag.reads }}</h2>
 
@@ -88,28 +165,41 @@
     <v-alert
       v-if="race.stream"
       text="zuzeneko jarraipena aktibatuta dago. Online jarraipena egiteko datuak zerbitzarira bidaliko dira denbora-errealean."
-      color="info"
-      variant="tonal"
+      color="primary"
       class="mb-3"
       icon="mdi-video-outline"
     ></v-alert>
 
-    <v-alert
+    <!-- <v-alert
       v-if="!_canInventory"
       text="Ezin zara TAG irakurketa bat hasi Reader bat bera ere konektatu gabe. Joan Ezarpenak atalera."
       color="red"
       variant="tonal"
       icon="mdi-alert-circle-outline"
-    ></v-alert>
+    ></v-alert> -->
 
-    <div v-else>
+    <div>
       <v-btn
         @click="_inventory()"
-        v-if="!_inventoryStatus"
+        v-if="!_inventoryStatus && _canInventory"
         variant="flat"
         color="success"
+        class="mr-2"
         prepend-icon="mdi-play"
         rounded
+      >
+        Irakurketa hasi
+      </v-btn>
+
+      <v-btn
+       v-if="!_inventoryStatus && !_canInventory"
+        
+        variant="flat"
+        class="mr-2"
+        color="primary"
+        prepend-icon="mdi-play"
+        rounded
+        disabled
       >
         Irakurketa hasi
       </v-btn>
@@ -119,42 +209,38 @@
         v-if="_inventoryStatus"
         variant="flat"
         color="red"
+        class="mr-2"
         prepend-icon="mdi-stop"
         rounded
       >
         Irakurketa geratu</v-btn
       >
 
-      <v-btn
-        v-if="_inventoryStatus"
-        @click="demoTagDialog = !demoTagDialog"
-        color="primary"
-        class="mx-2"
-        variant="text"
-      >
-        Demo check</v-btn
-      >
+      
 
       <v-btn
         @click="_delete()"
-        variant="text"
+        variant="tonal"
         color="red"
         prepend-icon="mdi-delete"
         class="mx-2"
+        rounded
       >
         Datuak ezabatu</v-btn
       >
 
       <v-btn
-        v-if="sortItems"
+        v-if="sortItems && items.length"
         @click="_saveData()"
         variant="tonal"
-        color="orange"
+        color="primary"
         prepend-icon="mdi-upload"
         class="mx-2"
+        rounded
       >
-        Datuak zerbitzarian gorde</v-btn
+        Zerbitzarian gorde</v-btn
       >
+
 
       <v-row class="my-1" dense>
         <v-col cols="1">
@@ -237,7 +323,7 @@
             <th class="text-left" style="width: 100px">Reader ID</th>
             <th class="text-left" style="width: 50px">Antena</th>
             <th class="text-left" style="width: 50px"></th>
-            <th class="text-left" style="width: 50px">ID</th>
+            <th class="text-left" style="width: 50px"></th>
           </tr>
           <tr
             v-for="(item, i) in sortItems"
@@ -294,7 +380,8 @@ import Loader from "./Loader.vue";
 import PercentsComponent from "./Percents.vue";
 import ReadDelayReader from "./ReadDelayReader.vue";
 import axios from "axios";
-import { getSexLabel, validateEditedTime } from "../vue-plugins/vue-helpers.js";
+import { getSexLabel, validateEditedTime, validateManualSplit } from "../vue-plugins/vue-helpers.js";
+
 
 export default {
   name: "InventoryComponent",
@@ -335,7 +422,10 @@ export default {
       editedItem: null,
       editedTime: "",
       errorMessage: false,
-      forceEdit: false
+      forceEdit: false,
+      editMode: "edit", // "edit" o "add"
+      selectedRunner: null,
+      serverTime: null
     };
   },
   mounted() {
@@ -360,10 +450,20 @@ export default {
 
     this.availableSplits = ["Denak", ...new Set(allSplits)];
 
+    window.ipc.send("toMain", [
+        "set-race",
+        JSON.stringify(this.race),
+      ]);
+
     window.ipc.handle(
       "fromMain",
       () =>
         function (event, data) {
+
+          if (data[0] === "server-time-info") {
+            that.serverTime = data[1];
+          }
+
           if (data[0] == "upload-response") {
             that.loader = false;
             that.message = null;
@@ -480,7 +580,7 @@ export default {
     },
     _inventoryStatus() {
       return this.$store.state.inventory;
-    },
+    }
   },
   // watch: {
   //   items: {
@@ -493,11 +593,21 @@ export default {
   methods: {
     getSexLabel,
     validateEditedTime,
+    _openAddDialog() {
+  this.editMode = "add";
+  this.editDialog = true;
+  this.editedTime = "0:00:00:000";
+  this.selectedRunner = null;
+  this.changeSplitSelected = null;
+  this.editStart = null;
+  this.errorMessage = false;
+},
     _editTag(item) {
   this.editedItem = item;
   this.editedTime = item.pretty_time;
   this.changeSplitSelected = item.split; // ✅ seleccionar split actual por defecto
   this.editDialog = true;
+  this.editMode = 'edit'
   this.errorMessage = false;
 },
     _confirmEdit() {
@@ -527,6 +637,63 @@ export default {
       ]);
       this.editDialog = false;
     },
+
+   _addNewSplit() {
+  this.errorMessage = false;
+
+  if (!this.selectedRunner || !this.changeSplitSelected || !this.editedTime) {
+    this.errorMessage = "Datu guztiak bete behar dira.";
+    return;
+  }
+
+  // Validar entrada (formato, existencia de splits, duplicados, etc.)
+  const error = validateManualSplit(
+    this.selectedRunner,
+    this.changeSplitSelected,
+    this.editedTime,
+    this.$store.state.startList,
+    this.$store.state.items, // Lecturas ya existentes
+    this.forceEdit
+  );
+
+  if (error) {
+    this.errorMessage = error;
+    return;
+  }
+
+  // Preparar payload para enviarlo al proceso main
+  const payload = this.sanitizeReadingPayload(
+    this.selectedRunner,
+    this.changeSplitSelected,
+    this.editedTime,
+    null, // no enviamos timestamp
+   null
+  );
+
+  // Enviar al proceso principal
+  window.ipc.send("toMain", ["add-split-reading", payload]);
+
+  this.editDialog = false;
+},sanitizeReadingPayload(runner, split, time, timestamp, prettyTime) {
+  const event = runner?.event || {};
+
+  return {
+    tag: runner.tag || "",
+    bib: runner.bib || "",
+    name: runner.name || "",
+    city: runner.city || "",
+    sex: runner.sex || "",
+    cat: runner.cat || "",
+    club: runner.club || "",
+    event: {
+      name: event.name || "",
+      ID: event.ID || event.id || "",
+    },
+    split: split || "",
+    newTime: time || "",
+    pretty: prettyTime || "", // solo para mostrar, opcional
+  };
+},
     _deleteItem(item) {
       if (confirm(`${item.bib} dortsalaren denbora hau ezabatu nahi duzu?`))
         window.ipc.send("toMain", ["delete-item", item.id]);
@@ -634,6 +801,7 @@ export default {
       ]);
     },
     _saveData() {
+      
       this.loader = true;
       this.message = false;
       window.ipc.send("toMain", [
@@ -670,6 +838,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+
 v-card-item .percent-name {
   font-weight: 300;
 }

@@ -27,7 +27,9 @@ const {
     sendSortedCount,
     addTagToBuffer,
     getEventNameById,
-    updateStartAndRecalculate
+    updateStartAndRecalculate,
+    generateRandomString,
+    rebuildPercents
 } = require("../helpers/helpers.js");
 
 
@@ -49,7 +51,7 @@ const socket = require('../socket-common.js')
 //     os.userInfo().username;
 
 /** vars */
-
+const mongoURL = 'https://denborak.online/api/v2/';
 // Array global donde irás acumulando los datos
 global.targetEPC = "0090b0000000000000000000"
 global.monitoredTagData = {
@@ -533,9 +535,7 @@ async function requests(data) {
             global.count.splice(index, 1); // Elimina 1 elemento en esa posición
         }   
 
-        // ✅ Recalcular percents
-        global.percents = [];
-        global.count.forEach(tag => percentsSum(tag));
+
         
         // 2. Limpiar también de epcWindowBuffer si existe
         if (global.epcWindowBuffer[tag]) {
@@ -543,93 +543,215 @@ async function requests(data) {
         delete global.epcWindowBuffer[tag];
         }
 
-        const del = await axios.post('https://denborak.online/api/v2/delete-data-by-id', {
-            id: deleteID
-        });
+        if(global.race.stream) {
 
-        sendSortedCount('delete');
-        global.mainWindow.webContents.send('fromMain', ['percents', global.percents]);
-    }
-
-
-    if (data[0] == "edit-time") {
-
-    const { id, newTime, newSplit } = data[1];
-
-    const target = global.count.find((t) => t.id === id);
-    if (!target) return;
-
-    // Validar formato
-    const parts = newTime.split(":");
-    if (parts.length !== 4) {
-        console.warn(`❌ Formato de tiempo inválido: ${newTime}`);
-        return;
-    }
-
-    const h = parseInt(parts[0]) || 0;
-    const m = parseInt(parts[1]) || 0;
-    const s = parseInt(parts[2]) || 0;
-    const ms = parseInt(parts[3]) || 0;
-    const totalMs = ((h * 3600) + (m * 60) + s) * 1000 + ms;
-
-    // Obtener evento con start válido
-    const matchingEvents = global.startTime.filter(
-        (s) => s.unique_id === uniqueId(target.event, global.startTime) && s.start
-    );
-    const startEvent = matchingEvents.sort((a, b) => b.start - a.start)[0];
-
-    if (!startEvent || isNaN(parseInt(startEvent.start))) {
-        console.warn(`❌ No se encontró el start válido del evento ${target.event}`);
-        return;
-    }
-
-    // Validación: evitar duplicados de split/tag (diferente id)
-    const duplicate = global.count.find(r =>
-        r.tag === target.tag &&
-        r.split === newSplit &&
-        r.id !== target.id
-    );
-    if (duplicate) {
-        console.warn(`❌ Ya existe otra lectura para ${target.tag} en el split ${newSplit}`);
-        return;
-    }
-
-    // Aplicar cambios
-    target.pretty_time = newTime;
-    target.timestamp = parseInt(startEvent.start) + totalMs;
-
-    if (newSplit && target.split !== newSplit) {
-        // Buscar split_id
-        const fullStartInfo = global.startList.find(p =>
-            p.tag === target.tag || p.bib == target.bib
-        );
-
-        if (fullStartInfo?.event?.splits?.length) {
-            const found = fullStartInfo.event.splits.find(s => s.name === newSplit);
-            if (found) {
-                target.split = found.name;
-                target.split_id = found.unique_id;
+            try {
+                await axios.post(`${mongoURL}delete-data-by-id`, {
+                    id: deleteID
+                });
+            } catch(error) {
+                console.log(error)
             }
         }
+        
+          // 8. Recalcular porcentajes correctamente
+        rebuildPercents();
+        sendSortedCount('delete');
     }
 
-    // Enviar al servidor
-    await axios.post('https://denborak.online/api/v2/update-data-by-id', {
-        id: id,
-        newPrettyTime: target.pretty_time,
-        newTimestamp: target.timestamp,
-        split: target.split,
-        splitId: target.split_id
-    });
 
-    // Recalcular porcentajes
-    global.percents = [];
-    global.count.forEach((t) => percentsSum(t));
+  if (data[0] === "add-split-reading") {
+  const {
+    tag,
+    bib,
+    event,
+    split,
+    newTime,
+    pretty,
+  } = data[1];
 
-    sendSortedCount('edit');
+  const eventName = typeof event === "string" ? event : event?.name;
+
+  // 1. Buscar evento con start válido
+  const matchingEvents = global.startTime.filter(
+    (s) => s.unique_id === uniqueId(eventName, global.startTime) && s.start
+  );
+  const startEvent = matchingEvents.sort((a, b) => b.start - a.start)[0];
+
+  if (!startEvent || isNaN(parseInt(startEvent.start))) {
+    console.warn(`❌ No se encontró un start válido para el evento '${eventName}'`);
+    return;
+  }
+
+  // 2. Buscar participante
+  const full = global.startList.find((p) => p.tag === tag || p.bib == bib);
+  if (!full?.event?.splits?.length) {
+    console.warn(`❌ No se encontró el participante o no tiene splits`);
+    return;
+  }
+
+  // 3. Buscar split
+  const splitInfo = full.event.splits.find((s) => s.name === split);
+  if (!splitInfo) {
+    console.warn(`❌ Split '${split}' no encontrado`);
+    return;
+  }
+
+  // 4. Verificar duplicado
+  const exists = global.count.find(
+    (r) =>
+      String(r.tag).toLowerCase().trim() === String(tag).toLowerCase().trim() &&
+      String(r.split_id) === String(splitInfo.unique_id)
+  );
+  if (exists) {
+    console.warn(`❌ Ya existe lectura para ${tag} en el split '${split}'`);
+    return;
+  }
+
+  // 5. Calcular timestamp desde start
+  const [h, m, s, ms] = newTime.split(":").map(Number);
+  const offsetMs = h * 3600000 + m * 60000 + s * 1000 + ms;
+  const correctedTimestamp = parseInt(startEvent.start) + offsetMs;
+
+  // 6. Crear nueva lectura
+  const newEntry = {
+    id: generateRandomString(10),
+    tag,
+    bib,
+    name: full.name || "",
+    city: full.city || "",
+    sex: full.sex || "",
+    cat: full.cat || "",
+    club: full.club || "",
+    pretty_time: newTime,
+    real_time: pretty || moment(correctedTimestamp).format("YYYY-MM-DD HH:mm:ss.SSS"),
+    event: eventName,
+    split: splitInfo.name,
+    split_id: splitInfo.unique_id,
+    reader: "Manual",
+    host: global.hostname,
+    race: global.race.ID,
+    timestamp: correctedTimestamp,
+  };
+
+  global.count.push(newEntry);
+
+
+  // 7. Guardar en Mongo
+  if(global.race.stream) {
+    try {
+        await axios.post(`${mongoURL}save-data`, {
+        items: [newEntry],
+        host: global.hostname,
+        post_id: global.race.ID,
+        });
+    } catch (err) {
+        console.error("❌ Error al guardar en backend:", err);
+    }
+  }
+
+  // 8. Recalcular porcentajes correctamente
+  rebuildPercents();
+  sendSortedCount("edit");
+
+  console.log(`✅ Añadida lectura manual para ${tag} en el split '${split}'`);
 }
 
 
+
+
+    if (data[0] == "edit-time") {
+  const { id, newTime, newSplit } = data[1];
+
+  const target = global.count.find((t) => t.id === id);
+  if (!target) return;
+
+  // Validar formato HH:mm:ss:SSS
+  const parts = newTime.split(":");
+  if (parts.length !== 4) {
+    console.warn(`❌ Formato de tiempo inválido: ${newTime}`);
+    return;
+  }
+
+  const h = parseInt(parts[0]) || 0;
+  const m = parseInt(parts[1]) || 0;
+  const s = parseInt(parts[2]) || 0;
+  const ms = parseInt(parts[3]) || 0;
+  const totalMs = ((h * 3600) + (m * 60) + s) * 1000 + ms;
+
+  // Obtener evento con start válido
+  const matchingEvents = global.startTime.filter(
+    (s) => s.unique_id === uniqueId(target.event, global.startTime) && s.start
+  );
+  const startEvent = matchingEvents.sort((a, b) => b.start - a.start)[0];
+
+  if (!startEvent || isNaN(parseInt(startEvent.start))) {
+    console.warn(`❌ No se encontró el start válido del evento ${target.event}`);
+    return;
+  }
+
+  // Validación: evitar duplicados de split/tag (diferente id)
+  const duplicate = global.count.find((r) =>
+    r.tag === target.tag &&
+    r.split === newSplit &&
+    r.id !== target.id
+  );
+  if (duplicate) {
+    console.warn(`❌ Ya existe otra lectura para ${target.tag} en el split ${newSplit}`);
+    return;
+  }
+
+  // Cambiar el split si es necesario (antes de recalcular todo)
+  if (newSplit && target.split !== newSplit) {
+    const fullStartInfo = global.startList.find(p =>
+      p.tag === target.tag || p.bib == target.bib
+    );
+
+    if (fullStartInfo?.event?.splits?.length) {
+      const found = fullStartInfo.event.splits.find(s => s.name === newSplit);
+      if (found) {
+        target.split = found.name;
+        target.split_id = found.unique_id;
+      }
+    }
+  }
+
+  // Actualizar tiempos
+  target.pretty_time = newTime;
+  target.timestamp = parseInt(startEvent.start) + totalMs;
+
+  // Guardar en el backend
+  if(global.race.stream) {
+
+        try {
+            await axios.post(`${mongoURL}update-data-by-id`, {
+                id: target.id,
+                newPrettyTime: target.pretty_time,
+                newTimestamp: target.timestamp,
+                split: target.split,
+                splitId: target.split_id
+            });
+        } catch (err) {
+            console.error("❌ Error al guardar en backend:", err);
+        }
+       
+    }
+
+  // Recalcular y notificar
+  rebuildPercents();
+  sendSortedCount("edit");
+
+  console.log("✅ Recalculated percents:", global.percents);
+  
+}
+
+
+
+ // Race zehazru gerago ID erabili ahal izateko
+    if (cmd == 'set-race') {
+        global.race = JSON.parse(data[1]);
+
+    }
 
 
     // Inbentarioak hasi (hau da garrantzitsuena)
@@ -724,13 +846,13 @@ async function requests(data) {
 
 
                     // Hacer la petición al servidor
-                    const response = await axios.post('https://denborak.online/api/v2/recalculate-times', {
+                    //https://denborak.online/api/v2/
+                    const response = await axios.post(`${mongoURL}recalculate-times`, {
                         race: raceID,
                         event: eventName,
                         newStartTimestamp: time.timestamp
                     });
 
-                    console.log(`✅ Recalculado en el servidor: ${eventName}`, response.data);
                 } catch (err) {
                     console.error(`❌ Error al recalcular tiempos para evento con ID: ${id}`, err.message);
                 }

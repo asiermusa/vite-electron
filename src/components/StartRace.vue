@@ -61,6 +61,7 @@
       variant="outlined"
       prepend-icon="mdi-timer-play"
       size="small"
+      rounded
       >Hasi</v-btn
     >
     <v-btn
@@ -70,6 +71,7 @@
       prepend-icon="mdi-timer-off"
       size="small"
       class="mx-2"
+      rounded
       >Geratu</v-btn
     >
   </div>

@@ -46,6 +46,7 @@
         class="mr-2 mt-2"
         color="primary"
         prepend-icon="mdi-download"
+        rounded
       >
         Eguneratu
       </v-btn>
@@ -56,6 +57,7 @@
         color="primary"
         prepend-icon="mdi-account-tag"
         class="mx-2 mt-2"
+        rounded
       >
         Tag grabatzailea
       </v-btn>

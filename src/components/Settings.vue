@@ -138,6 +138,7 @@
               size="small"
               @click="removeInput(key)"
               prepend-icon="mdi-delete"
+              rounded
               >Reader hau kendu</v-btn
             >
           </v-card-actions>
@@ -146,11 +147,12 @@
     </v-row>
 
     <v-btn
-      variant="text"
+      variant="outlined"
       color="black"
       @click="addInput"
       class="mx-3"
       prepend-icon="mdi-plus"
+      rounded
       >Reader berria gehitu</v-btn
     >
 
@@ -159,6 +161,7 @@
       variant="flat"
       color="primary"
       prepend-icon="mdi-chip"
+      rounded
       >Konektatu</v-btn
     >
   </div>

@@ -567,6 +567,7 @@ export default {
         JSON.stringify(this.race),
         this.sound,
       ]);
+      
     },
 
     _removeRace() {
