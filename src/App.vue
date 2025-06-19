@@ -134,6 +134,12 @@
               title="TAG Grabatzailea"
               to="/usb-reader"
             ></v-list-item>
+
+            <v-list-item
+              title="GPS zehaztu"
+              to="/gps"
+            ></v-list-item>
+
           </v-list-group>
 
           <v-divider class="mb-10"></v-divider>

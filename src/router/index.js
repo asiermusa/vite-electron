@@ -7,6 +7,7 @@ import store from '../store'
 
 import Settings from '@/components/Settings.vue'
 import USBReader from '@/components/USBReader.vue'
+import GPSmodule from '@/components/GPSmodule.vue'
 import ReadDelayReader from '@/components/ReadDelayReader.vue'
 
 import Inventory from '@/components/Inventory.vue'
@@ -76,6 +77,13 @@ const routes = [{
   {
     path: '/usb-reader',
     component: USBReader,
+    meta: {
+      requiresAuth: false,
+    }
+  },
+  {
+    path: '/gps',
+    component: GPSmodule,
     meta: {
       requiresAuth: false,
     }

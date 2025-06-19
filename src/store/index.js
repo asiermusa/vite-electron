@@ -35,6 +35,7 @@ export default createStore({
     readDelay: 10, //seconds
     sound: false,
     serial: null,
+    gps: null,
     race: null,
     events: [],
     selectedSplits: [],
@@ -104,6 +105,9 @@ export default createStore({
     },
     _SET_SERIAL_PORT(state, val) {
       state.serial = val
+    },
+    _SET_GPS_PORT(state, val) {
+      state.gps = val
     },
     _SET_INVENTORY_STATUS(state, val) {
       state.inventory = val
